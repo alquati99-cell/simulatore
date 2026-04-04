@@ -1,0 +1,680 @@
+DATA;COD_Ateneo;NOME_ATENEO;CODICE_STRUTTURA;DESCRIZIONE_STRUTTURA;NUMERO_STRUTTURE;POSTI_DISPONIBILI
+1/11/18;00101;Torino - Università degli studi;01 ;Mense;0;0
+1/11/18;00101;Torino - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;00101;Torino - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;00101;Torino - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;00101;Torino - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;00101;Torino - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;00101;Torino - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;00102;Torino - Politecnico;01 ;Mense;0;0
+1/11/18;00102;Torino - Politecnico;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;00102;Torino - Politecnico;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;00102;Torino - Politecnico;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;00102;Torino - Politecnico;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;00102;Torino - Politecnico;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;00102;Torino - Politecnico;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;00201;"Vercelli - Università degli studi del Piemonte orientale ""A. Avogadro""";01 ;Mense;0;0
+1/11/18;00201;"Vercelli - Università degli studi del Piemonte orientale ""A. Avogadro""";02 ;Residenze direttamente gestite dall'istituto;2;58
+1/11/18;00201;"Vercelli - Università degli studi del Piemonte orientale ""A. Avogadro""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;49
+1/11/18;00201;"Vercelli - Università degli studi del Piemonte orientale ""A. Avogadro""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;9
+1/11/18;00201;"Vercelli - Università degli studi del Piemonte orientale ""A. Avogadro""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;00201;"Vercelli - Università degli studi del Piemonte orientale ""A. Avogadro""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;00201;"Vercelli - Università degli studi del Piemonte orientale ""A. Avogadro""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;00401;Bra (CN) - Università di Scienze Gastronomiche;01 ;Mense;1;80
+1/11/18;00401;Bra (CN) - Università di Scienze Gastronomiche;02 ;Residenze direttamente gestite dall'istituto;7;29
+1/11/18;00401;Bra (CN) - Università di Scienze Gastronomiche;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;29
+1/11/18;00401;Bra (CN) - Università di Scienze Gastronomiche;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;00401;Bra (CN) - Università di Scienze Gastronomiche;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;00401;Bra (CN) - Università di Scienze Gastronomiche;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;00401;Bra (CN) - Università di Scienze Gastronomiche;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;00701;Aosta - Università degli studi;01 ;Mense;0;0
+1/11/18;00701;Aosta - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;1;33
+1/11/18;00701;Aosta - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;15
+1/11/18;00701;Aosta - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;7
+1/11/18;00701;Aosta - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;00701;Aosta - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;00701;Aosta - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01001;Genova - Università degli studi;01 ;Mense;0;0
+1/11/18;01001;Genova - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01001;Genova - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01001;Genova - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01001;Genova - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;01001;Genova - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;01001;Genova - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01201;"Castellanza - Università ""Carlo Cattaneo""";01 ;Mense;0;0
+1/11/18;01201;"Castellanza - Università ""Carlo Cattaneo""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01201;"Castellanza - Università ""Carlo Cattaneo""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01201;"Castellanza - Università ""Carlo Cattaneo""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01201;"Castellanza - Università ""Carlo Cattaneo""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;01201;"Castellanza - Università ""Carlo Cattaneo""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;01201;"Castellanza - Università ""Carlo Cattaneo""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01202;Varese - Università dell' Insubria;01 ;Mense;0;0
+1/11/18;01202;Varese - Università dell' Insubria;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01202;Varese - Università dell' Insubria;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01202;Varese - Università dell' Insubria;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01202;Varese - Università dell' Insubria;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;01202;Varese - Università dell' Insubria;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;01202;Varese - Università dell' Insubria;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01301;"Novedrate (CO) - Università telematica ""e-Campus""";01 ;Mense;0;0
+1/11/18;01301;"Novedrate (CO) - Università telematica ""e-Campus""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01301;"Novedrate (CO) - Università telematica ""e-Campus""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01301;"Novedrate (CO) - Università telematica ""e-Campus""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01301;"Novedrate (CO) - Università telematica ""e-Campus""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;01301;"Novedrate (CO) - Università telematica ""e-Campus""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;01301;"Novedrate (CO) - Università telematica ""e-Campus""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01501;Milano - Università degli studi;01 ;Mense;0;0
+1/11/18;01501;Milano - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01501;Milano - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01501;Milano - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01501;Milano - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;01501;Milano - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;01501;Milano - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01502;Milano - Politecnico;01 ;Mense;1;200
+1/11/18;01502;Milano - Politecnico;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01502;Milano - Politecnico;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01502;Milano - Politecnico;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01502;Milano - Politecnico;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;3;298
+1/11/18;01502;Milano - Politecnico;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;298
+1/11/18;01502;Milano - Politecnico;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01503;"Milano - Università commerciale ""Luigi Bocconi""";01 ;Mense;0;0
+1/11/18;01503;"Milano - Università commerciale ""Luigi Bocconi""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01503;"Milano - Università commerciale ""Luigi Bocconi""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01503;"Milano - Università commerciale ""Luigi Bocconi""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01503;"Milano - Università commerciale ""Luigi Bocconi""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;01503;"Milano - Università commerciale ""Luigi Bocconi""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;01503;"Milano - Università commerciale ""Luigi Bocconi""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01504;"Milano - Università Cattolica del ""Sacro Cuore""";01 ;Mense;0;0
+1/11/18;01504;"Milano - Università Cattolica del ""Sacro Cuore""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01504;"Milano - Università Cattolica del ""Sacro Cuore""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01504;"Milano - Università Cattolica del ""Sacro Cuore""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01504;"Milano - Università Cattolica del ""Sacro Cuore""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;01504;"Milano - Università Cattolica del ""Sacro Cuore""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;01504;"Milano - Università Cattolica del ""Sacro Cuore""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01505;Milano - Libera Università di Lingue e Comunicazione (IULM);01 ;Mense;0;0
+1/11/18;01505;Milano - Libera Università di Lingue e Comunicazione (IULM);02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01505;Milano - Libera Università di Lingue e Comunicazione (IULM);02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01505;Milano - Libera Università di Lingue e Comunicazione (IULM);02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01505;Milano - Libera Università di Lingue e Comunicazione (IULM);03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;01505;Milano - Libera Università di Lingue e Comunicazione (IULM);03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;01505;Milano - Libera Università di Lingue e Comunicazione (IULM);03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01508;Milano - Università Vita-Salute San Raffaele;01 ;Mense;0;0
+1/11/18;01508;Milano - Università Vita-Salute San Raffaele;02 ;Residenze direttamente gestite dall'istituto;2;139
+1/11/18;01508;Milano - Università Vita-Salute San Raffaele;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;133
+1/11/18;01508;Milano - Università Vita-Salute San Raffaele;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;2
+1/11/18;01508;Milano - Università Vita-Salute San Raffaele;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;01508;Milano - Università Vita-Salute San Raffaele;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;01508;Milano - Università Vita-Salute San Raffaele;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01509;Milano-Bicocca - Università degli studi;01 ;Mense;0;0
+1/11/18;01509;Milano-Bicocca - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01509;Milano-Bicocca - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01509;Milano-Bicocca - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01509;Milano-Bicocca - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;01509;Milano-Bicocca - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;01509;Milano-Bicocca - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01510;Rozzano (MI) Humanitas University;01 ;Mense;0;0
+1/11/18;01510;Rozzano (MI) Humanitas University;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01510;Rozzano (MI) Humanitas University;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01510;Rozzano (MI) Humanitas University;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01510;Rozzano (MI) Humanitas University;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;1;240
+1/11/18;01510;Rozzano (MI) Humanitas University;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;126
+1/11/18;01510;Rozzano (MI) Humanitas University;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01601;Bergamo - Università degli studi;01 ;Mense;0;0
+1/11/18;01601;Bergamo - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01601;Bergamo - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01601;Bergamo - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01601;Bergamo - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;01601;Bergamo - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;01601;Bergamo - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01701;Brescia - Università degli studi;01 ;Mense;0;0
+1/11/18;01701;Brescia - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01701;Brescia - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01701;Brescia - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01701;Brescia - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;01701;Brescia - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;01701;Brescia - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01801;Pavia - Università degli studi;01 ;Mense;0;0
+1/11/18;01801;Pavia - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01801;Pavia - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01801;Pavia - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01801;Pavia - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;01801;Pavia - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;01801;Pavia - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;01802;Pavia - Istituto universitario di studi superiori;01 ;Mense;0;0
+1/11/18;01802;Pavia - Istituto universitario di studi superiori;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;01802;Pavia - Istituto universitario di studi superiori;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;01802;Pavia - Istituto universitario di studi superiori;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;01802;Pavia - Istituto universitario di studi superiori;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;01802;Pavia - Istituto universitario di studi superiori;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;01802;Pavia - Istituto universitario di studi superiori;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;02101;Bolzano - Libera Università;01 ;Mense;0;0
+1/11/18;02101;Bolzano - Libera Università;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;02101;Bolzano - Libera Università;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;02101;Bolzano - Libera Università;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;02101;Bolzano - Libera Università;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;02101;Bolzano - Libera Università;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;02101;Bolzano - Libera Università;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;02201;Trento - Università degli studi;01 ;Mense;0;0
+1/11/18;02201;Trento - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;02201;Trento - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;02201;Trento - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;02201;Trento - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;02201;Trento - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;02201;Trento - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;02301;Verona - Università degli studi;01 ;Mense;0;0
+1/11/18;02301;Verona - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;02301;Verona - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;02301;Verona - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;02301;Verona - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;02301;Verona - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;02301;Verona - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;02701;"Venezia - Università degli studi ""Cà Foscari""";01 ;Mense;0;0
+1/11/18;02701;"Venezia - Università degli studi ""Cà Foscari""";02 ;Residenze direttamente gestite dall'istituto;1;9
+1/11/18;02701;"Venezia - Università degli studi ""Cà Foscari""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;02701;"Venezia - Università degli studi ""Cà Foscari""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;02701;"Venezia - Università degli studi ""Cà Foscari""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;10;180
+1/11/18;02701;"Venezia - Università degli studi ""Cà Foscari""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;02701;"Venezia - Università degli studi ""Cà Foscari""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;02702;Venezia - Università IUAV;01 ;Mense;0;0
+1/11/18;02702;Venezia - Università IUAV;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;02702;Venezia - Università IUAV;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;02702;Venezia - Università IUAV;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;02702;Venezia - Università IUAV;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;02702;Venezia - Università IUAV;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;02702;Venezia - Università IUAV;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;02801;Padova - Università degli studi;01 ;Mense;0;0
+1/11/18;02801;Padova - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;34;409
+1/11/18;02801;Padova - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;233
+1/11/18;02801;Padova - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;02801;Padova - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;2;65
+1/11/18;02801;Padova - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;65
+1/11/18;02801;Padova - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;03001;Udine - Università degli studi;01 ;Mense;0;0
+1/11/18;03001;Udine - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;1;84
+1/11/18;03001;Udine - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;77
+1/11/18;03001;Udine - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;03001;Udine - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;03001;Udine - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;03001;Udine - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;03201;Trieste - Università degli studi;01 ;Mense;0;0
+1/11/18;03201;Trieste - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;03201;Trieste - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;03201;Trieste - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;03201;Trieste - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;03201;Trieste - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;03201;Trieste - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;03202;Trieste - Scuola internazionale superiore di studi avanzati;01 ;Mense;0;0
+1/11/18;03202;Trieste - Scuola internazionale superiore di studi avanzati;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;03202;Trieste - Scuola internazionale superiore di studi avanzati;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;03202;Trieste - Scuola internazionale superiore di studi avanzati;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;03202;Trieste - Scuola internazionale superiore di studi avanzati;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;03202;Trieste - Scuola internazionale superiore di studi avanzati;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;03202;Trieste - Scuola internazionale superiore di studi avanzati;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;03401;Parma - Università degli studi;01 ;Mense;0;0
+1/11/18;03401;Parma - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;03401;Parma - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;03401;Parma - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;03401;Parma - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;03401;Parma - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;03401;Parma - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;03601;Modena e Reggio Emilia - Università degli studi;01 ;Mense;0;0
+1/11/18;03601;Modena e Reggio Emilia - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;1;30
+1/11/18;03601;Modena e Reggio Emilia - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;30
+1/11/18;03601;Modena e Reggio Emilia - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;03601;Modena e Reggio Emilia - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;03601;Modena e Reggio Emilia - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;03601;Modena e Reggio Emilia - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;03701;Bologna - Università degli studi;01 ;Mense;0;0
+1/11/18;03701;Bologna - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;03701;Bologna - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;03701;Bologna - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;03701;Bologna - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;1;80
+1/11/18;03701;Bologna - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;80
+1/11/18;03701;Bologna - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;03801;Ferrara - Università degli studi;01 ;Mense;0;0
+1/11/18;03801;Ferrara - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;03801;Ferrara - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;03801;Ferrara - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;03801;Ferrara - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;03801;Ferrara - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;03801;Ferrara - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;04101;"Urbino - Università degli studi ""Carlo Bo""";01 ;Mense;0;0
+1/11/18;04101;"Urbino - Università degli studi ""Carlo Bo""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;04101;"Urbino - Università degli studi ""Carlo Bo""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;04101;"Urbino - Università degli studi ""Carlo Bo""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;04101;"Urbino - Università degli studi ""Carlo Bo""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;04101;"Urbino - Università degli studi ""Carlo Bo""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;04101;"Urbino - Università degli studi ""Carlo Bo""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;04201;Ancona - Università Politecnica delle Marche;01 ;Mense;0;0
+1/11/18;04201;Ancona - Università Politecnica delle Marche;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;04201;Ancona - Università Politecnica delle Marche;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;04201;Ancona - Università Politecnica delle Marche;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;04201;Ancona - Università Politecnica delle Marche;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;04201;Ancona - Università Politecnica delle Marche;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;04201;Ancona - Università Politecnica delle Marche;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;04301;Macerata - Università degli studi;01 ;Mense;0;0
+1/11/18;04301;Macerata - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;04301;Macerata - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;04301;Macerata - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;04301;Macerata - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;6;192
+1/11/18;04301;Macerata - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;102
+1/11/18;04301;Macerata - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;5
+1/11/18;04302;Camerino - Università degli studi;01 ;Mense;0;0
+1/11/18;04302;Camerino - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;1;14
+1/11/18;04302;Camerino - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;14
+1/11/18;04302;Camerino - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;04302;Camerino - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;1;8
+1/11/18;04302;Camerino - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;8
+1/11/18;04302;Camerino - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;04601;Lucca - Scuola IMT Alti Studi;01 ;Mense;1;88
+1/11/18;04601;Lucca - Scuola IMT Alti Studi;02 ;Residenze direttamente gestite dall'istituto;1;127
+1/11/18;04601;Lucca - Scuola IMT Alti Studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;76
+1/11/18;04601;Lucca - Scuola IMT Alti Studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;1
+1/11/18;04601;Lucca - Scuola IMT Alti Studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;04601;Lucca - Scuola IMT Alti Studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;04601;Lucca - Scuola IMT Alti Studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;04801;Firenze - Università degli studi;01 ;Mense;0;0
+1/11/18;04801;Firenze - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;04801;Firenze - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;04801;Firenze - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;04801;Firenze - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;04801;Firenze - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;04801;Firenze - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;04804;"Firenze - Università telematica ""Italian University line""";01 ;Mense;0;0
+1/11/18;04804;"Firenze - Università telematica ""Italian University line""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;04804;"Firenze - Università telematica ""Italian University line""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;04804;"Firenze - Università telematica ""Italian University line""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;04804;"Firenze - Università telematica ""Italian University line""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;04804;"Firenze - Università telematica ""Italian University line""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;04804;"Firenze - Università telematica ""Italian University line""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05001;Pisa - Università degli studi;01 ;Mense;0;0
+1/11/18;05001;Pisa - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05001;Pisa - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05001;Pisa - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05001;Pisa - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05001;Pisa - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05001;Pisa - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05002;Pisa - Scuola normale superiore;01 ;Mense;1;350
+1/11/18;05002;Pisa - Scuola normale superiore;02 ;Residenze direttamente gestite dall'istituto;5;287
+1/11/18;05002;Pisa - Scuola normale superiore;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;233
+1/11/18;05002;Pisa - Scuola normale superiore;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;15
+1/11/18;05002;Pisa - Scuola normale superiore;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;2;33
+1/11/18;05002;Pisa - Scuola normale superiore;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;22
+1/11/18;05002;Pisa - Scuola normale superiore;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;5
+1/11/18;05003;"Pisa - Scuola superiore studi universitari e perfezionamento ""S. Anna""";01 ;Mense;1;156
+1/11/18;05003;"Pisa - Scuola superiore studi universitari e perfezionamento ""S. Anna""";02 ;Residenze direttamente gestite dall'istituto;3;256
+1/11/18;05003;"Pisa - Scuola superiore studi universitari e perfezionamento ""S. Anna""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;256
+1/11/18;05003;"Pisa - Scuola superiore studi universitari e perfezionamento ""S. Anna""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05003;"Pisa - Scuola superiore studi universitari e perfezionamento ""S. Anna""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05003;"Pisa - Scuola superiore studi universitari e perfezionamento ""S. Anna""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05003;"Pisa - Scuola superiore studi universitari e perfezionamento ""S. Anna""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05201;Siena - Università degli studi;01 ;Mense;0;0
+1/11/18;05201;Siena - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;1;87
+1/11/18;05201;Siena - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;40
+1/11/18;05201;Siena - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;17
+1/11/18;05201;Siena - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05201;Siena - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05201;Siena - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05202;Siena - Università per stranieri;01 ;Mense;0;0
+1/11/18;05202;Siena - Università per stranieri;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05202;Siena - Università per stranieri;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05202;Siena - Università per stranieri;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05202;Siena - Università per stranieri;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05202;Siena - Università per stranieri;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05202;Siena - Università per stranieri;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05401;Perugia - Università degli studi;01 ;Mense;0;0
+1/11/18;05401;Perugia - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05401;Perugia - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05401;Perugia - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05401;Perugia - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05401;Perugia - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05401;Perugia - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05403;Perugia - Università per stranieri;01 ;Mense;0;0
+1/11/18;05403;Perugia - Università per stranieri;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05403;Perugia - Università per stranieri;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05403;Perugia - Università per stranieri;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05403;Perugia - Università per stranieri;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05403;Perugia - Università per stranieri;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05403;Perugia - Università per stranieri;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05601;Viterbo - Università della Tuscia;01 ;Mense;0;0
+1/11/18;05601;Viterbo - Università della Tuscia;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05601;Viterbo - Università della Tuscia;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05601;Viterbo - Università della Tuscia;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05601;Viterbo - Università della Tuscia;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05601;Viterbo - Università della Tuscia;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05601;Viterbo - Università della Tuscia;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05801;"Roma - Università degli studi ""La Sapienza""";01 ;Mense;0;0
+1/11/18;05801;"Roma - Università degli studi ""La Sapienza""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05801;"Roma - Università degli studi ""La Sapienza""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05801;"Roma - Università degli studi ""La Sapienza""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05801;"Roma - Università degli studi ""La Sapienza""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;3;142
+1/11/18;05801;"Roma - Università degli studi ""La Sapienza""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;138
+1/11/18;05801;"Roma - Università degli studi ""La Sapienza""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;4
+1/11/18;05802;"Roma - Università degli studi di ""Tor Vergata""";01 ;Mense;0;0
+1/11/18;05802;"Roma - Università degli studi di ""Tor Vergata""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05802;"Roma - Università degli studi di ""Tor Vergata""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05802;"Roma - Università degli studi di ""Tor Vergata""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05802;"Roma - Università degli studi di ""Tor Vergata""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05802;"Roma - Università degli studi di ""Tor Vergata""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05802;"Roma - Università degli studi di ""Tor Vergata""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05803;Roma - Libera Università Maria SS.Assunta (LUMSA);01 ;Mense;0;0
+1/11/18;05803;Roma - Libera Università Maria SS.Assunta (LUMSA);02 ;Residenze direttamente gestite dall'istituto;3;73
+1/11/18;05803;Roma - Libera Università Maria SS.Assunta (LUMSA);02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;73
+1/11/18;05803;Roma - Libera Università Maria SS.Assunta (LUMSA);02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05803;Roma - Libera Università Maria SS.Assunta (LUMSA);03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05803;Roma - Libera Università Maria SS.Assunta (LUMSA);03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05803;Roma - Libera Università Maria SS.Assunta (LUMSA);03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05805;Roma - Libera Università internazionale degli studi sociali Guido Carli (LUISS);01 ;Mense;3;732
+1/11/18;05805;Roma - Libera Università internazionale degli studi sociali Guido Carli (LUISS);02 ;Residenze direttamente gestite dall'istituto;5;412
+1/11/18;05805;Roma - Libera Università internazionale degli studi sociali Guido Carli (LUISS);02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;391
+1/11/18;05805;Roma - Libera Università internazionale degli studi sociali Guido Carli (LUISS);02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;21
+1/11/18;05805;Roma - Libera Università internazionale degli studi sociali Guido Carli (LUISS);03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;6;94
+1/11/18;05805;Roma - Libera Università internazionale degli studi sociali Guido Carli (LUISS);03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;94
+1/11/18;05805;Roma - Libera Università internazionale degli studi sociali Guido Carli (LUISS);03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05806;"Roma - Università degli studi del ""Foro Italico""";01 ;Mense;0;0
+1/11/18;05806;"Roma - Università degli studi del ""Foro Italico""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05806;"Roma - Università degli studi del ""Foro Italico""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05806;"Roma - Università degli studi del ""Foro Italico""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05806;"Roma - Università degli studi del ""Foro Italico""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05806;"Roma - Università degli studi del ""Foro Italico""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05806;"Roma - Università degli studi del ""Foro Italico""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05807;Roma - III Università degli studi;01 ;Mense;1;40
+1/11/18;05807;Roma - III Università degli studi;02 ;Residenze direttamente gestite dall'istituto;1;27
+1/11/18;05807;Roma - III Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05807;Roma - III Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05807;Roma - III Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05807;Roma - III Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05807;Roma - III Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05808;"Roma - Università ""Campus Bio-Medico""";01 ;Mense;3;521
+1/11/18;05808;"Roma - Università ""Campus Bio-Medico""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05808;"Roma - Università ""Campus Bio-Medico""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05808;"Roma - Università ""Campus Bio-Medico""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05808;"Roma - Università ""Campus Bio-Medico""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05808;"Roma - Università ""Campus Bio-Medico""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05808;"Roma - Università ""Campus Bio-Medico""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05809;Roma - Università degli Studi Internazionali – UNINT;01 ;Mense;0;0
+1/11/18;05809;Roma - Università degli Studi Internazionali – UNINT;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05809;Roma - Università degli Studi Internazionali – UNINT;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05809;Roma - Università degli Studi Internazionali – UNINT;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05809;Roma - Università degli Studi Internazionali – UNINT;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05809;Roma - Università degli Studi Internazionali – UNINT;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05809;Roma - Università degli Studi Internazionali – UNINT;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05810;"Roma - Università telematica ""Guglielmo Marconi""";01 ;Mense;0;0
+1/11/18;05810;"Roma - Università telematica ""Guglielmo Marconi""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05810;"Roma - Università telematica ""Guglielmo Marconi""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05810;"Roma - Università telematica ""Guglielmo Marconi""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05810;"Roma - Università telematica ""Guglielmo Marconi""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05810;"Roma - Università telematica ""Guglielmo Marconi""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05810;"Roma - Università telematica ""Guglielmo Marconi""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05811;"Roma - Università telematica ""Unitelma Sapienza""";01 ;Mense;0;0
+1/11/18;05811;"Roma - Università telematica ""Unitelma Sapienza""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05811;"Roma - Università telematica ""Unitelma Sapienza""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05811;"Roma - Università telematica ""Unitelma Sapienza""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05811;"Roma - Università telematica ""Unitelma Sapienza""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05811;"Roma - Università telematica ""Unitelma Sapienza""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05811;"Roma - Università telematica ""Unitelma Sapienza""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05812;Roma - Università Europea;01 ;Mense;1;128
+1/11/18;05812;Roma - Università Europea;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05812;Roma - Università Europea;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05812;Roma - Università Europea;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05812;Roma - Università Europea;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05812;Roma - Università Europea;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05812;Roma - Università Europea;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05813;"Roma - Università telematica internazionale ""UNINETTUNO""";01 ;Mense;0;0
+1/11/18;05813;"Roma - Università telematica internazionale ""UNINETTUNO""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05813;"Roma - Università telematica internazionale ""UNINETTUNO""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05813;"Roma - Università telematica internazionale ""UNINETTUNO""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05813;"Roma - Università telematica internazionale ""UNINETTUNO""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05813;"Roma - Università telematica internazionale ""UNINETTUNO""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05813;"Roma - Università telematica internazionale ""UNINETTUNO""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05814;Roma - Universitas Mercatorum;01 ;Mense;0;0
+1/11/18;05814;Roma - Universitas Mercatorum;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05814;Roma - Universitas Mercatorum;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05814;Roma - Universitas Mercatorum;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05814;Roma - Universitas Mercatorum;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05814;Roma - Universitas Mercatorum;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05814;Roma - Universitas Mercatorum;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05815;Roma - Università telematica Niccolò Cusano (già UNISU);01 ;Mense;0;0
+1/11/18;05815;Roma - Università telematica Niccolò Cusano (già UNISU);02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05815;Roma - Università telematica Niccolò Cusano (già UNISU);02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05815;Roma - Università telematica Niccolò Cusano (già UNISU);02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05815;Roma - Università telematica Niccolò Cusano (già UNISU);03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05815;Roma - Università telematica Niccolò Cusano (già UNISU);03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05815;Roma - Università telematica Niccolò Cusano (già UNISU);03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05816;"Roma - Università telematica ""San Raffaele"" - già ""UNITEL""";01 ;Mense;0;0
+1/11/18;05816;"Roma - Università telematica ""San Raffaele"" - già ""UNITEL""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05816;"Roma - Università telematica ""San Raffaele"" - già ""UNITEL""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05816;"Roma - Università telematica ""San Raffaele"" - già ""UNITEL""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05816;"Roma - Università telematica ""San Raffaele"" - già ""UNITEL""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05816;"Roma - Università telematica ""San Raffaele"" - già ""UNITEL""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05816;"Roma - Università telematica ""San Raffaele"" - già ""UNITEL""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;05817;Roma - Link Campus University;01 ;Mense;0;0
+1/11/18;05817;Roma - Link Campus University;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;05817;Roma - Link Campus University;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;05817;Roma - Link Campus University;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;05817;Roma - Link Campus University;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;05817;Roma - Link Campus University;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;05817;Roma - Link Campus University;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06001;Cassino - Università degli Studi di Cassino e del Lazio Meridionale;01 ;Mense;0;0
+1/11/18;06001;Cassino - Università degli Studi di Cassino e del Lazio Meridionale;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;06001;Cassino - Università degli Studi di Cassino e del Lazio Meridionale;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;06001;Cassino - Università degli Studi di Cassino e del Lazio Meridionale;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;06001;Cassino - Università degli Studi di Cassino e del Lazio Meridionale;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;06001;Cassino - Università degli Studi di Cassino e del Lazio Meridionale;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;06001;Cassino - Università degli Studi di Cassino e del Lazio Meridionale;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06201;Benevento - Università degli studi del Sannio;01 ;Mense;0;0
+1/11/18;06201;Benevento - Università degli studi del Sannio;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;06201;Benevento - Università degli studi del Sannio;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;06201;Benevento - Università degli studi del Sannio;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;06201;Benevento - Università degli studi del Sannio;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;06201;Benevento - Università degli studi del Sannio;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;06201;Benevento - Università degli studi del Sannio;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06202;"Benevento - Università telematica ""Giustino Fortunato""";01 ;Mense;0;0
+1/11/18;06202;"Benevento - Università telematica ""Giustino Fortunato""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;06202;"Benevento - Università telematica ""Giustino Fortunato""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;06202;"Benevento - Università telematica ""Giustino Fortunato""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;06202;"Benevento - Università telematica ""Giustino Fortunato""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;06202;"Benevento - Università telematica ""Giustino Fortunato""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;06202;"Benevento - Università telematica ""Giustino Fortunato""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06301;"Napoli - Università degli studi ""Federico II""";01 ;Mense;0;0
+1/11/18;06301;"Napoli - Università degli studi ""Federico II""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;06301;"Napoli - Università degli studi ""Federico II""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;06301;"Napoli - Università degli studi ""Federico II""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;06301;"Napoli - Università degli studi ""Federico II""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;06301;"Napoli - Università degli studi ""Federico II""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;06301;"Napoli - Università degli studi ""Federico II""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06302;"Napoli - Università degli studi ""Parthenope""";01 ;Mense;0;0
+1/11/18;06302;"Napoli - Università degli studi ""Parthenope""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;06302;"Napoli - Università degli studi ""Parthenope""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;06302;"Napoli - Università degli studi ""Parthenope""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;06302;"Napoli - Università degli studi ""Parthenope""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;06302;"Napoli - Università degli studi ""Parthenope""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;06302;"Napoli - Università degli studi ""Parthenope""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06303;"Napoli - Università degli studi ""L' Orientale""";01 ;Mense;0;0
+1/11/18;06303;"Napoli - Università degli studi ""L' Orientale""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;06303;"Napoli - Università degli studi ""L' Orientale""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;06303;"Napoli - Università degli studi ""L' Orientale""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;06303;"Napoli - Università degli studi ""L' Orientale""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;06303;"Napoli - Università degli studi ""L' Orientale""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;06303;"Napoli - Università degli studi ""L' Orientale""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06304;"Napoli - Università degli studi ""Suor Orsola Benincasa""";01 ;Mense;0;0
+1/11/18;06304;"Napoli - Università degli studi ""Suor Orsola Benincasa""";02 ;Residenze direttamente gestite dall'istituto;1;61
+1/11/18;06304;"Napoli - Università degli studi ""Suor Orsola Benincasa""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;31
+1/11/18;06304;"Napoli - Università degli studi ""Suor Orsola Benincasa""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;10
+1/11/18;06304;"Napoli - Università degli studi ""Suor Orsola Benincasa""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;06304;"Napoli - Università degli studi ""Suor Orsola Benincasa""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;06304;"Napoli - Università degli studi ""Suor Orsola Benincasa""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06306;"Napoli - Università degli studi della Campania ""Luigi Vanvitelli""";01 ;Mense;0;0
+1/11/18;06306;"Napoli - Università degli studi della Campania ""Luigi Vanvitelli""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;06306;"Napoli - Università degli studi della Campania ""Luigi Vanvitelli""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;06306;"Napoli - Università degli studi della Campania ""Luigi Vanvitelli""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;06306;"Napoli - Università degli studi della Campania ""Luigi Vanvitelli""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;06306;"Napoli - Università degli studi della Campania ""Luigi Vanvitelli""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;06306;"Napoli - Università degli studi della Campania ""Luigi Vanvitelli""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06307;"Napoli - Università telematica ""Pegaso""";01 ;Mense;0;0
+1/11/18;06307;"Napoli - Università telematica ""Pegaso""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;06307;"Napoli - Università telematica ""Pegaso""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;06307;"Napoli - Università telematica ""Pegaso""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;06307;"Napoli - Università telematica ""Pegaso""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;06307;"Napoli - Università telematica ""Pegaso""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;06307;"Napoli - Università telematica ""Pegaso""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06501;Salerno - Università degli studi;01 ;Mense;0;0
+1/11/18;06501;Salerno - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;06501;Salerno - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;06501;Salerno - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;06501;Salerno - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;06501;Salerno - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;06501;Salerno - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06601;L'Aquila - Università degli studi;01 ;Mense;0;0
+1/11/18;06601;L'Aquila - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;06601;L'Aquila - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;06601;L'Aquila - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;06601;L'Aquila - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;06601;L'Aquila - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;06601;L'Aquila - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06603;L'Aquila - Gran Sasso Science Institute;01 ;Mense;0;0
+1/11/18;06603;L'Aquila - Gran Sasso Science Institute;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;06603;L'Aquila - Gran Sasso Science Institute;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;06603;L'Aquila - Gran Sasso Science Institute;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;06603;L'Aquila - Gran Sasso Science Institute;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;4;71
+1/11/18;06603;L'Aquila - Gran Sasso Science Institute;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;54
+1/11/18;06603;L'Aquila - Gran Sasso Science Institute;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06701;Teramo - Università degli studi;01 ;Mense;0;0
+1/11/18;06701;Teramo - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;06701;Teramo - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;06701;Teramo - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;06701;Teramo - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;06701;Teramo - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;06701;Teramo - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06901;Chieti e Pescara - Università degli studi Gabriele D'Annunzio;01 ;Mense;0;0
+1/11/18;06901;Chieti e Pescara - Università degli studi Gabriele D'Annunzio;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;06901;Chieti e Pescara - Università degli studi Gabriele D'Annunzio;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;06901;Chieti e Pescara - Università degli studi Gabriele D'Annunzio;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;06901;Chieti e Pescara - Università degli studi Gabriele D'Annunzio;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;06901;Chieti e Pescara - Università degli studi Gabriele D'Annunzio;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;06901;Chieti e Pescara - Università degli studi Gabriele D'Annunzio;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;06902;"Torrevecchia Teatina (CH) - Università telematica ""Leonardo da Vinci""";01 ;Mense;0;0
+1/11/18;06902;"Torrevecchia Teatina (CH) - Università telematica ""Leonardo da Vinci""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;06902;"Torrevecchia Teatina (CH) - Università telematica ""Leonardo da Vinci""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;06902;"Torrevecchia Teatina (CH) - Università telematica ""Leonardo da Vinci""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;06902;"Torrevecchia Teatina (CH) - Università telematica ""Leonardo da Vinci""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;06902;"Torrevecchia Teatina (CH) - Università telematica ""Leonardo da Vinci""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;06902;"Torrevecchia Teatina (CH) - Università telematica ""Leonardo da Vinci""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;07001;Campobasso - Università degli studi del Molise;01 ;Mense;0;0
+1/11/18;07001;Campobasso - Università degli studi del Molise;02 ;Residenze direttamente gestite dall'istituto;3;159
+1/11/18;07001;Campobasso - Università degli studi del Molise;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;149
+1/11/18;07001;Campobasso - Università degli studi del Molise;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;10
+1/11/18;07001;Campobasso - Università degli studi del Molise;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;07001;Campobasso - Università degli studi del Molise;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;07001;Campobasso - Università degli studi del Molise;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;07101;Foggia - Università degli studi;01 ;Mense;0;0
+1/11/18;07101;Foggia - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;07101;Foggia - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;07101;Foggia - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;07101;Foggia - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;07101;Foggia - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;07101;Foggia - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;07201;Bari - Università degli studi;01 ;Mense;0;0
+1/11/18;07201;Bari - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;07201;Bari - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;07201;Bari - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;07201;Bari - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;07201;Bari - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;07201;Bari - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;07202;Bari - Politecnico;01 ;Mense;0;0
+1/11/18;07202;Bari - Politecnico;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;07202;Bari - Politecnico;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;07202;Bari - Politecnico;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;07202;Bari - Politecnico;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;07202;Bari - Politecnico;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;07202;Bari - Politecnico;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;07203;"Casamassima - Libera Università Mediterranea ""Jean Monnet""";01 ;Mense;0;0
+1/11/18;07203;"Casamassima - Libera Università Mediterranea ""Jean Monnet""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;07203;"Casamassima - Libera Università Mediterranea ""Jean Monnet""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;07203;"Casamassima - Libera Università Mediterranea ""Jean Monnet""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;07203;"Casamassima - Libera Università Mediterranea ""Jean Monnet""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;07203;"Casamassima - Libera Università Mediterranea ""Jean Monnet""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;07203;"Casamassima - Libera Università Mediterranea ""Jean Monnet""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;07501;Lecce - Università del Salento;01 ;Mense;0;0
+1/11/18;07501;Lecce - Università del Salento;02 ;Residenze direttamente gestite dall'istituto;3;180
+1/11/18;07501;Lecce - Università del Salento;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;89
+1/11/18;07501;Lecce - Università del Salento;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;11
+1/11/18;07501;Lecce - Università del Salento;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;07501;Lecce - Università del Salento;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;07501;Lecce - Università del Salento;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;07601;Potenza - Università degli studi della Basilicata;01 ;Mense;0;0
+1/11/18;07601;Potenza - Università degli studi della Basilicata;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;07601;Potenza - Università degli studi della Basilicata;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;07601;Potenza - Università degli studi della Basilicata;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;07601;Potenza - Università degli studi della Basilicata;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;07601;Potenza - Università degli studi della Basilicata;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;07601;Potenza - Università degli studi della Basilicata;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;07801;Arcavacata di Rende - Università della Calabria;01 ;Mense;0;0
+1/11/18;07801;Arcavacata di Rende - Università della Calabria;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;07801;Arcavacata di Rende - Università della Calabria;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;07801;Arcavacata di Rende - Università della Calabria;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;07801;Arcavacata di Rende - Università della Calabria;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;07801;Arcavacata di Rende - Università della Calabria;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;07801;Arcavacata di Rende - Università della Calabria;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;07901;"Catanzaro - Università degli studi ""Magna Grecia""";01 ;Mense;1;254
+1/11/18;07901;"Catanzaro - Università degli studi ""Magna Grecia""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;07901;"Catanzaro - Università degli studi ""Magna Grecia""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;07901;"Catanzaro - Università degli studi ""Magna Grecia""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;07901;"Catanzaro - Università degli studi ""Magna Grecia""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;07901;"Catanzaro - Università degli studi ""Magna Grecia""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;07901;"Catanzaro - Università degli studi ""Magna Grecia""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;08001;Reggio Calabria - Università degli studi Mediterranea;01 ;Mense;0;0
+1/11/18;08001;Reggio Calabria - Università degli studi Mediterranea;02 ;Residenze direttamente gestite dall'istituto;1;50
+1/11/18;08001;Reggio Calabria - Università degli studi Mediterranea;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;50
+1/11/18;08001;Reggio Calabria - Università degli studi Mediterranea;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;08001;Reggio Calabria - Università degli studi Mediterranea;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;08001;Reggio Calabria - Università degli studi Mediterranea;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;08001;Reggio Calabria - Università degli studi Mediterranea;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;08003;Reggio Calabria - Università per Stranieri;01 ;Mense;0;0
+1/11/18;08003;Reggio Calabria - Università per Stranieri;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;08003;Reggio Calabria - Università per Stranieri;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;08003;Reggio Calabria - Università per Stranieri;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;08003;Reggio Calabria - Università per Stranieri;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;08003;Reggio Calabria - Università per Stranieri;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;08003;Reggio Calabria - Università per Stranieri;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;08201;Palermo - Università degli studi;01 ;Mense;2;120
+1/11/18;08201;Palermo - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;1;150
+1/11/18;08201;Palermo - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;128
+1/11/18;08201;Palermo - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;22
+1/11/18;08201;Palermo - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;3;97
+1/11/18;08201;Palermo - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;86
+1/11/18;08201;Palermo - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;11
+1/11/18;08301;Messina - Università degli studi;01 ;Mense;0;0
+1/11/18;08301;Messina - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;08301;Messina - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;08301;Messina - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;08301;Messina - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;1;132
+1/11/18;08301;Messina - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;55
+1/11/18;08301;Messina - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;08601;"Enna - Libera Università della Sicilia Centrale ""KORE""";01 ;Mense;0;0
+1/11/18;08601;"Enna - Libera Università della Sicilia Centrale ""KORE""";02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;08601;"Enna - Libera Università della Sicilia Centrale ""KORE""";02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;08601;"Enna - Libera Università della Sicilia Centrale ""KORE""";02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;08601;"Enna - Libera Università della Sicilia Centrale ""KORE""";03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;08601;"Enna - Libera Università della Sicilia Centrale ""KORE""";03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;08601;"Enna - Libera Università della Sicilia Centrale ""KORE""";03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;08701;Catania - Università degli studi;01 ;Mense;1;62
+1/11/18;08701;Catania - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;1;98
+1/11/18;08701;Catania - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;95
+1/11/18;08701;Catania - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;08701;Catania - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;08701;Catania - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;08701;Catania - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;09001;Sassari - Università degli studi;01 ;Mense;0;0
+1/11/18;09001;Sassari - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;09001;Sassari - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;09001;Sassari - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;09001;Sassari - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;09001;Sassari - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;09001;Sassari - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0
+1/11/18;09201;Cagliari - Università degli studi;01 ;Mense;0;0
+1/11/18;09201;Cagliari - Università degli studi;02 ;Residenze direttamente gestite dall'istituto;0;0
+1/11/18;09201;Cagliari - Università degli studi;02a;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti dell'ateneo;;0
+1/11/18;09201;Cagliari - Università degli studi;02b;Residenze direttamente gestite dall'istituto - di cui posti assegnati a studenti in mobilità;;0
+1/11/18;09201;Cagliari - Università degli studi;03 ;Residenze in strutture convenzionate o affidate in gestione a terzi;0;0
+1/11/18;09201;Cagliari - Università degli studi;03a;Residenze in strutture convenzionate o affidate in gestione a terzi - di cui posti assegnati a studenti dell'ateneo (in convenzione o a terzi);;0
+1/11/18;09201;Cagliari - Università degli studi;03b;Residenze in strutture convenzionate o affidate in gestione a terzi- di cui posti assegnati a studenti in mobilità (in convenzione o a terzi);;0

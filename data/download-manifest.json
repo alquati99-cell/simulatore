@@ -1,0 +1,43 @@
+{
+  "generated_on": "2026-04-04",
+  "workspace": "/Users/matteo7/Desktop/Simulatore scenari assicurativi",
+  "downloads": [
+    {
+      "source_id": "mur_university_contribution",
+      "provider": "MUR",
+      "status": "downloaded",
+      "files": [
+        "data/raw/mur/2018_atenei_contribuzione_media.csv",
+        "data/raw/mur/2018_atenei_strutture.csv"
+      ],
+      "processed_outputs": [
+        "data/processed/mur_university_costs_2018.csv"
+      ]
+    },
+    {
+      "source_id": "bdi_shiw_microdata",
+      "provider": "Banca d'Italia",
+      "status": "downloaded",
+      "files": [
+        "data/raw/bdi/ind22_ascii.zip"
+      ],
+      "processed_outputs": []
+    },
+    {
+      "source_id": "inail_work_injuries",
+      "provider": "INAIL",
+      "status": "downloaded",
+      "files": [
+        "data/raw/inail/DatiConCadenzaSemestraleInfortuniLazio_csv.zip"
+      ],
+      "processed_outputs": []
+    },
+    {
+      "source_id": "ae_omi_quotes",
+      "provider": "Agenzia delle Entrate - OMI",
+      "status": "pending_manual_or_semiautomated_ingestion",
+      "files": [],
+      "processed_outputs": []
+    }
+  ]
+}

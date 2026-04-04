@@ -1,0 +1,205 @@
+[
+  {
+    "id": "ae_omi_quotes",
+    "label": "Quotazioni immobiliari OMI",
+    "provider": "Agenzia delle Entrate - Osservatorio del Mercato Immobiliare",
+    "official": true,
+    "category": "housing",
+    "geography": "Comune / zona OMI",
+    "granularity": "Range di quotazioni e canoni per tipologia e stato immobile",
+    "primary_use_in_simulator": [
+      "stima obiettivo acquisto casa",
+      "benchmark prezzi al metro quadro",
+      "benchmark affitti"
+    ],
+    "recommended_storage": {
+      "raw": "R2",
+      "structured": "D1",
+      "rag": "solo metodologia e note"
+    },
+    "access_mode": "consultazione web e forniture da verificare; possibile lavoro semi-manuale per subset citta",
+    "landing_url": "https://www1.agenziaentrate.gov.it/servizi/Consultazione/ricerca.htm?level=0",
+    "priority": "high",
+    "status": "to-ingest",
+    "notes": "Fonte migliore per benchmark immobiliari italiani. Va normalizzata per citta, zona, tipologia e semestre."
+  },
+  {
+    "id": "istat_ipab",
+    "label": "Prezzi delle abitazioni (IPAB)",
+    "provider": "ISTAT",
+    "official": true,
+    "category": "housing",
+    "geography": "Italia / ripartizione / alcuni territori",
+    "granularity": "Indice prezzi abitazioni, trimestrale",
+    "primary_use_in_simulator": [
+      "aggiornamento macro del costo casa",
+      "fattore di rivalutazione immobiliare",
+      "trend di scenario"
+    ],
+    "recommended_storage": {
+      "raw": "R2",
+      "structured": "D1",
+      "rag": "no"
+    },
+    "access_mode": "export CSV e SDMX da I.Stat",
+    "landing_url": "https://dati-congiuntura.istat.it/Index.aspx?DataSetCode=DCSP_IPAB",
+    "priority": "medium",
+    "status": "to-ingest",
+    "notes": "Non sostituisce OMI per il prezzo puntuale per citta, ma aiuta a tenere aggiornati i benchmark."
+  },
+  {
+    "id": "mur_university_contribution",
+    "label": "Contribuzione e interventi atenei",
+    "provider": "MUR - Open Data dell'istruzione superiore",
+    "official": true,
+    "category": "education",
+    "geography": "Ateneo / nazionale",
+    "granularity": "Contribuzione media, gettito, esoneri e interventi",
+    "primary_use_in_simulator": [
+      "stima costo universitario figli",
+      "benchmark per fondo studi",
+      "profilazione obiettivo istruzione"
+    ],
+    "recommended_storage": {
+      "raw": "R2",
+      "structured": "D1",
+      "rag": "solo metadata"
+    },
+    "access_mode": "download CSV dal portale open data",
+    "landing_url": "https://dati-ustat.mur.gov.it/dataset/2018-contribuzione-e-interventi-atenei",
+    "priority": "high",
+    "status": "downloaded_raw_and_first_subset_ready",
+    "local_files": [
+      "data/raw/mur/2018_atenei_contribuzione_media.csv",
+      "data/raw/mur/2018_atenei_strutture.csv",
+      "data/processed/mur_university_costs_2018.csv"
+    ],
+    "notes": "Molto utile per una stima iniziale del costo universitario per citta o ateneo."
+  },
+  {
+    "id": "istat_household_spending",
+    "label": "Indagine sulle spese delle famiglie",
+    "provider": "ISTAT",
+    "official": true,
+    "category": "household_expenses",
+    "geography": "Italia / area / tipologia familiare",
+    "granularity": "Spese per categoria di consumo",
+    "primary_use_in_simulator": [
+      "benchmark costo vita",
+      "benchmark spesa familiare con figli",
+      "supporto a fondo emergenze e capacita di risparmio"
+    ],
+    "recommended_storage": {
+      "raw": "R2",
+      "structured": "D1",
+      "rag": "no"
+    },
+    "access_mode": "rilevazione e tabelle ISTAT da estrarre",
+    "landing_url": "https://www.istat.it/informazioni-sulla-rilevazione/spese/",
+    "priority": "high",
+    "status": "to-ingest",
+    "notes": "Fonte chiave per tarare reddito disponibile, uscite tipiche e intensita del fondo emergenze."
+  },
+  {
+    "id": "bdi_shiw_microdata",
+    "label": "Indagine sui bilanci delle famiglie italiane",
+    "provider": "Banca d'Italia",
+    "official": true,
+    "category": "income_wealth",
+    "geography": "Italia / famiglie",
+    "granularity": "Microdati su reddito, ricchezza, attivi, passivi",
+    "primary_use_in_simulator": [
+      "benchmark patrimonio e reddito",
+      "segmentazione cliente",
+      "taratura profili patrimoniali"
+    ],
+    "recommended_storage": {
+      "raw": "R2",
+      "structured": "D1 o preprocess locale",
+      "rag": "solo documentazione"
+    },
+    "access_mode": "download ZIP microdati",
+    "landing_url": "https://www.bancaditalia.it/statistiche/tematiche/indagini-famiglie-imprese/bilanci-famiglie/distribuzione-microdati/",
+    "priority": "high",
+    "status": "downloaded_raw",
+    "local_files": [
+      "data/raw/bdi/ind22_ascii.zip"
+    ],
+    "notes": "Ottima fonte per rendere credibili soglie di patrimonio, liquidita e vulnerabilita familiare."
+  },
+  {
+    "id": "inail_work_injuries",
+    "label": "Infortuni sul lavoro",
+    "provider": "INAIL Open Data",
+    "official": true,
+    "category": "risk",
+    "geography": "Italia / regione / settore / provincia",
+    "granularity": "Eventi di infortunio e tipologiche",
+    "primary_use_in_simulator": [
+      "affinare rischio occupazionale",
+      "tarare coperture infortuni e invalidita",
+      "benchmark professioni piu esposte"
+    ],
+    "recommended_storage": {
+      "raw": "R2",
+      "structured": "D1",
+      "rag": "no"
+    },
+    "access_mode": "download dataset open data regionale o tipologico",
+    "landing_url": "https://dati.inail.it/portale/it/dataset/infortuni-sul-lavoro.html",
+    "priority": "medium",
+    "status": "downloaded_raw",
+    "local_files": [
+      "data/raw/inail/DatiConCadenzaSemestraleInfortuniLazio_csv.zip"
+    ],
+    "notes": "Non serve al cliente in front-end, ma rende il motore molto piu serio sulla protezione reddito."
+  },
+  {
+    "id": "istat_demography_family",
+    "label": "Demografia e famiglie",
+    "provider": "ISTAT",
+    "official": true,
+    "category": "demography",
+    "geography": "Italia / regione / comune",
+    "granularity": "Famiglie, figli, classi di eta",
+    "primary_use_in_simulator": [
+      "benchmark composizione familiare",
+      "logiche di obiettivo figli",
+      "segmentazione per ciclo di vita"
+    ],
+    "recommended_storage": {
+      "raw": "R2",
+      "structured": "D1",
+      "rag": "no"
+    },
+    "access_mode": "dataset ISTAT da selezionare per nucleo, eta e territorio",
+    "landing_url": "https://www.istat.it/it/popolazione-e-famiglie",
+    "priority": "medium",
+    "status": "to-ingest",
+    "notes": "Utile per benchmark di vita reale, meno per i calcoli economici diretti."
+  },
+  {
+    "id": "boi_mortgage_rates",
+    "label": "Tassi medi mutui famiglie",
+    "provider": "Banca d'Italia / BCE",
+    "official": true,
+    "category": "credit",
+    "geography": "Italia",
+    "granularity": "Serie temporali tassi su mutui e credito famiglie",
+    "primary_use_in_simulator": [
+      "stima rata mutuo",
+      "stress test obiettivo casa",
+      "aggiornamento scenari tassi"
+    ],
+    "recommended_storage": {
+      "raw": "R2",
+      "structured": "D1",
+      "rag": "no"
+    },
+    "access_mode": "serie statistiche da acquisire in seconda fase",
+    "landing_url": "https://www.bancaditalia.it/statistiche/tematiche/moneta-intermediari-finanza/intermediari-finanziari/tassi/index.html",
+    "priority": "medium",
+    "status": "to-source",
+    "notes": "Serve per rendere piu credibile la simulazione casa e il mutuo."
+  }
+]
