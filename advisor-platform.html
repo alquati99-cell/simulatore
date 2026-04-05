@@ -2696,6 +2696,196 @@ nav::after{
   }
 }
 
+/* ── BLUE MOTION TUNE ── */
+:root{
+  --blue:#1f56a8;
+  --mid:#173f82;
+  --sky:#6c9be4;
+  --teal:#2f7680;
+  --title-dark:#1a2b42;
+  --title-light:#f5f8fc;
+  --title-accent:#8db6ff;
+}
+
+body,
+body[data-page="1"],
+body[data-page="2"],
+body[data-page="3"]{
+  background:
+    radial-gradient(900px 500px at 0% -10%,rgba(31,86,168,.09),transparent 60%),
+    radial-gradient(780px 420px at 100% 10%,rgba(47,118,128,.08),transparent 56%),
+    linear-gradient(180deg,#f2f5f8 0%,#eef2f6 52%,#ece9e4 100%);
+}
+
+nav{
+  box-shadow:0 14px 28px rgba(20,34,58,.06);
+}
+.nlm{
+  background:linear-gradient(145deg,#173f82 0%,#1f56a8 62%,#3f7ec7 100%);
+}
+.ns.on{
+  color:#15325f;
+  background:linear-gradient(180deg,#f7fbff,#edf4ff);
+  border-color:rgba(31,86,168,.1);
+}
+.ns.on .nn{
+  background:linear-gradient(145deg,#174182,#2b67ba);
+}
+.nrb,
+.bgho{
+  transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease,color .22s ease;
+}
+.nrb:hover,
+.bgho:hover{
+  color:var(--blue);
+  border-color:rgba(31,86,168,.16);
+  box-shadow:0 10px 24px rgba(31,86,168,.08);
+  transform:translateY(-1px);
+}
+.bpri,
+.pdf-btn,
+.bsnd{
+  background:linear-gradient(135deg,#173f82 0%,#1f56a8 58%,#3472ba 100%);
+  box-shadow:0 16px 34px rgba(31,86,168,.18);
+}
+
+.p1h,
+.profile-hero,
+.impact-stage,
+.prem-row{
+  position:relative;
+  overflow:hidden;
+}
+.p1h::before,
+.profile-hero::before,
+.impact-stage::before,
+.prem-row::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(260px 140px at 88% 16%,rgba(141,182,255,.18),transparent 72%),
+    radial-gradient(240px 140px at 10% 0%,rgba(255,255,255,.08),transparent 72%),
+    linear-gradient(120deg,rgba(255,255,255,.06),rgba(255,255,255,0) 32%);
+  opacity:.95;
+  animation:blueSweep 14s ease-in-out infinite;
+}
+.p1h{
+  background:linear-gradient(135deg,#13294b 0%,#183d72 48%,#24579a 100%);
+}
+.p1ey{
+  background:rgba(255,255,255,.1);
+}
+.p1ti em{
+  color:#9bc0ff;
+}
+.chatbox{
+  position:relative;
+}
+.chatbox::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  border-radius:inherit;
+  background:
+    radial-gradient(220px 140px at 90% 10%,rgba(31,86,168,.06),transparent 72%),
+    linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,0) 26%);
+}
+.ctop{
+  background:linear-gradient(90deg,#17365f 0%,#1e4b86 58%,#2f7680 100%);
+}
+.chip:hover{
+  border-color:rgba(31,86,168,.16);
+  box-shadow:0 8px 18px rgba(31,86,168,.08);
+}
+.cta:focus{
+  border-color:rgba(31,86,168,.18);
+  box-shadow:0 0 0 4px rgba(31,86,168,.08);
+}
+
+.ph{
+  position:relative;
+}
+.ph::before{
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:3px;
+  border-radius:20px 20px 0 0;
+  background:linear-gradient(90deg,#1f56a8,#5d8fd6,#2f7680);
+  opacity:.92;
+}
+.phl{
+  background:#eef4ff;
+  border-color:#dde9fa;
+  color:#5879a8;
+}
+
+.profile-hero,
+.impact-stage,
+.prem-row{
+  background:linear-gradient(135deg,#13294b 0%,#1b447c 52%,#2f628f 100%);
+}
+.phero-tag,
+.impact-stage-tag,
+.phero-side,
+.phero-metric,
+.impact-stage-side,
+.impact-stage-metric{
+  background:rgba(255,255,255,.08);
+}
+
+.goal-gauge-section,
+.coverage-band,
+.policy-group,
+.simple-graph-card{
+  transition:transform .28s ease,box-shadow .28s ease,border-color .28s ease;
+}
+.goal-gauge-section:hover,
+.coverage-band:hover,
+.policy-group:hover,
+.simple-graph-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 22px 42px rgba(20,34,58,.08);
+}
+.goal-gauge-ring{
+  box-shadow:0 18px 32px rgba(31,86,168,.12),0 0 0 10px color-mix(in srgb,var(--tone) 8%, white);
+}
+.goal-gauge-delta{
+  color:#21539b;
+}
+.coverage-band-title,
+.policy-group-title,
+.simple-graph-title,
+.goal-story-title{
+  color:#193358;
+}
+.policy-card{
+  transition:transform .24s ease,box-shadow .24s ease,border-color .24s ease;
+}
+.policy-card:hover{
+  transform:translateY(-2px);
+  box-shadow:0 18px 34px rgba(31,86,168,.08);
+}
+.policy-card-flag{
+  background:#eef4ff;
+  border-color:#dbe7fa;
+  color:#1f56a8;
+}
+.policy-toggle.on{
+  background:linear-gradient(135deg,#1b4685,#2d66b3);
+  border-color:#1b4685;
+}
+
+@keyframes blueSweep{
+  0%,100%{transform:translate3d(0,0,0)}
+  50%{transform:translate3d(12px,-8px,0)}
+}
+
 @media print{
   body{background:#fff}
   body *{visibility:hidden !important}
