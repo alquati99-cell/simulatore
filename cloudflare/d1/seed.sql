@@ -20,9 +20,9 @@ INSERT OR REPLACE INTO source_catalog (
     1,
     'https://www1.agenziaentrate.gov.it/servizi/Consultazione/ricerca.htm?level=0',
     'consultazione web e forniture da verificare',
-    'pending_manual_or_semiautomated_ingestion',
-    NULL,
-    'Fonte primaria per prezzi casa e affitti. Import ancora da completare.'
+    'subset_14_cities_ready',
+    '2026-04-05',
+    'Fonte primaria per prezzi casa e affitti. Primo subset urbano OMI pronto per 14 citta benchmark.'
   ),
   (
     'istat_ipab',
@@ -147,6 +147,35 @@ INSERT INTO education_city_benchmarks (
   ('Verona', 'VR', 'Veneto', '2017-2018', 'university_fees', 'Verona', '02301', 1426.32, 1195.19, NULL, NULL, NULL, 'mur_university_contribution', 'Valore MUR dal subset locale.'),
   ('Venezia', 'VE', 'Veneto', '2017-2018', 'university_fees', 'Venezia Ca Foscari', '02701', 1553.90, 1293.19, NULL, NULL, NULL, 'mur_university_contribution', 'Valore MUR dal subset locale.');
 
--- Seed intenzionalmente prudente:
--- housing_city_prices, household_expense_benchmarks, income_wealth_benchmarks e occupational_risk_benchmarks
--- restano vuote finche non completiamo l'import ufficiale da OMI, ISTAT, Banca d'Italia e INAIL.
+INSERT INTO housing_city_prices (
+  city,
+  province,
+  region,
+  semester_label,
+  property_type,
+  condition_label,
+  min_eur_sqm,
+  max_eur_sqm,
+  rent_min_eur_sqm_month,
+  rent_max_eur_sqm_month,
+  source_id,
+  confidence_label,
+  notes
+) VALUES
+  ('Torino', 'TO', 'Piemonte', '20252', 'residenziale_median', 'mediana_zone_residenziali', 1650.00, 2400.00, 6.00, 9.00, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 47 zone residenziali campionate.'),
+  ('Milano', 'MI', 'Lombardia', '20252', 'residenziale_median', 'mediana_zone_residenziali', 3600.00, 4450.00, 12.00, 15.85, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 42 zone residenziali campionate.'),
+  ('Padova', 'PD', 'Veneto', '20252', 'residenziale_median', 'mediana_zone_residenziali', 1125.00, 1500.00, 5.65, 7.55, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 18 zone residenziali campionate.'),
+  ('Bologna', 'BO', 'Emilia-Romagna', '20252', 'residenziale_median', 'mediana_zone_residenziali', 2400.00, 3200.00, 9.50, 14.00, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 33 zone residenziali campionate.'),
+  ('Firenze', 'FI', 'Toscana', '20252', 'residenziale_median', 'mediana_zone_residenziali', 2550.00, 3300.00, 8.70, 11.50, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 33 zone residenziali campionate.'),
+  ('Pisa', 'PI', 'Toscana', '20252', 'residenziale_median', 'mediana_zone_residenziali', 1475.00, 2225.00, 6.20, 9.20, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 16 zone residenziali campionate.'),
+  ('Roma', 'RM', 'Lazio', '20252', 'residenziale_median', 'mediana_zone_residenziali', 2250.00, 3200.00, 9.80, 13.80, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 213 zone residenziali campionate.'),
+  ('Napoli', 'NA', 'Campania', '20252', 'residenziale_median', 'mediana_zone_residenziali', 1650.00, 2550.00, 6.00, 9.10, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 63 zone residenziali campionate.'),
+  ('Bari', 'BA', 'Puglia', '20252', 'residenziale_median', 'mediana_zone_residenziali', 1500.00, 1900.00, 5.50, 6.70, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 27 zone residenziali campionate.'),
+  ('Palermo', 'PA', 'Sicilia', '20252', 'residenziale_median', 'mediana_zone_residenziali', 1100.00, 1450.00, 3.50, 5.00, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 51 zone residenziali campionate.'),
+  ('Catania', 'CT', 'Sicilia', '20252', 'residenziale_median', 'mediana_zone_residenziali', 1000.00, 1450.00, 3.50, 5.15, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 26 zone residenziali campionate.'),
+  ('Cagliari', 'CA', 'Sardegna', '20252', 'residenziale_median', 'mediana_zone_residenziali', 1800.00, 2400.00, 6.70, 9.20, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 21 zone residenziali campionate.'),
+  ('Verona', 'VR', 'Veneto', '20252', 'residenziale_median', 'mediana_zone_residenziali', 1600.00, 2050.00, 7.50, 9.50, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 15 zone residenziali campionate.'),
+  ('Venezia', 'VE', 'Veneto', '20252', 'residenziale_median', 'mediana_zone_residenziali', 1800.00, 2400.00, 8.50, 13.00, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 33 zone residenziali campionate.');
+
+-- Household expenses, income/wealth e occupational risk restano da alimentare
+-- dopo il subset iniziale OMI+MUR, con import ufficiali ISTAT, Banca d'Italia e INAIL.

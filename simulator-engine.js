@@ -197,8 +197,11 @@
     return DB.benchmarkCatalog && DB.benchmarkCatalog.education ? DB.benchmarkCatalog.education : null;
   }
 
-  function findEducationCityBenchmark(city) {
-    var catalog = educationCatalog();
+  function homeCatalog() {
+    return DB.benchmarkCatalog && DB.benchmarkCatalog.home ? DB.benchmarkCatalog.home : null;
+  }
+
+  function findCityBenchmark(catalog, city) {
     if (!catalog || !city) return null;
     var normalizedCity = normalizeText(city).replace(/\s+/g, " ").trim();
     return (catalog.cityBenchmarks || []).find(function (entry) {
@@ -206,11 +209,30 @@
     }) || null;
   }
 
+  function findEducationCityBenchmark(city) {
+    return findCityBenchmark(educationCatalog(), city);
+  }
+
+  function findHomeCityBenchmark(city) {
+    return findCityBenchmark(homeCatalog(), city);
+  }
+
+  function benchmarkCities() {
+    var byCity = {};
+    [educationCatalog(), homeCatalog()].forEach(function (catalog) {
+      (catalog && catalog.cityBenchmarks ? catalog.cityBenchmarks : []).forEach(function (entry) {
+        var key = normalizeText(entry.city).replace(/\s+/g, " ").trim();
+        if (key && !byCity[key]) byCity[key] = { city: entry.city };
+      });
+    });
+    return Object.keys(byCity).map(function (key) { return byCity[key]; });
+  }
+
   function extractResidenceCity(text) {
-    var catalog = educationCatalog();
-    if (!catalog) return "";
+    var cities = benchmarkCities();
+    if (!cities.length) return "";
     var normalizedText = " " + normalizeText(text).replace(/[.,;:()]/g, " ") + " ";
-    var cityMatch = (catalog.cityBenchmarks || [])
+    var cityMatch = cities
       .slice()
       .sort(function (left, right) {
         return right.city.length - left.city.length;
@@ -263,6 +285,65 @@
       studyDurationYears: studyDurationYears,
       totalPerChild: totalPerChild,
       totalTarget: totalPerChild * childCount
+    };
+  }
+
+  function householdHomeKey(profile) {
+    var hasPartner = !!(profile.spouseName || profile.maritalStatus === "Sposato" || profile.maritalStatus === "Convivente");
+    if (profile.childrenCount >= 3) return "family_3_plus";
+    if (profile.childrenCount >= 2) return "family_2";
+    if (profile.childrenCount === 1) return "family_1";
+    return hasPartner ? "couple" : "single";
+  }
+
+  function resolveHomeBenchmark(profile, overrides) {
+    var catalog = homeCatalog();
+    if (!catalog) return null;
+
+    var cityCandidate =
+      (overrides && overrides.benchmarkCity) ||
+      profile.residenceCity ||
+      extractResidenceCity(profile.notes || "");
+    var cityBenchmark = findHomeCityBenchmark(cityCandidate);
+    var benchmark = cityBenchmark || catalog.nationalDefault;
+    if (!benchmark) return null;
+
+    var householdKey = householdHomeKey(profile);
+    var targetSqm =
+      safeNumber(overrides && overrides.targetSqm, 0) ||
+      safeNumber(catalog.targetSqmByHousehold[householdKey], 0) ||
+      safeNumber(catalog.targetSqmByHousehold.single, 60);
+    var buyMidEurSqm =
+      safeNumber(benchmark.buyMidEurSqm, 0) ||
+      safeNumber(catalog.nationalDefault.buyMidEurSqm, 2062.5);
+    var propertyValue =
+      safeNumber(overrides && overrides.propertyValue, 0) ||
+      roundStep(targetSqm * buyMidEurSqm, 5000);
+    var downPaymentRate = safeNumber(catalog.downPaymentRate, 0.2);
+    var closingCostRate = safeNumber(catalog.closingCostRate, 0.08);
+    var setupBuffer =
+      safeNumber(catalog.setupBufferBase, 7000) +
+      safeNumber(catalog.setupBufferPerChild, 0) * safeNumber(profile.childrenCount, 0);
+    var totalTarget = roundStep(propertyValue * (downPaymentRate + closingCostRate) + setupBuffer, 5000);
+
+    return {
+      sourceId: catalog.sourceId || "ae_omi_quotes",
+      scope: cityBenchmark ? "city" : "national",
+      city: cityBenchmark ? cityBenchmark.city : (cityCandidate || catalog.nationalDefault.city || "Italia"),
+      province: benchmark.province || "",
+      region: benchmark.region || catalog.nationalDefault.region || "",
+      semester: benchmark.semester || catalog.semester || "",
+      householdKey: householdKey,
+      targetSqm: targetSqm,
+      buyMidEurSqm: buyMidEurSqm,
+      buyMidP25EurSqm: safeNumber(benchmark.buyMidP25EurSqm, 0),
+      buyMidP75EurSqm: safeNumber(benchmark.buyMidP75EurSqm, 0),
+      rentMidEurSqmMonth: safeNumber(benchmark.rentMidEurSqmMonth, 0),
+      propertyValue: propertyValue,
+      downPaymentRate: downPaymentRate,
+      closingCostRate: closingCostRate,
+      setupBuffer: setupBuffer,
+      totalTarget: totalTarget
     };
   }
 
@@ -494,13 +575,24 @@
       var homeAmounts = monetaryMatches.filter(function (value) { return value >= 50000; });
       propertyValue = homeAmounts.length ? Math.max.apply(null, homeAmounts) : 0;
       if (propertyValue && propertyValue <= 90000) propertyValue = propertyValue * 3;
-      if (!propertyValue) propertyValue = roundStep(Math.max(200000, (profile.grossAnnualIncome || 45000) * 3.6), 10000);
-      amount = roundStep(propertyValue * 0.28 + 15000, 5000);
+      var sentenceHomeBenchmark = resolveHomeBenchmark(profile, { propertyValue: propertyValue || 0 });
+      if (!propertyValue) {
+        propertyValue = sentenceHomeBenchmark
+          ? sentenceHomeBenchmark.propertyValue
+          : roundStep(Math.max(200000, (profile.grossAnnualIncome || 45000) * 3.6), 10000);
+      }
+      amount = roundStep(
+        sentenceHomeBenchmark
+          ? sentenceHomeBenchmark.totalTarget
+          : propertyValue * 0.28 + 15000,
+        5000
+      );
       return {
         id: goalId,
         propertyValue: roundStep(propertyValue, 10000),
         targetAmount: amount,
         years: years || 5,
+        benchmarkMeta: sentenceHomeBenchmark || null,
         source: "chat"
       };
     }
@@ -801,9 +893,11 @@
       goal.targetAmount = targetAmount || roundStep(Math.max(120000, profile.netMonthlyIncome * 12 * 17 * 0.4), 5000);
       goal.priority = profile.age >= 50 ? 3 : 2;
     } else if (goalId === "home") {
+      var homeBenchmark = resolveHomeBenchmark(profile, overrides);
       goal.years = years || 5;
-      goal.propertyValue = propertyValue || roundStep(Math.max(220000, profile.grossAnnualIncome * 3.6), 10000);
-      goal.targetAmount = targetAmount || roundStep(goal.propertyValue * 0.28 + 15000, 5000);
+      goal.propertyValue = propertyValue || (homeBenchmark ? homeBenchmark.propertyValue : roundStep(Math.max(220000, profile.grossAnnualIncome * 3.6), 10000));
+      goal.targetAmount = targetAmount || (homeBenchmark ? homeBenchmark.totalTarget : roundStep(goal.propertyValue * 0.28 + 15000, 5000));
+      if (homeBenchmark) goal.benchmarkMeta = homeBenchmark;
       goal.priority = 3;
     } else if (goalId === "education") {
       var educationBenchmark = resolveEducationBenchmark(profile, overrides);

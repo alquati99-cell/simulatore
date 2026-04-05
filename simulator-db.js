@@ -55,6 +55,45 @@
           { city: "Verona", region: "Veneto", university: "Verona", universityCode: "02301", avgFeePayers: 1426.32, avgFeeAllStudents: 1195.19, costBand: "medium" },
           { city: "Venezia", region: "Veneto", university: "Venezia Ca Foscari", universityCode: "02701", avgFeePayers: 1553.9, avgFeeAllStudents: 1293.19, costBand: "high" }
         ]
+      },
+      home: {
+        sourceId: "ae_omi_quotes",
+        semester: "20252",
+        downPaymentRate: 0.2,
+        closingCostRate: 0.08,
+        setupBufferBase: 7000,
+        setupBufferPerChild: 2000,
+        targetSqmByHousehold: {
+          single: 60,
+          couple: 75,
+          family_1: 95,
+          family_2: 110,
+          family_3_plus: 125
+        },
+        nationalDefault: {
+          city: "Italia",
+          region: "Italia",
+          buyMidEurSqm: 2062.5,
+          rentMidEurSqmMonth: 7.8,
+          buyMidP25EurSqm: 1625,
+          buyMidP75EurSqm: 2800
+        },
+        cityBenchmarks: [
+          { city: "Torino", province: "TO", region: "Piemonte", semester: "20252", sampleZoneCount: 47, buyMidEurSqm: 2025, buyMidP25EurSqm: 1625, buyMidP75EurSqm: 2375, rentMidEurSqmMonth: 7.5 },
+          { city: "Milano", province: "MI", region: "Lombardia", semester: "20252", sampleZoneCount: 42, buyMidEurSqm: 4000, buyMidP25EurSqm: 3400, buyMidP75EurSqm: 6150, rentMidEurSqmMonth: 14 },
+          { city: "Padova", province: "PD", region: "Veneto", semester: "20252", sampleZoneCount: 18, buyMidEurSqm: 1325, buyMidP25EurSqm: 1250, buyMidP75EurSqm: 1425, rentMidEurSqmMonth: 6.47 },
+          { city: "Bologna", province: "BO", region: "Emilia-Romagna", semester: "20252", sampleZoneCount: 33, buyMidEurSqm: 2800, buyMidP25EurSqm: 2475, buyMidP75EurSqm: 3100, rentMidEurSqmMonth: 11.55 },
+          { city: "Firenze", province: "FI", region: "Toscana", semester: "20252", sampleZoneCount: 33, buyMidEurSqm: 2850, buyMidP25EurSqm: 2675, buyMidP75EurSqm: 3350, rentMidEurSqmMonth: 10.2 },
+          { city: "Pisa", province: "PI", region: "Toscana", semester: "20252", sampleZoneCount: 16, buyMidEurSqm: 1862.5, buyMidP25EurSqm: 1675, buyMidP75EurSqm: 2100, rentMidEurSqmMonth: 7.65 },
+          { city: "Roma", province: "RM", region: "Lazio", semester: "20252", sampleZoneCount: 213, buyMidEurSqm: 2750, buyMidP25EurSqm: 2175, buyMidP75EurSqm: 3575, rentMidEurSqmMonth: 11.75 },
+          { city: "Napoli", province: "NA", region: "Campania", semester: "20252", sampleZoneCount: 63, buyMidEurSqm: 2100, buyMidP25EurSqm: 1650, buyMidP75EurSqm: 2800, rentMidEurSqmMonth: 7.55 },
+          { city: "Bari", province: "BA", region: "Puglia", semester: "20252", sampleZoneCount: 27, buyMidEurSqm: 1675, buyMidP25EurSqm: 1500, buyMidP75EurSqm: 1900, rentMidEurSqmMonth: 6.15 },
+          { city: "Palermo", province: "PA", region: "Sicilia", semester: "20252", sampleZoneCount: 51, buyMidEurSqm: 1250, buyMidP25EurSqm: 1175, buyMidP75EurSqm: 1500, rentMidEurSqmMonth: 4.25 },
+          { city: "Catania", province: "CT", region: "Sicilia", semester: "20252", sampleZoneCount: 26, buyMidEurSqm: 1225, buyMidP25EurSqm: 1085, buyMidP75EurSqm: 1350, rentMidEurSqmMonth: 4.32 },
+          { city: "Cagliari", province: "CA", region: "Sardegna", semester: "20252", sampleZoneCount: 21, buyMidEurSqm: 2100, buyMidP25EurSqm: 1950, buyMidP75EurSqm: 2250, rentMidEurSqmMonth: 7.95 },
+          { city: "Verona", province: "VR", region: "Veneto", semester: "20252", sampleZoneCount: 15, buyMidEurSqm: 1825, buyMidP25EurSqm: 1625, buyMidP75EurSqm: 2050, rentMidEurSqmMonth: 8.5 },
+          { city: "Venezia", province: "VE", region: "Veneto", semester: "20252", sampleZoneCount: 33, buyMidEurSqm: 2100, buyMidP25EurSqm: 1300, buyMidP75EurSqm: 3500, rentMidEurSqmMonth: 10.62 }
+        ]
       }
     },
     occupationRules: [

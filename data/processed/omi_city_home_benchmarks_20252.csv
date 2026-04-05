@@ -1,0 +1,15 @@
+city,province,region,semester,source_id,sample_zone_count,buy_min_median_eur_sqm,buy_max_median_eur_sqm,buy_mid_median_eur_sqm,buy_mid_p25_eur_sqm,buy_mid_p75_eur_sqm,rent_min_median_eur_sqm_month,rent_max_median_eur_sqm_month,rent_mid_median_eur_sqm_month,rent_mid_p25_eur_sqm_month,rent_mid_p75_eur_sqm_month,representative_zone,notes
+Torino,TO,Piemonte,20252,ae_omi_quotes,47,1650.0,2400.0,2025.0,1625.0,2375.0,6.0,9.0,7.5,6.85,8.5,B1,Subset calcolato da OMI con mediane delle zone residenziali del comune.
+Milano,MI,Lombardia,20252,ae_omi_quotes,42,3600.0,4450.0,4000.0,3400.0,6150.0,12.0,15.85,14.0,12.5,18.5,B12,Subset calcolato da OMI con mediane delle zone residenziali del comune.
+Padova,PD,Veneto,20252,ae_omi_quotes,18,1125.0,1500.0,1325.0,1250.0,1425.0,5.65,7.55,6.47,5.75,7.5,B1,Subset calcolato da OMI con mediane delle zone residenziali del comune.
+Bologna,BO,Emilia-Romagna,20252,ae_omi_quotes,33,2400.0,3200.0,2800.0,2475.0,3100.0,9.5,14.0,11.55,10.85,12.75,B1,Subset calcolato da OMI con mediane delle zone residenziali del comune.
+Firenze,FI,Toscana,20252,ae_omi_quotes,33,2550.0,3300.0,2850.0,2675.0,3350.0,8.7,11.5,10.2,8.8,11.5,B2,Subset calcolato da OMI con mediane delle zone residenziali del comune.
+Pisa,PI,Toscana,20252,ae_omi_quotes,16,1475.0,2225.0,1862.5,1675.0,2100.0,6.2,9.2,7.65,6.7,8.2,B1,Subset calcolato da OMI con mediane delle zone residenziali del comune.
+Roma,RM,Lazio,20252,ae_omi_quotes,213,2250.0,3200.0,2750.0,2175.0,3575.0,9.8,13.8,11.75,9.65,13.8,B1,Subset calcolato da OMI con mediane delle zone residenziali del comune.
+Napoli,NA,Campania,20252,ae_omi_quotes,63,1650.0,2550.0,2100.0,1650.0,2800.0,6.0,9.1,7.55,5.9,9.1,B8,Subset calcolato da OMI con mediane delle zone residenziali del comune.
+Bari,BA,Puglia,20252,ae_omi_quotes,27,1500.0,1900.0,1675.0,1500.0,1900.0,5.5,6.7,6.15,5.05,7.7,B1,Subset calcolato da OMI con mediane delle zone residenziali del comune.
+Palermo,PA,Sicilia,20252,ae_omi_quotes,51,1100.0,1450.0,1250.0,1175.0,1500.0,3.5,5.0,4.25,3.8,4.85,B2,Subset calcolato da OMI con mediane delle zone residenziali del comune.
+Catania,CT,Sicilia,20252,ae_omi_quotes,26,1000.0,1450.0,1225.0,1085.0,1350.0,3.5,5.15,4.32,3.75,4.85,B1,Subset calcolato da OMI con mediane delle zone residenziali del comune.
+Cagliari,CA,Sardegna,20252,ae_omi_quotes,21,1800.0,2400.0,2100.0,1950.0,2250.0,6.7,9.2,7.95,7.0,9.0,B1,Subset calcolato da OMI con mediane delle zone residenziali del comune.
+Verona,VR,Veneto,20252,ae_omi_quotes,15,1600.0,2050.0,1825.0,1625.0,2050.0,7.5,9.5,8.5,8.0,9.0,B2,Subset calcolato da OMI con mediane delle zone residenziali del comune.
+Venezia,VE,Veneto,20252,ae_omi_quotes,33,1800.0,2400.0,2100.0,1300.0,3500.0,8.5,13.0,10.62,7.5,10.75,B15,Subset calcolato da OMI con mediane delle zone residenziali del comune.
