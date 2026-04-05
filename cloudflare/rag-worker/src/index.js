@@ -239,6 +239,27 @@ function extractAnswerContent(result) {
   );
 }
 
+function parseStructuredJson(text) {
+  const normalized = normalizeText(text);
+  if (!normalized) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(normalized);
+  } catch {}
+
+  const start = normalized.indexOf("{");
+  const end = normalized.lastIndexOf("}");
+  if (start >= 0 && end > start) {
+    try {
+      return JSON.parse(normalized.slice(start, end + 1));
+    } catch {}
+  }
+
+  return null;
+}
+
 async function fetchChunkTexts(env, ids) {
   if (!ids.length) {
     return new Map();
@@ -258,21 +279,8 @@ async function fetchChunkTexts(env, ids) {
   return map;
 }
 
-async function handleQuery(request, env) {
-  const body = await parseJson(request);
-  if (!body) {
-    return jsonResponse(env, { error: "Body JSON non valido" }, 400);
-  }
-
-  const question = normalizeText(body.question);
-  const audience = normalizeText(body.audience) || "advisor";
-  const topK = Math.min(10, Math.max(2, toInt(body.topK, toInt(env.RAG_TOP_K, 6))));
-
-  if (!question) {
-    return jsonResponse(env, { error: "question obbligatoria" }, 400);
-  }
-
-  const [queryVector] = await embedTexts(env, [question]);
+async function retrieveContext(env, queryText, topK) {
+  const [queryVector] = await embedTexts(env, [queryText]);
   const matches = await env.KNOWLEDGE_INDEX.query(queryVector, {
     topK,
     returnMetadata: "all",
@@ -282,7 +290,7 @@ async function handleQuery(request, env) {
   const chunkIds = vectorMatches.map((match) => match.id);
   const chunkTextMap = await fetchChunkTexts(env, chunkIds);
 
-  const contextItems = vectorMatches
+  return vectorMatches
     .map((match, index) => {
       const metadata = match.metadata || {};
       const content = chunkTextMap.get(match.id) || "";
@@ -303,17 +311,32 @@ async function handleQuery(request, env) {
       };
     })
     .filter(Boolean);
+}
 
-  if (!contextItems.length) {
-    return jsonResponse(env, {
-      answer:
-        "Non ho ancora abbastanza contesto nel knowledge base per rispondere bene a questa domanda.",
-      citations: [],
-      matches: [],
-    });
+async function retrieveContextMulti(env, queries, topKPerQuery, finalLimit) {
+  const merged = new Map();
+
+  for (const queryText of queries.filter(Boolean)) {
+    const items = await retrieveContext(env, queryText, topKPerQuery);
+    for (const item of items) {
+      const existing = merged.get(item.chunkId);
+      if (!existing || item.score > existing.score) {
+        merged.set(item.chunkId, item);
+      }
+    }
   }
 
-  const contextBlock = contextItems
+  return Array.from(merged.values())
+    .sort((left, right) => right.score - left.score)
+    .slice(0, finalLimit)
+    .map((item, index) => ({
+      ...item,
+      rank: index + 1,
+    }));
+}
+
+function buildContextBlock(contextItems) {
+  return contextItems
     .map((item) => {
       return [
         `[${item.rank}] ${item.title}`,
@@ -325,6 +348,73 @@ async function handleQuery(request, env) {
         .join("\n");
     })
     .join("\n\n");
+}
+
+function buildContextMeta(env, contextItems) {
+  return {
+    citations: contextItems.map((item) => ({
+      ref: item.rank,
+      title: item.title,
+      category: item.category,
+      city: item.city,
+      sourceType: item.sourceType,
+      sourceUrl: item.sourceUrl,
+      chunkId: item.chunkId,
+      score: item.score,
+    })),
+    matches: contextItems.map((item) => ({
+      chunkId: item.chunkId,
+      title: item.title,
+      score: item.score,
+      category: item.category,
+      city: item.city,
+    })),
+    models: {
+      llm: env.RAG_LLM_MODEL,
+      embedding: env.RAG_EMBED_MODEL,
+    },
+  };
+}
+
+async function runRagCompletion(env, systemPrompt, userPrompt, maxTokens = 550) {
+  const llmResult = await env.AI.run(env.RAG_LLM_MODEL, {
+    messages: [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ],
+    temperature: 0.2,
+    max_tokens: maxTokens,
+  });
+
+  return normalizeText(extractAnswerContent(llmResult));
+}
+
+async function handleQuery(request, env) {
+  const body = await parseJson(request);
+  if (!body) {
+    return jsonResponse(env, { error: "Body JSON non valido" }, 400);
+  }
+
+  const question = normalizeText(body.question);
+  const audience = normalizeText(body.audience) || "advisor";
+  const topK = Math.min(10, Math.max(2, toInt(body.topK, toInt(env.RAG_TOP_K, 6))));
+
+  if (!question) {
+    return jsonResponse(env, { error: "question obbligatoria" }, 400);
+  }
+
+  const contextItems = await retrieveContext(env, question, topK);
+
+  if (!contextItems.length) {
+    return jsonResponse(env, {
+      answer:
+        "Non ho ancora abbastanza contesto nel knowledge base per rispondere bene a questa domanda.",
+      citations: [],
+      matches: [],
+    });
+  }
+
+  const contextBlock = buildContextBlock(contextItems);
 
   const systemPrompt = [
     "Sei l'assistente RAG del simulatore assicurativo FamilyAdvisor.",
@@ -350,41 +440,125 @@ async function handleQuery(request, env) {
     "Se la domanda chiede 'quanto costa', 'qual e il benchmark' o 'quanto serve', rispondi nel primo periodo con il numero principale ricavabile dal contesto.",
   ].join("\n");
 
-  const llmResult = await env.AI.run(env.RAG_LLM_MODEL, {
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt },
-    ],
-    temperature: 0.2,
-    max_tokens: 550,
-  });
+  const answer = await runRagCompletion(env, systemPrompt, userPrompt, 550);
 
-  const answer = extractAnswerContent(llmResult);
+  return jsonResponse(
+    env,
+    Object.assign(
+      {
+        answer,
+      },
+      buildContextMeta(env, contextItems)
+    )
+  );
+}
 
-  return jsonResponse(env, {
-    answer: normalizeText(answer),
-    citations: contextItems.map((item) => ({
-      ref: item.rank,
-      title: item.title,
-      category: item.category,
-      city: item.city,
-      sourceType: item.sourceType,
-      sourceUrl: item.sourceUrl,
-      chunkId: item.chunkId,
-      score: item.score,
-    })),
-    matches: contextItems.map((item) => ({
-      chunkId: item.chunkId,
-      title: item.title,
-      score: item.score,
-      category: item.category,
-      city: item.city,
-    })),
-    models: {
-      llm: env.RAG_LLM_MODEL,
-      embedding: env.RAG_EMBED_MODEL,
-    },
-  });
+async function handleIntake(request, env) {
+  const body = await parseJson(request);
+  if (!body) {
+    return jsonResponse(env, { error: "Body JSON non valido" }, 400);
+  }
+
+  const note = normalizeText(body.note);
+  const profileSummary = normalizeText(body.profileSummary);
+  const retrievalHint = normalizeText(body.retrievalHint);
+  const missingFields = Array.isArray(body.missingFields)
+    ? body.missingFields
+        .map((item) => normalizeText(String(item)))
+        .filter(Boolean)
+        .slice(0, 5)
+    : [];
+  const topK = Math.min(8, Math.max(3, toInt(body.topK, 5)));
+  const queryText = [retrievalHint, profileSummary, note, missingFields.join(" ")].filter(Boolean).join(" \n ");
+
+  if (!queryText) {
+    return jsonResponse(env, { error: "note o profileSummary obbligatori" }, 400);
+  }
+
+  const contextItems = await retrieveContextMulti(
+    env,
+    [retrievalHint, profileSummary, note, queryText],
+    Math.max(3, Math.min(5, topK)),
+    topK
+  );
+
+  if (!contextItems.length) {
+    return jsonResponse(env, {
+      summary: profileSummary || note,
+      benchmark: "",
+      nextQuestion: missingFields.length
+        ? "Per completare il questionario chiederei prima " + missingFields[0] + "."
+        : "",
+      missingFields,
+      citations: [],
+      matches: [],
+      models: {
+        llm: env.RAG_LLM_MODEL,
+        embedding: env.RAG_EMBED_MODEL,
+      },
+    });
+  }
+
+  const contextBlock = buildContextBlock(contextItems);
+  const systemPrompt = [
+    "Sei l'assistente intake RAG del simulatore assicurativo FamilyAdvisor.",
+    "Aiuti un consulente a leggere appunti cliente prima di aprire il questionario.",
+    "Usa solo il contesto recuperato e i dati ricevuti.",
+    "Non parlare di polizze o raccomandazioni di prodotto se non richiesto esplicitamente.",
+    "Non chiedere dati che sono gia presenti negli appunti o nel profilo strutturato.",
+    "Se nel contesto trovi benchmark obiettivo casa, benchmark studi figli o benchmark legati alla citta del cliente, preferiscili ai benchmark nazionali generici su reddito o patrimonio.",
+    "Restituisci solo JSON valido.",
+    "Formato obbligatorio: {\"summary\":\"...\",\"benchmark\":\"...\",\"nextQuestion\":\"...\",\"missingFields\":[\"...\"]}.",
+    "summary: massimo 2 frasi, tono consulenziale, focalizzata sul caso.",
+    "benchmark: massimo 1 frase con al massimo 2 numeri reali tratti dal contesto; se non c'e un benchmark utile lascia stringa vuota.",
+    "nextQuestion: una sola domanda breve e naturale che aiuta il consulente a completare il profilo, preferendo il primo campo davvero mancante.",
+    "missingFields: massimo 3 elementi, in italiano, solo se davvero mancanti o utili a migliorare la stima.",
+  ].join(" ");
+
+  const userPrompt = [
+    `Appunti grezzi: ${note || "n.d."}`,
+    `Profilo strutturato finora: ${profileSummary || "n.d."}`,
+    `Campi mancanti gia rilevati: ${missingFields.join(", ") || "nessuno"}`,
+    "",
+    "Contesto recuperato:",
+    contextBlock,
+    "",
+    "Restituisci solo il JSON richiesto.",
+  ].join("\n");
+
+  const raw = await runRagCompletion(env, systemPrompt, userPrompt, 320);
+  const parsed = parseStructuredJson(raw) || {};
+  const resolvedMissingFields = Array.isArray(parsed.missingFields)
+    ? parsed.missingFields
+        .map((item) => normalizeText(String(item)))
+        .filter(Boolean)
+        .slice(0, 3)
+    : missingFields.slice(0, 3);
+  const fallbackQuestion = resolvedMissingFields.length
+    ? "Qual e il prossimo dato chiave che vuoi verificare per primo?"
+    : "Qual e il prossimo dato che vuoi confermare nel questionario?";
+  const parsedQuestion = normalizeText(parsed.nextQuestion);
+  const questionMatchesMissing = resolvedMissingFields.some((item) =>
+    normalizeText(parsedQuestion).toLowerCase().includes(item.toLowerCase())
+  );
+  const deterministicQuestion = resolvedMissingFields.length
+    ? `Mi aiuta a completare ${resolvedMissingFields[0]}?`
+    : fallbackQuestion;
+
+  return jsonResponse(
+    env,
+    Object.assign(
+      {
+        summary: normalizeText(parsed.summary) || profileSummary || note,
+        benchmark: normalizeText(parsed.benchmark),
+        nextQuestion: parsedQuestion && (!resolvedMissingFields.length || questionMatchesMissing)
+          ? parsedQuestion
+          : deterministicQuestion,
+        missingFields: resolvedMissingFields,
+      },
+      buildContextMeta(env, contextItems)
+    )
+  );
 }
 
 async function handleIngest(request, env) {
@@ -460,6 +634,10 @@ export default {
     try {
       if (request.method === "POST" && url.pathname === "/api/rag/query") {
         return await handleQuery(request, env);
+      }
+
+      if (request.method === "POST" && url.pathname === "/api/rag/intake") {
+        return await handleIntake(request, env);
       }
 
       if (request.method === "POST" && url.pathname === "/api/rag/ingest") {

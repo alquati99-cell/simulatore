@@ -15,7 +15,8 @@
     isRendering: false,
     pendingTurnId: 0,
     ragTurnId: 0,
-    ragInsight: null
+    ragInsight: null,
+    chatRagInsight: null
   };
   var INITIAL_ASSISTANT_MESSAGE = "Ciao! Scrivi quello che sai del cliente: nome, eta, famiglia, reddito mensile, casa, obiettivi. Anche due righe o appunti veloci vanno bene.";
   var AI_STORAGE_KEYS = {
@@ -26,7 +27,9 @@
   var GROQ_CHAT_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
   var AI_TIMEOUT_MS = 6500;
   var RAG_QUERY_ENDPOINT = "https://simulatore-rag-api.alquati99.workers.dev/api/rag/query";
+  var RAG_INTAKE_ENDPOINT = "https://simulatore-rag-api.alquati99.workers.dev/api/rag/intake";
   var RAG_TIMEOUT_MS = 9000;
+  var RAG_INTAKE_TIMEOUT_MS = 4200;
 
   function byId(id) {
     return document.getElementById(id);
@@ -567,6 +570,88 @@
     return parts.join(", ");
   }
 
+  function chatProfileSummary(profile) {
+    var current = profile || {};
+    var parts = [];
+    var explicitGoals = (current.goals || []).filter(function (goal) {
+      return goal && goal.id;
+    });
+
+    if (current.name) parts.push(current.name);
+    if (current.age) parts.push(current.age + " anni");
+    if (current.profession) parts.push(current.profession.toLowerCase());
+    if (current.maritalStatus) parts.push(current.maritalStatus.toLowerCase());
+    if (current.childrenCount) parts.push(current.childrenCount + " figli");
+    if (current.residenceCity) parts.push("residenza " + current.residenceCity);
+    if (current.housingStatus) parts.push("casa " + current.housingStatus.toLowerCase());
+    if (current.netMonthlyIncome) parts.push("reddito mensile € " + currency(current.netMonthlyIncome));
+    else if (current.grossAnnualIncome) parts.push("reddito annuo € " + currency(current.grossAnnualIncome));
+    if (current.totalAssets) parts.push("patrimonio € " + currency(current.totalAssets));
+    if (current.monthlySavings) parts.push("risparmio € " + currency(current.monthlySavings) + "/mese");
+    if (explicitGoals.length) {
+      var goalNames = {
+        retirement: "pensione integrativa",
+        home: "acquisto casa",
+        education: "fondo studi figli",
+        emergency: "fondo emergenze",
+        wealth: "risparmio obiettivo"
+      };
+      parts.push("obiettivi " + explicitGoals.slice(0, 3).map(function (goal) {
+        return goal.name ? String(goal.name).toLowerCase() : (goalNames[goal.id] || goal.id);
+      }).join(", "));
+    }
+
+    return parts.join(" · ");
+  }
+
+  function chatMissingFieldLabels(profile) {
+    var current = profile || {};
+    var labels = [];
+    if (!current.age) labels.push("eta");
+    if (!current.grossAnnualIncome && !current.netMonthlyIncome) labels.push("reddito");
+    if (!current.monthlySavings && !current.totalAssets) labels.push("risparmio o patrimonio");
+    if (!current.profession) labels.push("professione");
+    if (!current.housingStatus) labels.push("situazione abitativa");
+    if (!(current.goals || []).length) labels.push("obiettivi");
+    return labels.slice(0, 4);
+  }
+
+  function chatRetrievalHint(profile) {
+    var current = profile || {};
+    var goalNames = {
+      retirement: "pensione integrativa",
+      home: "acquisto casa",
+      education: "fondo studi figli",
+      emergency: "fondo emergenze",
+      wealth: "risparmio obiettivo"
+    };
+    var hints = [];
+
+    if (current.residenceCity) hints.push(current.residenceCity);
+    if (current.housingStatus) hints.push("situazione abitativa " + current.housingStatus.toLowerCase());
+    if (current.childrenCount) hints.push(current.childrenCount + " figli");
+    if ((current.goals || []).length) {
+      hints.push("obiettivi " + current.goals.slice(0, 3).map(function (goal) {
+        return goal.name ? String(goal.name).toLowerCase() : (goalNames[goal.id] || goal.id);
+      }).join(", "));
+    }
+
+    return hints.join(" · ");
+  }
+
+  function shouldRequestChatRag(profile, text) {
+    var normalized = String(text || "").trim();
+    if (normalized.length < 12) return false;
+    if (!profileSignalCount(profile)) return false;
+    return !!(
+      profile.residenceCity ||
+      profile.housingStatus ||
+      (profile.goals || []).length ||
+      profile.childrenCount ||
+      /casa|mutuo|universita|studi|figli|pensione|emergenz|milano|roma|torino|bari|palermo|bologna|napoli/i.test(normalized)
+    );
+  }
+
   function ragQuestionForProduct(product, activeScenario) {
     var focusGoal = S.analysis && S.analysis.focusGoal ? S.analysis.focusGoal : featuredGoal(S.plan.goals);
     var profileSummary = ragProfileSummary();
@@ -586,25 +671,21 @@
     );
   }
 
-  async function requestRagExplanation(question) {
+  async function requestRag(payload, endpoint, timeoutMs) {
     if (typeof root.fetch !== "function") {
       throw new Error("Fetch non disponibile in questo browser");
     }
 
     var controller = typeof root.AbortController === "function" ? new root.AbortController() : null;
-    var timeoutId = controller ? root.setTimeout(function () { controller.abort(); }, RAG_TIMEOUT_MS) : 0;
+    var timeoutId = controller ? root.setTimeout(function () { controller.abort(); }, timeoutMs || RAG_TIMEOUT_MS) : 0;
 
     try {
-      var response = await root.fetch(RAG_QUERY_ENDPOINT, {
+      var response = await root.fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({
-          question: question,
-          audience: "advisor",
-          topK: 4
-        }),
+        body: JSON.stringify(payload || {}),
         signal: controller ? controller.signal : undefined
       });
 
@@ -615,6 +696,71 @@
       if (timeoutId) root.clearTimeout(timeoutId);
       throw error;
     }
+  }
+
+  async function requestRagExplanation(question) {
+    return requestRag({
+      question: question,
+      audience: "advisor",
+      topK: 4
+    }, RAG_QUERY_ENDPOINT, RAG_TIMEOUT_MS);
+  }
+
+  async function requestChatRagInsight(profile, text) {
+    return requestRag({
+      note: String(text || "").trim(),
+      profileSummary: chatProfileSummary(profile),
+      retrievalHint: chatRetrievalHint(profile),
+      missingFields: chatMissingFieldLabels(profile),
+      topK: 5
+    }, RAG_INTAKE_ENDPOINT, RAG_INTAKE_TIMEOUT_MS);
+  }
+
+  function hasChatRagContent(insight) {
+    return !!(insight && (insight.summary || insight.benchmark || insight.nextQuestion));
+  }
+
+  function intakeCitationsMarkup(citations, limit) {
+    var list = (citations || []).slice(0, limit || 3);
+    if (!list.length) return "";
+    return (
+      '<div class="intake-citations">' +
+      list.map(function (citation) {
+        return '<span class="intake-citation">[' + esc(citation.ref) + "] " + esc(citation.title) + "</span>";
+      }).join("") +
+      "</div>"
+    );
+  }
+
+  function chatRagMessageMarkup(insight) {
+    return (
+      '<div class="chat-rag-card">' +
+      '<div class="chat-rag-ey">Contesto benchmark</div>' +
+      '<div class="chat-rag-title">' + esc(insight.summary || "Lettura rapida del caso") + "</div>" +
+      (insight.benchmark ? '<div class="chat-rag-body">' + esc(insight.benchmark) + "</div>" : "") +
+      (insight.nextQuestion ? '<div class="chat-rag-follow">Domanda utile: ' + esc(insight.nextQuestion) + "</div>" : "") +
+      intakeCitationsMarkup(insight.citations, 3) +
+      "</div>"
+    );
+  }
+
+  function renderPage2IntakeInsight() {
+    var panel = byId("page2IntakeInsight");
+    if (!panel) return;
+    if (!hasChatRagContent(S.chatRagInsight)) {
+      panel.hidden = true;
+      panel.innerHTML = "";
+      return;
+    }
+
+    panel.hidden = false;
+    panel.innerHTML =
+      '<div class="intake-band-ey">Insight emerso dagli appunti</div>' +
+      '<div class="intake-band-head"><div><div class="intake-band-title">' + esc(S.chatRagInsight.summary || "Lettura iniziale del caso") + '</div><div class="intake-band-copy">' + esc(S.chatRagInsight.benchmark || "Ho recuperato benchmark e contesto utili dal knowledge base per dare profondita alla conversazione iniziale.") + '</div></div><div class="intake-band-pill">RAG</div></div>' +
+      (S.chatRagInsight.nextQuestion
+        ? '<div class="intake-band-question">Prossima domanda utile: <strong>' + esc(S.chatRagInsight.nextQuestion) + '</strong></div>'
+        : "") +
+      intakeCitationsMarkup(S.chatRagInsight.citations, 3);
   }
 
   function renderRagInsightPanel() {
@@ -894,7 +1040,9 @@
     S.activeScenarioMode = "bundle";
     S.coverageTouched = false;
     S.ragInsight = null;
+    S.chatRagInsight = null;
     resetRenderedState();
+    renderPage2IntakeInsight();
     if (!preserveChat) renderWelcomeChat();
   }
 
@@ -944,6 +1092,7 @@
     subtitle.textContent = "Completa solo i dati essenziali e poi vai subito alla simulazione scenari.";
     topCta.textContent = "Simula scenari →";
     bottomCta.textContent = "Simula scenari →";
+    renderPage2IntakeInsight();
   }
 
   function showTyp() {
@@ -971,14 +1120,32 @@
 
       var reply = FamilyAdvisorEngine.buildAdvisorReply(mergedProfile);
       var canOpenProfile = shouldOpenProfile(reply, mergedProfile, text);
+      var chatRagInsight = null;
 
       S.draftProfile = mergedProfile;
       remTyp();
       addM("ai", reply.message);
 
+      if (shouldRequestChatRag(mergedProfile, text)) {
+        try {
+          chatRagInsight = await requestChatRagInsight(mergedProfile, text);
+        } catch (error) {
+          chatRagInsight = null;
+        }
+
+        if (turnId !== S.pendingTurnId) return;
+
+        if (hasChatRagContent(chatRagInsight)) {
+          S.chatRagInsight = chatRagInsight;
+          addM("ai", chatRagMessageMarkup(chatRagInsight));
+          renderPage2IntakeInsight();
+        }
+      }
+
       if (canOpenProfile) {
         S.page2AnalysisVisible = false;
         fillFormFromProfile(mergedProfile);
+        renderPage2IntakeInsight();
         root.setTimeout(function () {
           addM("ai", "✅ Apro il questionario essenziale: completa i dati e poi passiamo subito agli scenari.");
           root.setTimeout(function () {

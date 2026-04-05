@@ -159,6 +159,31 @@ Restituisce:
 - match recuperati
 - modelli usati
 
+### `POST /api/rag/intake`
+
+Serve per la chat iniziale del consulente.
+
+Accetta:
+
+```json
+{
+  "note": "Giulia Rossi, 39 anni, 2 figli, vive a Milano...",
+  "profileSummary": "Giulia Rossi · 39 anni · 2 figli · residenza Milano · obiettivi acquisto casa, fondo studi figli",
+  "retrievalHint": "Milano · 2 figli · obiettivi acquisto casa, fondo studi figli",
+  "missingFields": ["risparmio mensile", "professione"],
+  "topK": 5
+}
+```
+
+Restituisce:
+
+- sintesi breve del caso
+- benchmark utile per aprire il colloquio
+- prossima domanda sensata da fare
+- citazioni e match recuperati
+
+Il punto importante e che anche qui il RAG non decide score o coperture: aggiunge contesto e profondita alla fase di raccolta dati.
+
 ## Setup operativo
 
 ### 1. Crea il database D1
