@@ -14,7 +14,6 @@
     coverageTouched: false,
     isRendering: false,
     pendingTurnId: 0,
-    ragTurnId: 0,
     ragInsight: null,
     chatRagInsight: null
   };
@@ -26,9 +25,7 @@
   var DEFAULT_GROQ_MODEL = "llama-3.1-8b-instant";
   var GROQ_CHAT_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
   var AI_TIMEOUT_MS = 6500;
-  var RAG_QUERY_ENDPOINT = "https://simulatore-rag-api.alquati99.workers.dev/api/rag/query";
   var RAG_INTAKE_ENDPOINT = "https://simulatore-rag-api.alquati99.workers.dev/api/rag/intake";
-  var RAG_TIMEOUT_MS = 9000;
   var RAG_INTAKE_TIMEOUT_MS = 4200;
 
   function byId(id) {
@@ -559,182 +556,13 @@
     });
   }
 
-  function productKnowledgeTerms(productId) {
-    var map = {
-      tcm: ["tcm", "temporanea caso morte", "famiglia"],
-      income_protection: ["protezione reddito", "invalidita", "reddito"],
-      accident: ["infortuni", "invalidita", "reddito"],
-      rc_family: ["rc famiglia", "casa", "responsabilita"],
-      ltc: ["ltc", "long term care", "non autosufficienza"],
-      health: ["salute", "ricoveri", "spese mediche"],
-      mortgage: ["mutuo", "casa", "reddito"]
-    };
-    return map[productId] || [];
-  }
-
-  function filterPolicyCitations(product, citations) {
-    var list = Array.isArray(citations) ? citations.slice() : [];
-    if (!list.length) return [];
-
-    var terms = productKnowledgeTerms(product.id);
-    var methodology = list.filter(function (citation) {
-      return String((citation && citation.category) || "").toLowerCase() === "methodology";
-    });
-    var filtered = list.filter(function (citation) {
-      var title = String((citation && citation.title) || "").toLowerCase();
-      var category = String((citation && citation.category) || "").toLowerCase();
-      if (category === "methodology") return true;
-      return terms.some(function (term) { return title.indexOf(term) >= 0; });
-    });
-
-    if (filtered.length) return filtered.slice(0, 4);
-    if (methodology.length) return methodology.slice(0, 1);
-    return [];
-  }
-
-  function productPriorityNarrative(product) {
-    if (product.score >= 60) return "e una leva prioritaria";
-    if (product.score >= 45) return "e una copertura coerente";
-    return "resta una copertura complementare";
-  }
-
-  function productRiskFocus(product) {
-    var labels = {
-      tcm: "l'assenza improvvisa del capitale familiare",
-      income_protection: "il blocco del reddito per invalidita",
-      accident: "lo stop lavorativo per infortunio",
-      rc_family: "danni a terzi e imprevisti su casa o vita privata",
-      ltc: "i costi di assistenza di lungo periodo",
-      health: "spese mediche importanti e ricoveri",
-      mortgage: "la continuita del progetto casa e del mutuo"
-    };
-    return labels[product.id] || "un rischio che puo erodere il piano";
-  }
-
-  function productReasons(product, profile, focusGoal) {
-    var reasons = [];
-    var goalNames = activeGoalNames(3);
-
-    if (product.id === "tcm") {
-      if (profile.childrenCount) reasons.push("ci sono " + profile.childrenCount + " figli da proteggere");
-      if (profile.spouseName || profile.maritalStatus === "Coniugato" || profile.maritalStatus === "Convivente") reasons.push("il nucleo familiare puo dipendere dal reddito principale");
-      if (profile.housingStatus === "Con mutuo") reasons.push("c'e un mutuo che non va lasciato scoperto");
-      if (goalNames.length) reasons.push("obiettivi come " + joinReadableList(goalNames) + " non dovrebbero dipendere solo dal patrimonio accumulato");
-    } else if (product.id === "income_protection") {
-      if (profile.netMonthlyIncome) reasons.push("il piano dipende da un reddito netto mensile di € " + currency(profile.netMonthlyIncome));
-      if (profile.occupationRisk === "alto") reasons.push("la professione ha una rischiosita alta");
-      if (profile.childrenCount) reasons.push("il nucleo ha impegni familiari continuativi");
-      if (goalNames.length) reasons.push("gli obiettivi di medio periodo richiedono continuita di risparmio");
-    } else if (product.id === "accident") {
-      if (profile.occupationRisk !== "basso") reasons.push("la professione espone a uno stop temporaneo piu rilevante");
-      if (profile.netMonthlyIncome) reasons.push("un infortunio potrebbe fermare il flusso di reddito");
-      if (goalNames.length) reasons.push("serve difendere il ritmo di accumulo sugli obiettivi");
-    } else if (product.id === "rc_family") {
-      if (profile.housingStatus !== "Affittuario") reasons.push("il cliente ha un immobile o un progetto casa da proteggere");
-      if (profile.childrenCount) reasons.push("la vita familiare aumenta la possibilita di danni a terzi o eventi domestici");
-      if (profile.totalAssets >= 60000) reasons.push("c'e un patrimonio che non conviene esporre a spese improvvise");
-    } else if (product.id === "ltc") {
-      if (profile.age >= 50) reasons.push("con l'eta cresce il rischio di erodere patrimonio per assistenza");
-      if (focusGoal && focusGoal.id === "retirement") reasons.push("il tema previdenziale richiede protezione anche nella non autosufficienza");
-      if (profile.totalAssets >= 80000) reasons.push("ha senso difendere capitale gia accumulato");
-    } else if (product.id === "health") {
-      if (profile.age >= 45) reasons.push("la probabilita di spese mediche importanti cresce con l'eta");
-      if (profile.netMonthlyIncome) reasons.push("spese straordinarie potrebbero sottrarre risorse al piano");
-      if (goalNames.length) reasons.push("il cliente ha obiettivi che richiedono stabilita di liquidita");
-    } else if (product.id === "mortgage") {
-      if (profile.housingStatus === "Con mutuo") reasons.push("c'e un mutuo che va tenuto in piedi anche sotto shock");
-      if (profile.housingCost) reasons.push("la rata casa pesa gia sul cash flow mensile");
-      if (focusGoal && focusGoal.id === "home") reasons.push("il progetto casa non dovrebbe saltare se il reddito si interrompe");
-    }
-
-    if (!reasons.length && goalNames.length) {
-      reasons.push("serve proteggere obiettivi come " + joinReadableList(goalNames));
-    }
-    if (!reasons.length) {
-      reasons.push("aiuta a non usare il capitale destinato agli obiettivi per assorbire un imprevisto");
-    }
-
-    return reasons.slice(0, 3);
-  }
-
-  function scenarioBlockForProduct(product, activeScenario, focusGoal) {
-    if (!activeScenario) {
-      return "Questa copertura protegge il piano sul rischio " + productRiskFocus(product) + ".";
-    }
-
-    var gapText = activeScenario.noCoverage.goalGap
-      ? "puo aprire un gap di € " + currency(activeScenario.noCoverage.goalGap)
-      : "non apre un gap immediato, ma indebolisce comunque il piano";
-    var baseSentence = "Nello scenario attivo \"" + activeScenario.label + "\" il cliente senza copertura " + gapText + " su " + (focusGoal ? "\"" + focusGoal.name + "\"" : "questo obiettivo") + " e la probabilita scende al " + activeScenario.noCoverage.achievement + "%.";
-
-    if (productMatchesScenario(product, activeScenario)) {
-      return baseSentence + " Questa polizza interviene proprio sul punto di fragilita legato a " + productRiskFocus(product) + ".";
-    }
-
-    return baseSentence + " Anche se non e la leva piu diretta su questo scenario, resta utile per non lasciare scoperto " + productRiskFocus(product) + ".";
-  }
-
-  function economicBlockForProduct(product) {
-    var lines = [];
-    lines.push("Il motore stima un premio indicativo di " + premiumRangeLabel(product) + ".");
-    if (product.detail) lines.push(product.detail + ".");
-    if (product.secondaryDetail) lines.push(product.secondaryDetail + ".");
-    lines.push("Senza copertura il cliente dovrebbe tenere circa € " + currency(product.selfFundMonthlyEquivalent) + "/mese di auto-cuscinetto sul rischio.");
-    return lines.join(" ");
-  }
-
-  function buildPolicyInsightBlocks(product, activeScenario) {
-    var profile = S.plan.profile;
-    var focusGoal = S.analysis && S.analysis.focusGoal ? S.analysis.focusGoal : (S.plan.goals && S.plan.goals[0]);
-    var headlineFacts = [];
-
-    if (profile.name) headlineFacts.push(profile.name);
-    if (profile.age) headlineFacts.push(profile.age + " anni");
-    if (profile.childrenCount) headlineFacts.push(profile.childrenCount + " figli");
-    if (profile.housingStatus) headlineFacts.push("casa " + profile.housingStatus.toLowerCase());
-    if (profile.netMonthlyIncome) headlineFacts.push("reddito netto € " + currency(profile.netMonthlyIncome) + "/mese");
-    var subject = headlineFacts.length ? joinReadableList(headlineFacts) : "questo cliente";
-
-    return [
-      {
-        label: "Perche qui",
-        body: "Per " + subject + ", " + product.name + " " + productPriorityNarrative(product) + " perche " + joinReadableList(productReasons(product, profile, focusGoal)) + "."
-      },
-      {
-        label: "Che cosa protegge",
-        body: scenarioBlockForProduct(product, activeScenario, focusGoal)
-      },
-      {
-        label: "Lettura economica",
-        body: economicBlockForProduct(product)
-      }
-    ];
-  }
-
   function resetRagInsight() {
     S.ragInsight = null;
-    renderRagInsightPanel();
   }
 
   function currentActiveScenario() {
     var collection = currentScenarioCollection();
     return collection ? collection[S.activeScenarioId] : null;
-  }
-
-  function ragProfileSummary() {
-    if (!S.plan) return "";
-    var profile = S.plan.profile;
-    var parts = [];
-
-    if (profile.name) parts.push(profile.name);
-    if (profile.age) parts.push(profile.age + " anni");
-    if (profile.housingStatus) parts.push("stato casa " + profile.housingStatus.toLowerCase());
-    if (profile.childrenCount) parts.push(profile.childrenCount + " figli");
-    if (profile.netMonthlyIncome) parts.push("reddito netto mensile € " + currency(profile.netMonthlyIncome));
-    else if (profile.grossAnnualIncome) parts.push("reddito annuo lordo € " + currency(profile.grossAnnualIncome));
-    if (profile.totalAssets) parts.push("patrimonio € " + currency(profile.totalAssets));
-
-    return parts.join(", ");
   }
 
   function chatProfileSummary(profile) {
@@ -819,32 +647,13 @@
     );
   }
 
-  function ragQuestionForProduct(product, activeScenario) {
-    var focusGoal = S.analysis && S.analysis.focusGoal ? S.analysis.focusGoal : featuredGoal(S.plan.goals);
-    var profileSummary = ragProfileSummary();
-    var scenarioLabel = activeScenario ? activeScenario.label : "scenario principale";
-    return (
-      "Spiega in italiano, per un consulente assicurativo, perche per il cliente " +
-      profileSummary +
-      " ha senso valutare la copertura " +
-      product.name +
-      ". " +
-      "Resta focalizzato sull'obiettivo " +
-      (focusGoal ? focusGoal.name : "principale") +
-      " e sullo scenario " +
-      scenarioLabel +
-      ". " +
-      "Usa solo il contesto davvero rilevante e non allargarti su polizze non pertinenti."
-    );
-  }
-
   async function requestRag(payload, endpoint, timeoutMs) {
     if (typeof root.fetch !== "function") {
       throw new Error("Fetch non disponibile in questo browser");
     }
 
     var controller = typeof root.AbortController === "function" ? new root.AbortController() : null;
-    var timeoutId = controller ? root.setTimeout(function () { controller.abort(); }, timeoutMs || RAG_TIMEOUT_MS) : 0;
+    var timeoutId = controller ? root.setTimeout(function () { controller.abort(); }, timeoutMs || RAG_INTAKE_TIMEOUT_MS) : 0;
 
     try {
       var response = await root.fetch(endpoint, {
@@ -863,10 +672,6 @@
       if (timeoutId) root.clearTimeout(timeoutId);
       throw error;
     }
-  }
-
-  async function requestRagExplanation(question) {
-    return requestRag(question, RAG_QUERY_ENDPOINT, RAG_TIMEOUT_MS);
   }
 
   async function requestChatRagInsight(profile, text) {
@@ -924,109 +729,6 @@
         ? '<div class="intake-band-question">Prossima domanda utile: <strong>' + esc(S.chatRagInsight.nextQuestion) + '</strong></div>'
         : "") +
       intakeCitationsMarkup(S.chatRagInsight.citations, 3);
-  }
-
-  function renderRagInsightPanel() {
-    var panel = byId("ragInsightPanel");
-    if (!panel) return;
-
-    var insight = S.ragInsight;
-    if (!insight) {
-      panel.hidden = true;
-      panel.innerHTML = "";
-      return;
-    }
-
-    panel.hidden = false;
-
-    if (insight.status === "loading") {
-      panel.innerHTML =
-        '<div class="rag-panel-ey">RAG consulenziale</div>' +
-        '<div class="rag-panel-head"><div><div class="rag-panel-title">Sto preparando la spiegazione per ' + esc(insight.productName) + '</div><div class="rag-panel-sub">Recupero i contenuti piu rilevanti dal knowledge base assicurativo e li traduco in linguaggio consulenziale.</div></div><div class="rag-panel-pill">In elaborazione</div></div>';
-      return;
-    }
-
-    if (insight.status === "error") {
-      panel.innerHTML =
-        '<div class="rag-panel-ey">Lettura consulenziale</div>' +
-        '<div class="rag-panel-head"><div><div class="rag-panel-title">Non sono riuscito a generare la spiegazione</div><div class="rag-panel-sub">' + esc(insight.message || "Il servizio RAG non ha risposto in tempo utile.") + '</div></div><div class="rag-panel-pill error">Riprova</div></div>';
-      return;
-    }
-
-    panel.innerHTML =
-      '<div class="rag-panel-ey">Lettura consulenziale</div>' +
-      '<div class="rag-panel-head"><div><div class="rag-panel-title">Perche ' + esc(insight.productName) + ' e coerente con questo caso</div><div class="rag-panel-sub">Sintesi guidata dal profilo cliente e dal motore assicurativo, con fonti del knowledge base usate come supporto.</div></div><div class="rag-panel-pill">' + esc((insight.citations || []).length ? "Fonti " + (insight.citations || []).length : "Profilo + motore") + '</div></div>' +
-      '<div class="rag-panel-grid">' +
-      (insight.blocks || []).map(function (block) {
-        return '<div class="rag-panel-card"><div class="rag-panel-card-k">' + esc(block.label) + '</div><div class="rag-panel-card-v">' + esc(block.body) + '</div></div>';
-      }).join("") +
-      '</div>' +
-      ((insight.citations || []).length
-        ? '<div class="rag-citations">' + insight.citations.slice(0, 4).map(function (citation) {
-            return '<span class="rag-citation">[' + esc(citation.ref) + '] ' + esc(citation.title) + '</span>';
-          }).join("") + '</div>'
-        : "");
-
-    if (typeof panel.scrollIntoView === "function") {
-      root.setTimeout(function () {
-        panel.scrollIntoView({ behavior: "smooth", block: "start" });
-      }, 30);
-    }
-  }
-
-  async function explainPolicyWithRag(productId) {
-    if (!S.plan) return;
-    var product = S.plan.recommendations.find(function (entry) { return entry.id === productId; });
-    if (!product) return;
-
-    var activeScenario = currentActiveScenario();
-    var focusGoal = S.analysis && S.analysis.focusGoal ? S.analysis.focusGoal : (S.plan.goals && S.plan.goals[0]);
-    var turnId = ++S.ragTurnId;
-    S.ragInsight = {
-      status: "loading",
-      productId: product.id,
-      productName: product.name,
-      scenarioId: activeScenario ? activeScenario.id : null
-    };
-    renderRagInsightPanel();
-    renderPolicyBoard(activeScenario);
-
-    try {
-      var result = await requestRagExplanation({
-        question: ragQuestionForProduct(product, activeScenario),
-        audience: "advisor",
-        topK: 4,
-        productId: product.id,
-        profileSummary: ragProfileSummary(),
-        goalName: focusGoal ? focusGoal.name : "",
-        scenarioLabel: activeScenario ? activeScenario.label : "",
-        scenarioIds: activeScenario ? relevantScenarioIds(activeScenario) : []
-      });
-      if (turnId !== S.ragTurnId) return;
-
-      S.ragInsight = {
-        status: "ready",
-        productId: product.id,
-        productName: product.name,
-        scenarioId: activeScenario ? activeScenario.id : null,
-        blocks: buildPolicyInsightBlocks(product, activeScenario),
-        citations: filterPolicyCitations(product, result && result.citations ? result.citations : [])
-      };
-    } catch (error) {
-      if (turnId !== S.ragTurnId) return;
-      S.ragInsight = {
-        status: "error",
-        productId: product.id,
-        productName: product.name,
-        scenarioId: activeScenario ? activeScenario.id : null,
-        message: error && error.name === "AbortError"
-          ? "Il servizio RAG ha impiegato troppo tempo. Riprova tra poco."
-          : "Il servizio RAG non e disponibile in questo momento."
-      };
-    }
-
-    renderRagInsightPanel();
-    renderPolicyBoard(currentActiveScenario());
   }
 
   function scenarioCollectionForMode(analysis, mode) {
@@ -1766,10 +1468,7 @@
       var priority = priorityMeta(product.score);
       var selected = isSelectedProduct(product.id);
       var matchesCurrentScenario = activeScenario ? productMatchesScenario(product, activeScenario) : false;
-      var reserveRatio = reserveMultiple(product);
       var isSuggested = bucket === "suggested";
-      var ragActive = S.ragInsight && S.ragInsight.productId === product.id;
-      var ragLoading = ragActive && S.ragInsight.status === "loading";
       return (
         '<div class="policy-card' + (isSuggested ? " suggested" : "") + (selected ? " on" : "") + '">' +
         '<div class="policy-card-shell">' +
@@ -1787,14 +1486,13 @@
         '<div class="policy-card-stats">' +
         '<div class="policy-card-metrics">' +
         '<div class="policy-mini premium"><div class="policy-mini-k">Costo mensile</div><div class="policy-mini-v">' + esc(premiumRangeLabel(product)) + '</div><div class="policy-mini-s">' + esc(product.deductibleLabel) + "</div></div>" +
-        '<div class="policy-mini reserve"><div class="policy-mini-k">Senza polizza</div><div class="policy-mini-v">€ ' + esc(currency(product.selfFundMonthlyEquivalent)) + '/mese</div></div>' +
+        '<div class="policy-mini reserve"><div class="policy-mini-k">Auto-cuscinetto</div><div class="policy-mini-v">€ ' + esc(currency(product.selfFundMonthlyEquivalent)) + '/mese</div><div class="policy-mini-s">Quanto dovrebbe tenere da parte da solo</div></div>' +
         "</div>" +
-        '<div class="policy-legend"><span class="policy-legend-item"><span class="policy-legend-dot green"></span>Costo mensile</span><span class="policy-legend-item"><span class="policy-legend-dot red"></span>Senza polizza</span></div>' +
-        '<div class="policy-callout"><div><div class="policy-callout-k">Lettura veloce</div><div class="policy-callout-v">1€ di premio evita circa <strong>' + esc(reserveRatio) + '€</strong> di auto-cuscinetto</div></div><div class="policy-callout-s">Il cliente trasferisce il rischio invece di bloccarsi da solo molta piu liquidita.</div></div>' +
         "</div>" +
         '<div class="policy-card-side">' +
         '<div class="policy-side-score"><div class="policy-side-k">Coerenza profilo</div><div class="policy-side-v">' + esc(product.score) + '<small>/100</small></div></div>' +
-        '<div class="policy-card-foot"><button class="policy-rag-btn' + (ragActive ? " on" : "") + '" onclick="explainPolicyWithRag(\'' + esc(product.id) + '\')" ' + (ragLoading ? "disabled" : "") + '>' + esc(ragLoading ? "Analizzo..." : (ragActive ? "Aggiorna insight" : "Spiegami perche")) + '</button><button class="policy-toggle' + (selected ? " on" : "") + '" onclick="toggleCoverage(\'' + esc(product.id) + '\')">' + esc(selected ? "Disattiva" : "Attiva") + "</button></div>" +
+        '<div class="policy-side-hint">' + esc(matchesCurrentScenario ? "Impatta subito sullo scenario selezionato" : "Rafforza il profilo in modo trasversale") + "</div>" +
+        '<div class="policy-card-foot"><button class="policy-toggle' + (selected ? " on" : "") + '" onclick="toggleCoverage(\'' + esc(product.id) + '\')">' + esc(selected ? "Disattiva" : "Attiva") + "</button></div>" +
         "</div>" +
         "</div>" +
         "</div>"
@@ -1803,7 +1501,6 @@
 
     suggestedGrid.innerHTML = suggested.length ? suggested.map(function (product) { return cardMarkup(product, "suggested"); }).join("") : '<div class="policy-empty">Nessuna copertura prioritaria individuata per questo profilo.</div>';
     optionalGrid.innerHTML = optional.length ? optional.map(function (product) { return cardMarkup(product, "optional"); }).join("") : '<div class="policy-empty">Per questo profilo il motore non vede altre coperture opzionali davvero rilevanti.</div>';
-    renderRagInsightPanel();
   }
 
   function yearlyLabelsFromPath(path) {
@@ -1818,6 +1515,11 @@
     return path.filter(function (_, index) {
       return index === 0 || index % 12 === 0;
     });
+  }
+
+  function lastValue(list) {
+    if (!list || !list.length) return 0;
+    return Number(list[list.length - 1] || 0);
   }
 
   function drawScenarioPathChart(activeScenario) {
@@ -1896,44 +1598,22 @@
     var canvas = byId("gapC");
     if (!canvas) return;
     destroyChart("gap");
-    var labels = yearlyLabelsFromPath(activeScenario.withCoverage.path);
-    var noData = yearlyValues(activeScenario.noCoverage.path);
-    var yesData = yearlyValues(activeScenario.withCoverage.path);
-    var targetData = yearlyValues(activeScenario.targetPath);
-    var noGap = targetData.map(function (target, index) {
-      return Math.max(0, target - (noData[index] || 0));
-    });
-    var yesGap = targetData.map(function (target, index) {
-      return Math.max(0, target - (yesData[index] || 0));
-    });
+    var noCapital = lastValue(activeScenario.noCoverage.path);
+    var yesCapital = lastValue(activeScenario.withCoverage.path);
+    var target = lastValue(activeScenario.targetPath);
     var ctx = canvas.getContext("2d");
 
     S.ch.gap = new Chart(ctx, {
-      type: "line",
+      type: "bar",
       data: {
-        labels: labels,
+        labels: ["Target", "Senza copertura", "Con copertura"],
         datasets: [
           {
-            label: "Gap senza copertura",
-            data: noGap,
-            borderColor: "#f87171",
-            backgroundColor: "rgba(248,113,113,.12)",
-            fill: true,
-            tension: 0.3,
-            borderWidth: 2.5,
-            pointRadius: 2.5,
-            pointBackgroundColor: "#f87171"
-          },
-          {
-            label: "Gap con copertura",
-            data: yesGap,
-            borderColor: "#34d399",
-            backgroundColor: "rgba(52,211,153,.12)",
-            fill: true,
-            tension: 0.3,
-            borderWidth: 2.5,
-            pointRadius: 2.5,
-            pointBackgroundColor: "#34d399"
+            label: "Valore finale",
+            data: [target, noCapital, yesCapital],
+            backgroundColor: ["#e8a000", "#e57373", "#00857c"],
+            borderRadius: 12,
+            maxBarThickness: 58
           }
         ]
       },
@@ -1947,12 +1627,18 @@
             callbacks: {
               label: function (context) {
                 return "€ " + context.parsed.y.toLocaleString("it-IT");
+              },
+              afterBody: function (items) {
+                var label = items && items[0] ? items[0].label : "";
+                if (label === "Senza copertura") return ["Gap residuo: € " + Math.max(0, target - noCapital).toLocaleString("it-IT")];
+                if (label === "Con copertura") return ["Gap residuo: € " + Math.max(0, target - yesCapital).toLocaleString("it-IT")];
+                return [];
               }
             }
           }
         },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8", maxTicksLimit: 8 } },
+          x: { grid: { display: false }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8" } },
           y: { grid: { color: "rgba(212,227,245,.5)" }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8", callback: function (value) { return "€" + Math.round(value / 1000) + "k"; } } }
         },
         animation: { duration: 650, easing: "easeInOutQuart" }
@@ -1964,14 +1650,17 @@
     var intro = byId("scenarioSimpleIntro");
     var pathLabel = byId("simplePathLabel");
     var gapLabel = byId("simpleGapLabel");
+    var finalTarget = lastValue(activeScenario.targetPath);
+    var finalNoCapital = lastValue(activeScenario.noCoverage.path);
+    var finalYesCapital = lastValue(activeScenario.withCoverage.path);
     if (intro) {
-      intro.textContent = 'I grafici leggono lo scenario "' + activeScenario.label + '" sull\'obiettivo "' + S.analysis.focusGoal.name + '". Rosso = cliente scoperto, verde = coperture attive.';
+      intro.textContent = 'Scenario "' + activeScenario.label + '" letto sull\'obiettivo "' + S.analysis.focusGoal.name + '". Prima vedi la traiettoria negli anni, poi dove atterra davvero il piano alla scadenza.';
     }
     if (pathLabel) {
-      pathLabel.textContent = "Confronto tra patrimonio disponibile e target obiettivo lungo l'orizzonte simulato.";
+      pathLabel.textContent = "Rosso e verde mostrano il capitale disponibile anno per anno. La linea oro e il target da raggiungere.";
     }
     if (gapLabel) {
-      gapLabel.textContent = "Quanto capitale manca ancora anno dopo anno per arrivare al target.";
+      gapLabel.textContent = "A scadenza il target e € " + currency(finalTarget) + ": senza copertura il cliente arriva a € " + currency(finalNoCapital) + ", con copertura a € " + currency(finalYesCapital) + ".";
     }
     drawScenarioPathChart(activeScenario);
     drawScenarioGapChart(activeScenario);
@@ -2706,7 +2395,6 @@
   root.toggleMic = toggleMic;
   root.syncProfile = syncProfile;
   root.toggleCoverage = toggleCoverage;
-  root.explainPolicyWithRag = explainPolicyWithRag;
   root.selectScenario = selectScenario;
   root.selectGoal = selectGoal;
   root.updateScenarioGoal = updateScenarioGoal;
