@@ -799,6 +799,12 @@
             return '<span class="rag-citation">[' + esc(citation.ref) + '] ' + esc(citation.title) + '</span>';
           }).join("") + '</div>'
         : "");
+
+    if (typeof panel.scrollIntoView === "function") {
+      root.setTimeout(function () {
+        panel.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 30);
+    }
   }
 
   async function explainPolicyWithRag(productId) {
