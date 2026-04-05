@@ -1761,6 +1761,9 @@ nav::after{
   --blue:#223a57;
   --mid:#17283d;
   --sky:#7387a2;
+  --title-dark:#1b2736;
+  --title-light:#f4f6f8;
+  --title-accent:#c5ae8b;
   --pale:rgba(34,58,87,.08);
   --palest:rgba(255,255,255,.82);
   --bgs:#eff2f5;
@@ -1878,12 +1881,13 @@ nav::after{
   font-family:'Manrope',sans-serif;
   font-weight:700;
   letter-spacing:-.055em;
+  color:var(--title-dark);
 }
 .p1ti em{
   font-family:'Instrument Serif',serif;
   font-style:italic;
   font-weight:400;
-  color:#d7a15d;
+  color:var(--title-accent);
   background:none;
 }
 
@@ -1923,7 +1927,7 @@ nav::after{
 }
 .p1ti,
 .pht{
-  color:#f7f9fb;
+  color:var(--title-light);
 }
 .p1su,
 .phs{
@@ -2110,7 +2114,7 @@ nav::after{
 .coverage-band-title,
 .policy-group-title,
 .simple-graph-title{
-  color:#172333;
+  color:var(--title-dark);
 }
 .coverage-band-copy,
 .policy-group-copy,
