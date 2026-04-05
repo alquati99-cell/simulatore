@@ -31,27 +31,27 @@ function decodeBasicAuth(header) {
   }
 }
 
-export async function onRequest(context) {
-  const expectedUsername = context.env.BASIC_AUTH_USER;
-  const expectedPassword = context.env.BASIC_AUTH_PASS;
+export default {
+  async fetch(request, env) {
+    const expectedUsername = env.BASIC_AUTH_USER;
+    const expectedPassword = env.BASIC_AUTH_PASS;
 
-  if (!expectedUsername || !expectedPassword) {
-    return unauthorized();
-  }
+    if (!expectedUsername || !expectedPassword) {
+      return unauthorized();
+    }
 
-  const credentials = decodeBasicAuth(
-    context.request.headers.get("Authorization")
-  );
+    const credentials = decodeBasicAuth(request.headers.get("Authorization"));
+    if (
+      !credentials ||
+      credentials.username !== expectedUsername ||
+      credentials.password !== expectedPassword
+    ) {
+      return unauthorized();
+    }
 
-  if (
-    !credentials ||
-    credentials.username !== expectedUsername ||
-    credentials.password !== expectedPassword
-  ) {
-    return unauthorized();
-  }
-
-  const response = await context.next();
-  response.headers.set("Cache-Control", "private, no-store");
-  return response;
-}
+    const assetResponse = await env.ASSETS.fetch(request);
+    const response = new Response(assetResponse.body, assetResponse);
+    response.headers.set("Cache-Control", "private, no-store");
+    return response;
+  },
+};
