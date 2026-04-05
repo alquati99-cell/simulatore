@@ -1,0 +1,60 @@
+{
+  "documents": [
+    {
+      "id": "method-rag-role",
+      "title": "Ruolo del RAG nel simulatore",
+      "category": "methodology",
+      "sourceType": "internal_methodology",
+      "tags": ["rag", "motore", "simulazione"],
+      "text": "Nel simulatore assicurativo il RAG non decide il punteggio, non calcola i premi e non sostituisce il motore matematico. Il suo ruolo e capire meglio la chat iniziale, recuperare benchmark o note coerenti con il caso e spiegare in linguaggio naturale perche un obiettivo o una copertura risultano rilevanti. Tutti i numeri di simulazione devono restare deterministici."
+    },
+    {
+      "id": "method-score-logic",
+      "title": "Lettura dello score obiettivo",
+      "category": "methodology",
+      "sourceType": "internal_methodology",
+      "tags": ["score", "obiettivi", "resilienza"],
+      "text": "Lo score obiettivo del simulatore nasce da due blocchi. Il primo e la partenza oggi: capitale utile, capacita di risparmio sostenibile e liquidita di protezione. Il secondo e la tenuta con imprevisti: quanto target resta coperto sotto shock, probabilita di raggiungimento, capitale residuo e ritardo accumulato. Le polizze migliorano lo score solo se riducono davvero il danno netto nello scenario."
+    },
+    {
+      "id": "benchmark-home-goal",
+      "title": "Benchmark obiettivo acquisto casa",
+      "category": "benchmark",
+      "sourceType": "internal_benchmark_logic",
+      "tags": ["casa", "omi", "milano", "bari"],
+      "text": "L'obiettivo acquisto casa usa prima il benchmark territoriale e solo dopo eventuali fallback interni. La logica considera prezzo medio al metro quadro per citta, metratura coerente con il nucleo, anticipo iniziale di circa il 20 percento, costi accessori e buffer di avvio. Esempio operativo: un single a Milano puo richiedere circa 60 mq e un capitale iniziale intorno a 75 mila euro; una famiglia con due figli a Bari puo richiedere circa 110 mq e un capitale iniziale intorno a 65 mila euro."
+    },
+    {
+      "id": "benchmark-education-goal",
+      "title": "Benchmark fondo studi figli",
+      "category": "benchmark",
+      "sourceType": "internal_benchmark_logic",
+      "tags": ["figli", "universita", "mur"],
+      "text": "L'obiettivo fondo studi figli parte dai benchmark MUR per contribuzione universitaria e aggiunge costo vita e spese accessorie. Se la citta e disponibile il motore usa il benchmark locale; se non e disponibile usa il fallback nazionale. Per esempio, due figli a Milano possono richiedere un target di circa 90 mila euro, mentre due figli a Bari possono richiedere circa 50 mila euro."
+    },
+    {
+      "id": "policy-home-liability",
+      "title": "Quando ha senso proporre RC Famiglia e Casa",
+      "category": "product",
+      "sourceType": "internal_product_logic",
+      "tags": ["polizza", "casa", "responsabilita"],
+      "text": "La copertura RC Famiglia e Casa diventa prioritaria quando il cliente e proprietario di casa, ha mutuo, convive con figli o ha un patrimonio che vuole proteggere. La lettura consulenziale corretta non e solo il danno materiale alla casa, ma il fatto che senza copertura il cliente dovrebbe tenere piu liquidita ferma per assorbire eventi domestici o responsabilita verso terzi."
+    },
+    {
+      "id": "policy-income-protection",
+      "title": "Quando ha senso proporre protezione reddito e infortuni",
+      "category": "product",
+      "sourceType": "internal_product_logic",
+      "tags": ["polizza", "reddito", "infortuni", "invalidita"],
+      "text": "Le coperture protezione reddito e infortuni diventano centrali quando il cliente dipende dal proprio reddito per sostenere obiettivi di medio e lungo periodo. Se uno shock di invalidita o infortunio interrompe il reddito, il piano non si rompe solo per il costo medico, ma soprattutto per la perdita di flusso di risparmio. In questi casi la polizza puo sostituire una parte del cuscinetto che il cliente dovrebbe auto-accantonare."
+    },
+    {
+      "id": "policy-family-protection",
+      "title": "Quando ha senso proporre TCM e LTC",
+      "category": "product",
+      "sourceType": "internal_product_logic",
+      "tags": ["polizza", "tcm", "ltc", "famiglia"],
+      "text": "La TCM e piu coerente quando esistono figli, partner o debiti che dipendono economicamente dalla persona assicurata. La LTC aumenta di priorita con l'eta e con il timore di erodere patrimonio o risparmio per bisogni assistenziali futuri. In entrambi i casi la polizza va letta come trasferimento di un rischio che altrimenti consumerebbe capitale destinato agli obiettivi di vita."
+    }
+  ]
+}

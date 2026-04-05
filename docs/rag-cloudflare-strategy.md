@@ -171,6 +171,14 @@ Le pagine ufficiali che ci interessano sono:
 - Cloudflare Vectorize: <https://developers.cloudflare.com/vectorize/get-started/>
 - Cloudflare Workers AI: <https://developers.cloudflare.com/workers-ai/get-started/workers-wrangler/>
 
+## Nota sul percorso free
+
+Per partire gratis conviene usare:
+
+- `Workers AI + Vectorize + D1 + Worker custom`
+
+e non `AI Search / AutoRAG`, perche la guida ufficiale di AI Search richiede una subscription `R2` attiva prima della creazione della RAG gestita.
+
 ## Cosa posso fare io e cosa serve a te
 
 ### Posso farlo io
