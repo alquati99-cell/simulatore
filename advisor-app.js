@@ -785,7 +785,12 @@
       navItem.querySelector(".nn").textContent = i < pageNumber ? "✓" : i;
     }
     S.page = pageNumber;
-    root.scrollTo(0, 0);
+    if (root.document && root.document.body) {
+      root.document.body.setAttribute("data-page", String(pageNumber));
+    }
+    if (typeof root.scrollTo === "function") {
+      root.scrollTo({ top: 0, behavior: "smooth" });
+    }
     if (pageNumber === 2) renderPage2Mode();
     if (pageNumber === 3) refreshScenarioAnalysis();
   }
