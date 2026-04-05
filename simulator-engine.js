@@ -1260,11 +1260,125 @@
       detail: detail,
       secondaryDetail: secondaryDetail,
       selfFundMonthlyEquivalent: selfFundEquivalent(productMeta.id, needs),
-      selectedByDefault:
-        score >= 40 ||
-        (productMeta.id === "rc_family" && profile.housingStatus !== "Affittuario") ||
-        (productMeta.id === "mortgage" && profile.housingStatus === "Con mutuo")
+      selectedByDefault: false,
+      selectedByDefaultReason: ""
     };
+  }
+
+  function recommendationById(recommendations, id) {
+    return recommendations.find(function (recommendation) {
+      return recommendation.id === id;
+    }) || null;
+  }
+
+  function bundleScenarioWeights(goals) {
+    return goals.reduce(function (weights, goal) {
+      bundleCatalogForGoal(goal.id).forEach(function (bundle) {
+        bundle.scenarioIds.forEach(function (scenarioId) {
+          weights[scenarioId] = (weights[scenarioId] || 0) + 1;
+        });
+      });
+      return weights;
+    }, {});
+  }
+
+  function defaultCoverageTargetCount(profile, goals) {
+    var strategicGoals = goals.filter(function (goal) { return goal.id !== "emergency"; }).length;
+    var base = 2 + strategicGoals;
+    if (profile.housingStatus === "Con mutuo") base += 1;
+    return clamp(base, 2, 5);
+  }
+
+  function addDefaultSelection(selectionMap, recommendations, id, reason) {
+    var recommendation = recommendationById(recommendations, id);
+    if (!recommendation) return;
+    if (!selectionMap[id]) selectionMap[id] = reason;
+  }
+
+  function scenarioShortLabel(scenarioId) {
+    var meta = scenarioMetaById(scenarioId);
+    return meta ? meta.shortLabel.toLowerCase() : scenarioId;
+  }
+
+  function computeDefaultSelectionMap(profile, goals, recommendations) {
+    var selectionMap = {};
+    var scenarioWeights = bundleScenarioWeights(goals);
+    var targetCount = Math.min(defaultCoverageTargetCount(profile, goals), recommendations.length);
+
+    if (profile.netMonthlyIncome > 0) {
+      addDefaultSelection(selectionMap, recommendations, "income_protection", "protegge la continuita del reddito");
+    }
+    if (profile.childrenCount > 0 || profile.spouseName) {
+      addDefaultSelection(selectionMap, recommendations, "tcm", "difende il nucleo familiare in caso di decesso");
+    }
+    if (profile.housingStatus !== "Affittuario") {
+      addDefaultSelection(selectionMap, recommendations, "rc_family", "protegge casa, responsabilita civile e patrimonio");
+    }
+    if (profile.housingStatus === "Con mutuo") {
+      addDefaultSelection(selectionMap, recommendations, "mortgage", "mantiene in piedi il progetto casa con mutuo");
+    }
+
+    var uncovered = Object.assign({}, scenarioWeights);
+    Object.keys(selectionMap).forEach(function (productId) {
+      var recommendation = recommendationById(recommendations, productId);
+      if (!recommendation) return;
+      recommendation.scenarioIds.forEach(function (scenarioId) {
+        uncovered[scenarioId] = 0;
+      });
+    });
+
+    while (Object.keys(selectionMap).length < targetCount) {
+      var best = recommendations
+        .filter(function (recommendation) { return !selectionMap[recommendation.id]; })
+        .map(function (recommendation) {
+          var uncoveredWeight = recommendation.scenarioIds.reduce(function (total, scenarioId) {
+            return total + (uncovered[scenarioId] || 0);
+          }, 0);
+          return {
+            recommendation: recommendation,
+            uncoveredWeight: uncoveredWeight
+          };
+        })
+        .filter(function (entry) {
+          return entry.uncoveredWeight > 0 || entry.recommendation.score >= 58;
+        })
+        .sort(function (left, right) {
+          if (right.uncoveredWeight !== left.uncoveredWeight) return right.uncoveredWeight - left.uncoveredWeight;
+          if (right.recommendation.score !== left.recommendation.score) return right.recommendation.score - left.recommendation.score;
+          return (right.recommendation.selfFundMonthlyEquivalent || 0) - (left.recommendation.selfFundMonthlyEquivalent || 0);
+        })[0];
+
+      if (!best) break;
+
+      var matchedScenarios = best.recommendation.scenarioIds.filter(function (scenarioId) {
+        return uncovered[scenarioId] > 0;
+      });
+      var reason = matchedScenarios.length
+        ? "copre il bundle critico su " + matchedScenarios.map(scenarioShortLabel).join(", ")
+        : "rafforza la protezione sul profilo";
+
+      selectionMap[best.recommendation.id] = reason;
+      best.recommendation.scenarioIds.forEach(function (scenarioId) {
+        uncovered[scenarioId] = 0;
+      });
+    }
+
+    var minimumSelections = Math.min(recommendations.length, goals.length >= 2 ? 2 : 1);
+    if (Object.keys(selectionMap).length < minimumSelections) {
+      recommendations
+        .filter(function (recommendation) { return !selectionMap[recommendation.id]; })
+        .sort(function (left, right) { return right.score - left.score; })
+        .slice(0, minimumSelections - Object.keys(selectionMap).length)
+        .forEach(function (recommendation) {
+          selectionMap[recommendation.id] = "rafforza il set base di protezione";
+        });
+    }
+
+    if (!Object.keys(selectionMap).length && recommendations.length) {
+      selectionMap[recommendations[0].id] = "copertura con priorita piu alta sul profilo";
+    }
+
+    return selectionMap;
   }
 
   function recommendProducts(profile, goals, needs, segment) {
@@ -1281,13 +1395,17 @@
       .sort(function (left, right) {
         return right.score - left.score;
       });
+    recommendations = recommendations.slice(0, 6);
 
-    var selected = recommendations.filter(function (recommendation) {
-      return recommendation.selectedByDefault;
+    var selectionMap = computeDefaultSelectionMap(profile, goals, recommendations);
+    recommendations = recommendations.map(function (recommendation) {
+      return Object.assign({}, recommendation, {
+        selectedByDefault: !!selectionMap[recommendation.id],
+        selectedByDefaultReason: selectionMap[recommendation.id] || ""
+      });
     });
 
-    if (!selected.length && recommendations.length) recommendations[0].selectedByDefault = true;
-    return recommendations.slice(0, 6);
+    return recommendations;
   }
 
   function buildSnapshot(profile, recommendations, selectedCoverageIds) {
@@ -1390,8 +1508,49 @@
     return { upfront: 0, monthly: 0, durationMonths: 0 };
   }
 
-  function scenarioPriorityValue(summary) {
-    return summary.noCoverage.goalGap + Math.round(summary.noCoverage.delayYears * 9000) + (summary.totalLossValue || 0) * 0.03;
+  function scenarioLikelihoodFactor(scenarioId, profile, goalId) {
+    if (scenarioId === "ip") {
+      if (!profile.netMonthlyIncome) return 0.35;
+      return profile.occupationRisk === "alto" ? 1 : profile.occupationRisk === "medio" ? 0.92 : 0.84;
+    }
+    if (scenarioId === "morte") {
+      if (profile.childrenCount > 0 || profile.spouseName) return 1;
+      if (profile.housingStatus === "Con mutuo") return 0.8;
+      return 0.45;
+    }
+    if (scenarioId === "ltc") {
+      if (profile.age >= 58) return 1;
+      if (profile.age >= 50) return 0.8;
+      if (profile.age >= 42) return goalId === "retirement" ? 0.55 : 0.42;
+      if (profile.age >= 35) return goalId === "retirement" ? 0.35 : 0.22;
+      return 0.12;
+    }
+    if (scenarioId === "rc") {
+      var base = 0.3;
+      if (profile.housingStatus !== "Affittuario") base += 0.25;
+      if (profile.childrenCount > 0) base += 0.2;
+      if (profile.totalAssets > 60000) base += 0.1;
+      return clamp(base, 0.25, 0.9);
+    }
+    if (scenarioId === "casa") {
+      if (profile.housingStatus === "Con mutuo") return 1;
+      if (profile.housingStatus === "Proprietario") return 0.85;
+      return 0.18;
+    }
+    return 0.5;
+  }
+
+  function scenarioRelevance(summary, profile, goalId) {
+    var scenarioIds = summary.scenarioIds && summary.scenarioIds.length ? summary.scenarioIds : [summary.id];
+    var averageLikelihood = average(scenarioIds.map(function (scenarioId) {
+      return scenarioLikelihoodFactor(scenarioId, profile, goalId);
+    })) || 0.5;
+    return averageLikelihood * (summary.type === "bundle" ? 0.94 : 1);
+  }
+
+  function scenarioPriorityValue(summary, profile, goalId) {
+    var rawPriority = summary.noCoverage.goalGap + Math.round(summary.noCoverage.delayYears * 9000) + (summary.totalLossValue || 0) * 0.03;
+    return rawPriority * scenarioRelevance(summary, profile, goalId);
   }
 
   function goalAssetQuota(goal, context) {
@@ -1501,7 +1660,7 @@
         });
 
     candidates.sort(function (left, right) {
-      return scenarioPriorityValue(right) - scenarioPriorityValue(left);
+      return scenarioPriorityValue(right, context.profile, goal.id) - scenarioPriorityValue(left, context.profile, goal.id);
     });
 
     var pivot = candidates[0];
