@@ -12,6 +12,7 @@ cp "$ROOT_DIR/advisor-app.js" "$OUT_DIR/advisor-app.js"
 cp "$ROOT_DIR/simulator-db.js" "$OUT_DIR/simulator-db.js"
 cp "$ROOT_DIR/simulator-engine.js" "$OUT_DIR/simulator-engine.js"
 cp "$ROOT_DIR/data/processed/bdi_benchmarks_2022.js" "$OUT_DIR/data/processed/bdi_benchmarks_2022.js"
+cp "$ROOT_DIR/cloudflare/pages-auth/_worker.js" "$OUT_DIR/_worker.js"
 
 cat > "$OUT_DIR/_headers" <<'EOF'
 /*
