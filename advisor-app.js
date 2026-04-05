@@ -921,6 +921,7 @@
   }
 
   function readProfileFromForm() {
+    var existingProfile = (S.plan && S.plan.profile) || S.draftProfile || {};
     var birthDate = byId("fDOB").value;
     var age = parseInt(byId("fEta").value, 10) || computeAgeFromDob(birthDate) || 0;
     var totalAssets = parseInt(byId("fPat").value, 10) || 0;
@@ -947,11 +948,14 @@
       totalAssets: totalAssets,
       liquidAssets: parseInt(byId("fLiqu").value, 10) || 0,
       investedAssets: parseInt(byId("fInv").value, 10) || 0,
+      residenceCity: existingProfile.residenceCity || "",
       housingStatus: byId("fAb").value,
       housingCost: parseInt(byId("fHomeCost").value, 10) || 0,
       fixedExpenses: parseInt(byId("fFixed").value, 10) || 0,
       goals: domGoals.length ? domGoals : fallbackGoals,
-      existingCoverageIds: S.plan ? S.plan.profile.existingCoverageIds : []
+      existingCoverageIds: S.plan ? S.plan.profile.existingCoverageIds : [],
+      notes: existingProfile.notes || "",
+      riskProfileId: existingProfile.riskProfileId || "bilanciato"
     }, { applyDefaults: false });
   }
 

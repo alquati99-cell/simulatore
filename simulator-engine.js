@@ -27,6 +27,10 @@
       .toLowerCase();
   }
 
+  function escapeRegExp(value) {
+    return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  }
+
   function titleCase(value) {
     return String(value || "")
       .split(/\s+/)
@@ -187,6 +191,79 @@
 
   function formatCurrency(value) {
     return Math.round(safeNumber(value, 0)).toLocaleString("it-IT");
+  }
+
+  function educationCatalog() {
+    return DB.benchmarkCatalog && DB.benchmarkCatalog.education ? DB.benchmarkCatalog.education : null;
+  }
+
+  function findEducationCityBenchmark(city) {
+    var catalog = educationCatalog();
+    if (!catalog || !city) return null;
+    var normalizedCity = normalizeText(city).replace(/\s+/g, " ").trim();
+    return (catalog.cityBenchmarks || []).find(function (entry) {
+      return normalizeText(entry.city).replace(/\s+/g, " ").trim() === normalizedCity;
+    }) || null;
+  }
+
+  function extractResidenceCity(text) {
+    var catalog = educationCatalog();
+    if (!catalog) return "";
+    var normalizedText = " " + normalizeText(text).replace(/[.,;:()]/g, " ") + " ";
+    var cityMatch = (catalog.cityBenchmarks || [])
+      .slice()
+      .sort(function (left, right) {
+        return right.city.length - left.city.length;
+      })
+      .find(function (entry) {
+        var cityPattern = escapeRegExp(normalizeText(entry.city)).replace(/\s+/g, "\\s+");
+        var regex = new RegExp("(^|\\W)" + cityPattern + "(?=\\W|$)");
+        return regex.test(normalizedText);
+      });
+    return cityMatch ? cityMatch.city : "";
+  }
+
+  function resolveEducationBenchmark(profile, overrides) {
+    var catalog = educationCatalog();
+    if (!catalog) return null;
+
+    var cityCandidate =
+      (overrides && overrides.benchmarkCity) ||
+      profile.residenceCity ||
+      extractResidenceCity(profile.notes || "");
+    var cityBenchmark = findEducationCityBenchmark(cityCandidate);
+    var benchmark = cityBenchmark || catalog.nationalDefault;
+    if (!benchmark) return null;
+
+    var costBand = benchmark.costBand || catalog.nationalDefault.costBand || "medium";
+    var supportAnnual =
+      safeNumber(catalog.supportAnnualByCostBand[costBand], 0) ||
+      safeNumber(catalog.supportAnnualByCostBand.medium, 4500);
+    var ancillaryAnnual = safeNumber(catalog.booksAndMobilityAnnual, 0);
+    var tuitionAnnual =
+      safeNumber(benchmark.avgFeeAllStudents, 0) ||
+      safeNumber(catalog.nationalDefault.avgFeeAllStudents, 1322.56);
+    var studyDurationYears = safeNumber(catalog.studyDurationYears, 5);
+    var childCount = Math.max(1, safeNumber(profile.childrenCount, 1));
+    var annualTotalPerChild = tuitionAnnual + supportAnnual + ancillaryAnnual;
+    var totalPerChild = annualTotalPerChild * studyDurationYears;
+
+    return {
+      sourceId: catalog.sourceId || "mur_university_contribution",
+      scope: cityBenchmark ? "city" : "national",
+      city: cityBenchmark ? cityBenchmark.city : (cityCandidate || catalog.nationalDefault.city || "Italia"),
+      region: benchmark.region || catalog.nationalDefault.region || "",
+      university: benchmark.university || "",
+      universityCode: benchmark.universityCode || "",
+      costBand: costBand,
+      annualFee: tuitionAnnual,
+      annualSupport: supportAnnual,
+      annualAncillary: ancillaryAnnual,
+      annualTotalPerChild: annualTotalPerChild,
+      studyDurationYears: studyDurationYears,
+      totalPerChild: totalPerChild,
+      totalTarget: totalPerChild * childCount
+    };
   }
 
   function estimateNetMonthlyFromGross(grossAnnualIncome) {
@@ -430,9 +507,11 @@
 
     if (goalId === "education") {
       years = findFirstIntegerByKeywords(sentence, ["figli", "studi", "universita", "entro"], 3, 20);
-      var educationAmounts = monetaryMatches.filter(function (value) { return value >= 10000; });
-      amount = educationAmounts.length ? Math.max.apply(null, educationAmounts) : 0;
-      if (!amount) amount = 40000 * Math.max(1, profile.childrenCount || 1);
+      amount = findFirstMoneyByKeywords(sentence, ["studi", "universita", "scuola", "fondo", "figli"], { min: 10000, max: 300000 }) || 0;
+      if (!amount) {
+        var sentenceBenchmark = resolveEducationBenchmark(profile, {});
+        amount = sentenceBenchmark ? sentenceBenchmark.totalTarget : 40000 * Math.max(1, profile.childrenCount || 1);
+      }
       return {
         id: goalId,
         targetAmount: roundStep(amount, 5000),
@@ -538,6 +617,7 @@
       totalAssets: 0,
       liquidAssets: 0,
       investedAssets: 0,
+      residenceCity: "",
       housingStatus: "",
       housingCost: 0,
       fixedExpenses: 0,
@@ -553,6 +633,7 @@
     var profile = Object.assign(createEmptyProfile(), draftProfile || {});
     var extractedChildren = extractChildren(text);
     var spouse = extractSpouse(text);
+    var inferredResidenceCity = extractResidenceCity(text);
     var standaloneInference = inferStandaloneReplyFields(text, profile);
     var grossAnnualIncome =
       findFirstMoneyByKeywords(text, ["ral", "reddito annuo lordo", "reddito lordo", "reddito annuo", "stipendio annuo"], { min: 10000, max: 500000 }) ||
@@ -585,7 +666,12 @@
       if (genericIncome >= 10000) grossAnnualIncome = genericIncome;
       else if (genericIncome >= 500) netMonthlyIncome = genericIncome;
     }
-    var mergedGoals = dedupeGoals((profile.goals || []).concat(extractGoals(text, profile)));
+    var goalProfileContext = Object.assign({}, profile, {
+      childrenCount: extractedChildren.childrenCount || profile.childrenCount,
+      childrenAges: extractedChildren.childrenAges.length ? extractedChildren.childrenAges : profile.childrenAges || [],
+      residenceCity: inferredResidenceCity || profile.residenceCity
+    });
+    var mergedGoals = dedupeGoals((profile.goals || []).concat(extractGoals(text, goalProfileContext)));
     var existingCoverages = Array.from(
       new Set((profile.existingCoverageIds || []).concat(extractCoverages(text)))
     );
@@ -605,6 +691,7 @@
     profile.totalAssets = totalAssets || profile.totalAssets;
     profile.liquidAssets = liquidAssets || profile.liquidAssets;
     profile.investedAssets = investedAssets || profile.investedAssets;
+    profile.residenceCity = inferredResidenceCity || profile.residenceCity;
     profile.housingStatus = extractHousingStatus(text) || profile.housingStatus;
     profile.housingCost = housingCost || profile.housingCost;
     profile.fixedExpenses = fixedExpenses || profile.fixedExpenses;
@@ -642,6 +729,7 @@
       profile.netMonthlyIncome = estimateNetMonthlyFromGross(profile.grossAnnualIncome);
     }
 
+    if (profile.residenceCity) profile.residenceCity = titleCase(profile.residenceCity);
     if (!profile.housingStatus && applyDefaults) profile.housingStatus = "Affittuario";
     if (!profile.housingCost && applyDefaults && profile.housingStatus) {
       profile.housingCost = profile.housingStatus === "Con mutuo" ? 950 : profile.housingStatus === "Proprietario" ? 250 : 950;
@@ -718,8 +806,13 @@
       goal.targetAmount = targetAmount || roundStep(goal.propertyValue * 0.28 + 15000, 5000);
       goal.priority = 3;
     } else if (goalId === "education") {
+      var educationBenchmark = resolveEducationBenchmark(profile, overrides);
       goal.years = years || clamp(19 - youngestChildAge, 4, 18);
-      goal.targetAmount = targetAmount || roundStep(40000 * Math.max(1, profile.childrenCount), 5000);
+      goal.targetAmount = targetAmount || roundStep(
+        educationBenchmark ? educationBenchmark.totalTarget : 40000 * Math.max(1, profile.childrenCount),
+        5000
+      );
+      if (educationBenchmark) goal.benchmarkMeta = educationBenchmark;
       goal.priority = 3;
     } else if (goalId === "emergency") {
       goal.years = years || 2;

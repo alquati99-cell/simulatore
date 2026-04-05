@@ -22,6 +22,41 @@
         dinamico: { label: "Dinamico", annualReturn: 0.046, annualVolatility: 0.088 }
       }
     },
+    benchmarkCatalog: {
+      education: {
+        sourceId: "mur_university_contribution",
+        studyDurationYears: 5,
+        booksAndMobilityAnnual: 1200,
+        supportAnnualByCostBand: {
+          high: 6500,
+          medium: 4500,
+          base: 3000
+        },
+        nationalDefault: {
+          city: "Italia",
+          region: "Italia",
+          avgFeePayers: 1740.7,
+          avgFeeAllStudents: 1322.56,
+          costBand: "medium"
+        },
+        cityBenchmarks: [
+          { city: "Torino", region: "Piemonte", university: "Torino", universityCode: "00101", avgFeePayers: 1502.08, avgFeeAllStudents: 1224.67, costBand: "medium" },
+          { city: "Milano", region: "Lombardia", university: "Milano", universityCode: "01501", avgFeePayers: 1752.23, avgFeeAllStudents: 1426.12, costBand: "high" },
+          { city: "Padova", region: "Veneto", university: "Padova", universityCode: "02801", avgFeePayers: 1574.08, avgFeeAllStudents: 1318.43, costBand: "medium" },
+          { city: "Bologna", region: "Emilia-Romagna", university: "Bologna", universityCode: "03701", avgFeePayers: 1512.56, avgFeeAllStudents: 1128.61, costBand: "high" },
+          { city: "Firenze", region: "Toscana", university: "Firenze", universityCode: "04801", avgFeePayers: 1070.25, avgFeeAllStudents: 868.99, costBand: "high" },
+          { city: "Pisa", region: "Toscana", university: "Pisa", universityCode: "05001", avgFeePayers: 1184.6, avgFeeAllStudents: 926.77, costBand: "medium" },
+          { city: "Roma", region: "Lazio", university: "Roma La Sapienza", universityCode: "05801", avgFeePayers: 1245.44, avgFeeAllStudents: 946.29, costBand: "high" },
+          { city: "Napoli", region: "Campania", university: "Napoli Federico II", universityCode: "06301", avgFeePayers: 1354.56, avgFeeAllStudents: 879.16, costBand: "medium" },
+          { city: "Bari", region: "Puglia", university: "Bari", universityCode: "07201", avgFeePayers: 1039.23, avgFeeAllStudents: 742.82, costBand: "base" },
+          { city: "Palermo", region: "Sicilia", university: "Palermo", universityCode: "08201", avgFeePayers: 1155.97, avgFeeAllStudents: 787.8, costBand: "base" },
+          { city: "Catania", region: "Sicilia", university: "Catania", universityCode: "08701", avgFeePayers: 770.19, avgFeeAllStudents: 559.05, costBand: "base" },
+          { city: "Cagliari", region: "Sardegna", university: "Cagliari", universityCode: "09201", avgFeePayers: 900.99, avgFeeAllStudents: 592.36, costBand: "medium" },
+          { city: "Verona", region: "Veneto", university: "Verona", universityCode: "02301", avgFeePayers: 1426.32, avgFeeAllStudents: 1195.19, costBand: "medium" },
+          { city: "Venezia", region: "Veneto", university: "Venezia Ca Foscari", universityCode: "02701", avgFeePayers: 1553.9, avgFeeAllStudents: 1293.19, costBand: "high" }
+        ]
+      }
+    },
     occupationRules: [
       {
         risk: "basso",
