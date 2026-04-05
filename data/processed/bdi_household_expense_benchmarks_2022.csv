@@ -1,0 +1,43 @@
+macro_area,household_type,children_band,sample_size,monthly_consumption_median_eur,monthly_saving_median_eur,source_id,benchmark_period,notes
+Centro,couple,0,159,2041.67,833.09,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Centro,extended,0,413,2402.5,1339.75,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Centro,family_1,1,210,2112.5,1149.61,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Centro,family_2_plus,2_plus,328,1894.17,1023.58,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Centro,single,0,174,1530.83,340.52,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Centro,single,1,77,1416.67,345.73,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Centro,single,2_plus,150,1305.0,137.06,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Isole,couple,0,175,1425.0,663.59,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Isole,extended,0,414,1873.33,628.71,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Isole,family_1,1,227,1553.83,587.92,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Isole,family_2_plus,2_plus,422,1425.83,549.19,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Isole,single,0,211,1145.83,91.08,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Isole,single,1,45,1100.83,29.79,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Isole,single,2_plus,177,1163.33,158.67,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Italia,couple,0,1004,1908.33,863.86,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Italia,extended,0,2628,2310.0,940.95,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Italia,family_1,1,1335,1951.67,1044.51,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Italia,family_2_plus,2_plus,2190,1870.0,795.11,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Italia,single,0,1136,1472.0,275.38,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Italia,single,1,399,1437.5,338.65,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Italia,single,2_plus,949,1231.67,194.03,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Nord Est,couple,0,221,2086.67,992.97,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Nord Est,extended,0,446,2607.5,1358.76,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Nord Est,family_1,1,289,2138.33,1406.49,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Nord Est,family_2_plus,2_plus,447,2305.83,1018.24,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Nord Est,single,0,255,1608.33,279.94,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Nord Est,single,1,90,1425.83,288.86,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Nord Est,single,2_plus,192,1333.33,187.82,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Nord Ovest,couple,0,215,2000.0,1029.82,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Nord Ovest,extended,0,498,2718.33,975.58,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Nord Ovest,family_1,1,262,2098.33,1434.63,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Nord Ovest,family_2_plus,2_plus,332,2266.67,1191.83,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Nord Ovest,single,0,261,1575.0,430.06,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Nord Ovest,single,1,103,1588.33,547.45,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Nord Ovest,single,2_plus,157,1512.5,285.95,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Sud,couple,0,234,1529.17,369.26,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Sud,extended,0,857,1891.67,667.9,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Sud,family_1,1,347,1587.5,387.01,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Sud,family_2_plus,2_plus,661,1461.67,435.26,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Sud,single,0,235,1223.5,134.57,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Sud,single,1,84,1272.92,96.36,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.
+Sud,single,2_plus,273,1098.33,141.51,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; consumi e risparmio famigliare.

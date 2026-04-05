@@ -347,6 +347,124 @@
     };
   }
 
+  function householdExpenseCatalog() {
+    return DB.benchmarkCatalog && DB.benchmarkCatalog.householdExpense ? DB.benchmarkCatalog.householdExpense : null;
+  }
+
+  function incomeWealthCatalog() {
+    return DB.benchmarkCatalog && DB.benchmarkCatalog.incomeWealth ? DB.benchmarkCatalog.incomeWealth : null;
+  }
+
+  function resolveProfileRegion(profile) {
+    var city = profile.residenceCity || extractResidenceCity(profile.notes || "");
+    if (!city) return "";
+    var home = findHomeCityBenchmark(city);
+    if (home && home.region) return home.region;
+    var education = findEducationCityBenchmark(city);
+    if (education && education.region) return education.region;
+    return "";
+  }
+
+  function resolveProfileMacroArea(profile) {
+    var catalog = householdExpenseCatalog();
+    var region = resolveProfileRegion(profile);
+    if (catalog && catalog.regionMacroMap && region && catalog.regionMacroMap[region]) {
+      return catalog.regionMacroMap[region];
+    }
+    return "Italia";
+  }
+
+  function householdChildrenBand(profile) {
+    if (profile.childrenCount >= 2) return "2_plus";
+    return String(Math.max(0, profile.childrenCount || 0));
+  }
+
+  function householdBenchmarkType(profile) {
+    var homeKey = householdHomeKey(profile);
+    if (homeKey === "family_2" || homeKey === "family_3_plus") return "family_2_plus";
+    return homeKey;
+  }
+
+  function incomeAgeBand(age) {
+    if (age <= 34) return "under_35";
+    if (age <= 44) return "35_44";
+    if (age <= 54) return "45_54";
+    if (age <= 64) return "55_64";
+    return "65_plus";
+  }
+
+  function resolveHouseholdExpenseBenchmark(profile) {
+    var catalog = householdExpenseCatalog();
+    if (!catalog) return null;
+    var macroArea = resolveProfileMacroArea(profile);
+    var hhType = householdBenchmarkType(profile);
+    var childBand = householdChildrenBand(profile);
+    var rows = catalog.rows || [];
+
+    function lookup(area, type, band) {
+      return rows.find(function (entry) {
+        return entry.macro_area === area && entry.household_type === type && entry.children_band === band;
+      }) || null;
+    }
+
+    var benchmark =
+      lookup(macroArea, hhType, childBand) ||
+      lookup("Italia", hhType, childBand) ||
+      lookup(macroArea, hhType, "0") ||
+      lookup("Italia", hhType, "0");
+    if (!benchmark && catalog.nationalDefault) {
+      benchmark = {
+        macro_area: catalog.nationalDefault.macroArea,
+        household_type: catalog.nationalDefault.householdType,
+        children_band: catalog.nationalDefault.childrenBand,
+        monthly_consumption_median_eur: catalog.nationalDefault.monthlyConsumptionMedianEur,
+        monthly_saving_median_eur: catalog.nationalDefault.monthlySavingMedianEur,
+        source_id: catalog.sourceId || "bdi_shiw_microdata",
+        benchmark_period: catalog.period || "2022",
+        sample_size: 0
+      };
+    }
+    return benchmark;
+  }
+
+  function resolveIncomeWealthBenchmark(profile) {
+    var catalog = incomeWealthCatalog();
+    if (!catalog) return null;
+    var macroArea = resolveProfileMacroArea(profile);
+    var hhType = householdBenchmarkType(profile);
+    var ageBand = incomeAgeBand(profile.age || 45);
+    var minSample = safeNumber(catalog.minSampleSizeAgeBand, 10);
+    var rows = catalog.rows || [];
+
+    function lookup(area, band, type, enforceSample) {
+      return rows.find(function (entry) {
+        if (entry.macro_area !== area || entry.age_band !== band || entry.household_type !== type) return false;
+        return !enforceSample || safeNumber(entry.sample_size, 0) >= minSample;
+      }) || null;
+    }
+
+    var benchmark =
+      lookup(macroArea, ageBand, hhType, true) ||
+      lookup(macroArea, "all_ages", hhType, false) ||
+      lookup("Italia", ageBand, hhType, true) ||
+      lookup("Italia", "all_ages", hhType, false);
+
+    if (!benchmark && catalog.nationalDefault) {
+      benchmark = {
+        macro_area: catalog.nationalDefault.macroArea,
+        age_band: catalog.nationalDefault.ageBand,
+        household_type: catalog.nationalDefault.householdType,
+        income_median_eur: catalog.nationalDefault.incomeMedianEur,
+        wealth_median_eur: catalog.nationalDefault.wealthMedianEur,
+        financial_assets_median_eur: catalog.nationalDefault.financialAssetsMedianEur,
+        source_id: catalog.sourceId || "bdi_shiw_microdata",
+        benchmark_period: catalog.period || "2022",
+        sample_size: 0
+      };
+    }
+    return benchmark;
+  }
+
   function estimateNetMonthlyFromGross(grossAnnualIncome) {
     var gross = safeNumber(grossAnnualIncome, 0);
     if (!gross) return 0;
@@ -909,8 +1027,12 @@
       if (educationBenchmark) goal.benchmarkMeta = educationBenchmark;
       goal.priority = 3;
     } else if (goalId === "emergency") {
+      var emergencyBenchmark = resolveHouseholdExpenseBenchmark(profile);
+      var actualMonthlyNeed = profile.housingCost + profile.fixedExpenses + householdFloor(profile);
+      var benchmarkMonthlyNeed = emergencyBenchmark ? safeNumber(emergencyBenchmark.monthly_consumption_median_eur, 0) : 0;
       goal.years = years || 2;
-      goal.targetAmount = targetAmount || roundStep((profile.housingCost + profile.fixedExpenses + householdFloor(profile)) * 6, 1000);
+      goal.targetAmount = targetAmount || roundStep(Math.max(actualMonthlyNeed * 6, benchmarkMonthlyNeed * 6), 1000);
+      if (emergencyBenchmark) goal.benchmarkMeta = emergencyBenchmark;
       goal.priority = 2;
     } else if (goalId === "wealth") {
       goal.years = years || 7;
@@ -1306,12 +1428,46 @@
         ? clamp(profile.liquidAssets / target, 0, 1)
         : clamp(profile.liquidAssets / Math.max(needs.monthlyOutflows * 8, 1), 0, 1);
 
-    return {
+    var foundation = {
       capitalCoverage: capitalCoverage,
       savingsCoverage: savingsCoverage,
       liquidityCoverage: liquidityCoverage,
       score: 0.45 * capitalCoverage + 0.35 * savingsCoverage + 0.2 * liquidityCoverage
     };
+
+    var benchmark = resolveIncomeWealthBenchmark(profile);
+    if (benchmark) {
+      var peerSignals = [];
+      var annualIncome = profile.grossAnnualIncome || estimateGrossAnnualFromNet(profile.netMonthlyIncome);
+      if (annualIncome > 0 && safeNumber(benchmark.income_median_eur, 0) > 0) {
+        peerSignals.push({
+          weight: 0.4,
+          value: clamp(annualIncome / benchmark.income_median_eur / 1.1, 0, 1.15)
+        });
+      }
+      if (profile.totalAssets > 0 && safeNumber(benchmark.wealth_median_eur, 0) > 0) {
+        peerSignals.push({
+          weight: 0.35,
+          value: clamp(profile.totalAssets / benchmark.wealth_median_eur / 1.1, 0, 1.15)
+        });
+      }
+      if (profile.liquidAssets > 0 && safeNumber(benchmark.financial_assets_median_eur, 0) > 0) {
+        peerSignals.push({
+          weight: 0.25,
+          value: clamp(profile.liquidAssets / benchmark.financial_assets_median_eur / 1.1, 0, 1.15)
+        });
+      }
+
+      if (peerSignals.length) {
+        var peerWeight = sum(peerSignals.map(function (item) { return item.weight; })) || 1;
+        var peerScore = sum(peerSignals.map(function (item) { return item.weight * item.value; })) / peerWeight;
+        foundation.peerScore = peerScore;
+        foundation.score = foundation.score * 0.78 + peerScore * 0.22;
+        foundation.benchmarkMeta = benchmark;
+      }
+    }
+
+    return foundation;
   }
 
   function goalResilienceScore(goal, profile, summary, foundationScore, branchKey) {

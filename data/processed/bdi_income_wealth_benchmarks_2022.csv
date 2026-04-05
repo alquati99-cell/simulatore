@@ -1,0 +1,177 @@
+macro_area,age_band,household_type,sample_size,income_median_eur,wealth_median_eur,financial_assets_median_eur,source_id,benchmark_period,notes
+Centro,35_44,couple,16,28817.25,124000.0,7000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,35_44,extended,86,45078.77,112325.03,12754.61,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,35_44,family_1,3,52825.34,360021.48,60337.21,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,35_44,family_2_plus,1,55639.83,260000.0,105000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,35_44,single,19,14100.0,36500.0,1500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,45_54,couple,31,33821.95,143032.46,3400.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,45_54,extended,155,48665.42,214789.28,14689.28,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,45_54,family_1,8,24002.42,74854.65,1500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,45_54,family_2_plus,9,20306.51,43100.0,5000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,45_54,single,44,23360.0,93000.0,10000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,55_64,couple,38,37555.41,155000.0,10000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,55_64,extended,127,53131.36,289800.0,21000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,55_64,family_1,66,39712.54,209700.0,10235.66,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,55_64,family_2_plus,57,38000.62,160600.0,17373.13,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,55_64,single,93,20405.05,116500.0,5524.23,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,65_plus,couple,67,31829.41,180001.0,7830.81,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,65_plus,extended,32,33024.73,233741.83,8000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,65_plus,family_1,131,38701.93,205854.72,20000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,65_plus,family_2_plus,261,35513.59,227000.0,14000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,65_plus,single,232,20311.36,150000.0,10000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,all_ages,couple,159,36826.79,143032.46,7000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,all_ages,extended,413,47464.81,189007.57,12754.61,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,all_ages,family_1,210,39031.36,205558.08,12000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,all_ages,family_2_plus,328,35513.59,213500.0,12500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,all_ages,single,401,21012.54,105000.0,7535.68,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,under_35,couple,7,46226.54,34500.0,7000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,under_35,extended,13,37760.98,5600.0,3500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,under_35,family_1,2,46209.41,264000.0,3000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Centro,under_35,single,13,18805.79,5000.0,1698.44,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,35_44,couple,9,28521.76,64947.87,1684.2,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,35_44,extended,73,27209.23,128943.79,3307.46,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,35_44,family_1,2,33261.35,138380.92,3380.92,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,35_44,family_2_plus,9,33708.51,126500.0,3500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,35_44,single,21,12012.54,8825.45,1000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,45_54,couple,24,21204.08,94000.0,1386.47,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,45_54,extended,147,32204.05,167750.0,5044.51,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,45_54,family_1,28,23800.0,52000.0,800.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,45_54,family_2_plus,23,16800.0,100500.0,0.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,45_54,single,42,18834.01,107500.0,10846.71,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,55_64,couple,35,26200.0,40100.0,5080.74,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,55_64,extended,106,34678.4,192000.0,3000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,55_64,family_1,80,31760.0,155374.88,2343.08,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,55_64,family_2_plus,81,21333.06,117200.0,1190.73,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,55_64,single,72,14000.0,19800.0,0.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,65_plus,couple,93,29462.54,145815.03,6077.75,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,65_plus,extended,65,26716.41,173749.75,3000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,65_plus,family_1,115,25658.45,162000.0,4500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,65_plus,family_2_plus,306,25312.54,120500.0,4674.18,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,65_plus,single,275,15751.88,92000.0,3000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,all_ages,couple,175,26821.95,112000.0,5000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,all_ages,extended,414,28915.0,155500.0,3547.21,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,all_ages,family_1,227,26931.36,138942.13,3000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,all_ages,family_2_plus,422,24334.66,120250.0,3009.78,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,all_ages,single,433,15403.14,77881.24,1931.8,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,under_35,couple,14,33762.72,153000.0,7000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,under_35,extended,23,24000.0,158480.35,5000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,under_35,family_1,2,11900.0,200.0,0.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,under_35,family_2_plus,3,3500.63,2200.0,200.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Isole,under_35,single,23,12202.51,3918.63,1200.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,35_44,couple,107,31377.82,124000.0,7100.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,35_44,extended,491,37832.8,109304.71,7000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,35_44,family_1,18,33261.35,10254.16,3380.92,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,35_44,family_2_plus,20,43723.95,147500.0,7000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,35_44,single,144,22221.16,90000.0,9500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,45_54,couple,168,33821.95,118340.0,5025.87,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,45_54,extended,936,42135.48,176500.0,12300.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,45_54,family_1,125,37921.18,152500.0,7000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,45_54,family_2_plus,85,24025.09,45677.3,3000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,45_54,single,248,22815.47,79901.05,9000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,55_64,couple,225,35856.45,155000.0,10000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,55_64,extended,710,48909.74,260055.18,20000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,55_64,family_1,431,40703.14,176627.24,11224.97,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,55_64,family_2_plus,435,32200.88,176700.0,9500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,55_64,single,471,22041.82,116500.0,9056.41,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,65_plus,couple,445,36382.32,235000.0,15603.18,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,65_plus,extended,329,47243.74,225500.0,12404.43,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,65_plus,family_1,751,37010.26,200000.0,15000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,65_plus,family_2_plus,1644,33136.36,200134.72,11685.04,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,65_plus,single,1528,19201.25,125000.0,8000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,all_ages,couple,1004,35230.87,163418.55,10000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,all_ages,extended,2628,41202.51,170000.0,10000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,all_ages,family_1,1335,37516.62,178675.19,11000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,all_ages,family_2_plus,2190,32697.04,184000.0,10000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,all_ages,single,2484,20407.84,107500.0,7582.16,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,under_35,couple,59,45306.1,130500.0,9800.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,under_35,extended,162,32882.61,66500.0,5000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,under_35,family_1,10,22815.52,160500.0,4680.06,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,under_35,family_2_plus,6,3500.63,2200.0,200.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Italia,under_35,single,93,17866.0,10000.0,3000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,35_44,couple,30,44606.71,169783.03,11858.12,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,35_44,extended,65,40160.93,109304.71,25000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,35_44,family_1,6,18009.41,5100.0,3000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,35_44,family_2_plus,4,34693.56,500.0,1000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,35_44,single,33,25648.58,67300.0,17500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,45_54,couple,35,33306.27,185200.0,10500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,45_54,extended,162,47828.22,238600.0,32318.88,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,45_54,family_1,16,44252.23,145550.0,2000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,45_54,family_2_plus,11,49020.78,45677.3,5198.61,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,45_54,single,54,26228.22,67350.0,11000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,55_64,couple,45,50958.29,478000.0,45000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,55_64,extended,126,67530.07,302013.46,55000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,55_64,family_1,90,51445.06,263700.0,26687.29,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,55_64,family_2_plus,61,46487.04,315000.0,40000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,55_64,single,86,26081.36,195000.0,22500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,65_plus,couple,100,41506.02,259000.0,37000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,65_plus,extended,60,52394.08,314284.63,63813.49,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,65_plus,family_1,177,39050.87,265720.05,26000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,65_plus,family_2_plus,371,39779.32,325916.46,42899.55,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,65_plus,single,341,19690.68,138000.0,14000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,all_ages,couple,221,43576.62,197221.73,22000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,all_ages,extended,446,47907.16,227300.0,30997.19,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,all_ages,family_1,289,43625.44,236322.58,25000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,all_ages,family_2_plus,447,40894.83,311000.0,40000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,all_ages,single,537,21704.7,131001.0,14536.74,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,under_35,couple,11,48028.24,130500.0,10000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,under_35,extended,33,36410.98,12500.0,15000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Est,under_35,single,23,20156.8,30100.0,10000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,35_44,couple,22,32016.04,114681.57,7000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,35_44,extended,98,45156.8,70216.0,10751.16,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,35_44,family_1,2,59678.4,197000.0,25000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,35_44,family_2_plus,2,43723.95,147500.0,7000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,35_44,single,43,31678.4,135001.38,22188.67,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,45_54,couple,33,40586.42,118050.0,21000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,45_54,extended,182,43135.22,168578.7,14000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,45_54,family_1,22,47578.4,225424.0,17448.11,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,45_54,family_2_plus,17,22050.0,500.0,400.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,45_54,single,56,23410.98,79901.05,7244.08,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,55_64,couple,47,35856.45,283887.99,23950.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,55_64,extended,147,58235.94,264914.5,23537.95,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,55_64,family_1,77,41162.09,176685.32,20000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,55_64,family_2_plus,77,40545.94,299931.96,20000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,55_64,single,103,25808.12,145200.0,15696.14,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,65_plus,couple,96,38615.68,316406.46,28003.63,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,65_plus,extended,45,45469.89,243312.73,17000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,65_plus,family_1,160,40323.45,230500.0,20501.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,65_plus,family_2_plus,236,42803.07,299500.0,25001.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,65_plus,single,303,22743.14,161000.0,17000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,all_ages,couple,215,38750.68,203001.0,17500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,all_ages,extended,498,45156.8,160327.11,15000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,all_ages,family_1,262,42097.19,207000.0,20500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,all_ages,family_2_plus,332,42497.04,298300.0,20000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,all_ages,single,521,24090.62,142820.35,16000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,under_35,couple,17,45306.1,153501.0,5018.72,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,under_35,extended,26,30309.41,123300.0,4674.42,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,under_35,family_1,1,22815.52,164383.97,7500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Nord Ovest,under_35,single,16,19801.23,46166.72,2500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,35_44,couple,30,29805.21,142500.0,2794.97,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,35_44,extended,169,28519.13,113720.0,3500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,35_44,family_1,5,14880.0,2000.0,600.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,35_44,family_2_plus,4,28809.41,218000.0,3000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,35_44,single,28,18515.68,162000.0,5000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,45_54,couple,45,31212.89,144500.0,9794.16,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,45_54,extended,290,31781.36,134500.0,5000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,45_54,family_1,51,26950.17,178480.0,7000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,45_54,family_2_plus,25,20509.41,86620.0,500.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,45_54,single,52,17613.17,54200.0,5000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,55_64,couple,60,21958.22,85000.0,4697.83,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,55_64,extended,204,36415.68,204000.0,8000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,55_64,family_1,118,34939.2,125600.0,2000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,55_64,family_2_plus,159,23432.41,77500.0,3081.14,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,55_64,single,117,16851.25,81192.1,2000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,65_plus,couple,89,25959.2,168350.62,2000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,65_plus,extended,127,46089.17,164000.0,7393.93,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,65_plus,family_1,168,24258.01,97000.0,5000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,65_plus,family_2_plus,470,25301.54,117319.09,5000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,65_plus,single,377,15348.82,80864.7,4001.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,all_ages,couple,234,25959.2,142500.0,5019.34,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,all_ages,extended,857,30837.96,149143.3,5000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,all_ages,family_1,347,26531.27,106300.0,4700.03,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,all_ages,family_2_plus,661,24496.82,109000.0,4793.8,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,all_ages,single,592,16224.33,71200.0,4700.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,under_35,couple,10,37811.16,152008.0,20000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,under_35,extended,67,25427.15,108500.0,3249.61,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,under_35,family_1,5,21994.68,59856.24,4680.06,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,under_35,family_2_plus,3,3140.0,2000.0,0.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.
+Sud,under_35,single,18,16009.35,6000.0,2000.0,bdi_shiw_microdata,2022,Mediane ponderate SHIW/Banca d'Italia; le attivita finanziarie fungono da proxy di liquidita.

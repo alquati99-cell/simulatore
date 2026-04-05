@@ -68,9 +68,9 @@ INSERT OR REPLACE INTO source_catalog (
     1,
     'https://www.bancaditalia.it/statistiche/tematiche/indagini-famiglie-imprese/bilanci-famiglie/distribuzione-microdati/',
     'download ZIP microdati',
-    'downloaded_raw',
-    '2026-04-04',
-    'Fonte per benchmark reddito, patrimonio e liquidita.'
+    'processed_benchmarks_ready',
+    '2026-04-05',
+    'Fonte per benchmark reddito, patrimonio, attivita finanziarie e spese familiari.'
   ),
   (
     'inail_work_injuries',
@@ -177,5 +177,39 @@ INSERT INTO housing_city_prices (
   ('Verona', 'VR', 'Veneto', '20252', 'residenziale_median', 'mediana_zone_residenziali', 1600.00, 2050.00, 7.50, 9.50, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 15 zone residenziali campionate.'),
   ('Venezia', 'VE', 'Veneto', '20252', 'residenziale_median', 'mediana_zone_residenziali', 1800.00, 2400.00, 8.50, 13.00, 'ae_omi_quotes', 'official_subset', 'Subset OMI 20252, 33 zone residenziali campionate.');
 
--- Household expenses, income/wealth e occupational risk restano da alimentare
--- dopo il subset iniziale OMI+MUR, con import ufficiali ISTAT, Banca d'Italia e INAIL.
+INSERT INTO household_expense_benchmarks (
+  region,
+  household_type,
+  children_band,
+  expense_type,
+  period_label,
+  monthly_amount_eur,
+  source_id,
+  notes
+) VALUES
+  ('Italia', 'single', '0', 'consumption_median', '2022', 1472.00, 'bdi_shiw_microdata', 'Mediana nazionale ponderata SHIW 2022.'),
+  ('Italia', 'single', '1', 'consumption_median', '2022', 1437.50, 'bdi_shiw_microdata', 'Mediana nazionale ponderata SHIW 2022.'),
+  ('Italia', 'single', '2_plus', 'consumption_median', '2022', 1231.67, 'bdi_shiw_microdata', 'Mediana nazionale ponderata SHIW 2022.'),
+  ('Italia', 'couple', '0', 'consumption_median', '2022', 1908.33, 'bdi_shiw_microdata', 'Mediana nazionale ponderata SHIW 2022.'),
+  ('Italia', 'family_1', '1', 'consumption_median', '2022', 1951.67, 'bdi_shiw_microdata', 'Mediana nazionale ponderata SHIW 2022.'),
+  ('Italia', 'family_2_plus', '2_plus', 'consumption_median', '2022', 1870.00, 'bdi_shiw_microdata', 'Mediana nazionale ponderata SHIW 2022.'),
+  ('Italia', 'extended', '0', 'consumption_median', '2022', 2310.00, 'bdi_shiw_microdata', 'Mediana nazionale ponderata SHIW 2022.');
+
+INSERT INTO income_wealth_benchmarks (
+  region,
+  age_band,
+  household_type,
+  period_label,
+  income_median_eur,
+  wealth_median_eur,
+  liquid_assets_median_eur,
+  source_id,
+  notes
+) VALUES
+  ('Italia', 'all_ages', 'single', '2022', 20407.84, 107500.00, 7582.16, 'bdi_shiw_microdata', 'Benchmark nazionale SHIW 2022; attivita finanziarie usate come proxy di liquidita.'),
+  ('Italia', 'all_ages', 'couple', '2022', 35230.87, 163418.55, 10000.00, 'bdi_shiw_microdata', 'Benchmark nazionale SHIW 2022; attivita finanziarie usate come proxy di liquidita.'),
+  ('Italia', 'all_ages', 'family_1', '2022', 37516.62, 178675.19, 11000.00, 'bdi_shiw_microdata', 'Benchmark nazionale SHIW 2022; attivita finanziarie usate come proxy di liquidita.'),
+  ('Italia', 'all_ages', 'family_2_plus', '2022', 32697.04, 184000.00, 10000.00, 'bdi_shiw_microdata', 'Benchmark nazionale SHIW 2022; attivita finanziarie usate come proxy di liquidita.'),
+  ('Italia', 'all_ages', 'extended', '2022', 41202.51, 170000.00, 10000.00, 'bdi_shiw_microdata', 'Benchmark nazionale SHIW 2022; attivita finanziarie usate come proxy di liquidita.');
+
+-- Occupational risk resta da alimentare nel prossimo step con benchmark INAIL.

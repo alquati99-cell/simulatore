@@ -1,4 +1,5 @@
 (function (root) {
+  const EXTRA_BENCHMARKS = root.FAMILY_ADVISOR_EXTRA_BENCHMARKS || {};
   const FAMILY_ADVISOR_DB = {
     meta: {
       appName: "FamilyAdvisor Pro",
@@ -94,6 +95,54 @@
           { city: "Verona", province: "VR", region: "Veneto", semester: "20252", sampleZoneCount: 15, buyMidEurSqm: 1825, buyMidP25EurSqm: 1625, buyMidP75EurSqm: 2050, rentMidEurSqmMonth: 8.5 },
           { city: "Venezia", province: "VE", region: "Veneto", semester: "20252", sampleZoneCount: 33, buyMidEurSqm: 2100, buyMidP25EurSqm: 1300, buyMidP75EurSqm: 3500, rentMidEurSqmMonth: 10.62 }
         ]
+      },
+      householdExpense: {
+        sourceId: "bdi_shiw_microdata",
+        period: "2022",
+        nationalDefault: {
+          macroArea: "Italia",
+          householdType: "couple",
+          childrenBand: "0",
+          monthlyConsumptionMedianEur: 1908.33,
+          monthlySavingMedianEur: 863.86
+        },
+        regionMacroMap: {
+          "Valle d'Aosta": "Nord Ovest",
+          Piemonte: "Nord Ovest",
+          Liguria: "Nord Ovest",
+          Lombardia: "Nord Ovest",
+          "Trentino-Alto Adige": "Nord Est",
+          Veneto: "Nord Est",
+          "Friuli-Venezia Giulia": "Nord Est",
+          "Emilia-Romagna": "Nord Est",
+          Toscana: "Centro",
+          Umbria: "Centro",
+          Marche: "Centro",
+          Lazio: "Centro",
+          Abruzzo: "Sud",
+          Molise: "Sud",
+          Campania: "Sud",
+          Puglia: "Sud",
+          Basilicata: "Sud",
+          Calabria: "Sud",
+          Sicilia: "Isole",
+          Sardegna: "Isole"
+        },
+        rows: (EXTRA_BENCHMARKS.householdExpense && EXTRA_BENCHMARKS.householdExpense.rows) || []
+      },
+      incomeWealth: {
+        sourceId: "bdi_shiw_microdata",
+        period: "2022",
+        minSampleSizeAgeBand: 10,
+        nationalDefault: {
+          macroArea: "Italia",
+          ageBand: "all_ages",
+          householdType: "couple",
+          incomeMedianEur: 32000,
+          wealthMedianEur: 140000,
+          financialAssetsMedianEur: 10000
+        },
+        rows: (EXTRA_BENCHMARKS.incomeWealth && EXTRA_BENCHMARKS.incomeWealth.rows) || []
       }
     },
     occupationRules: [
