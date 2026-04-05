@@ -1,0 +1,40 @@
+name: Deploy Cloudflare Pages
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: cloudflare-pages-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build Pages bundle
+        run: bash scripts/build_pages_bundle.sh
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          command: pages deploy public --project-name=alquati99-simulatore --branch=${{ github.ref_name }}
+
+      - name: Print deployment URLs
+        run: |
+          echo "Production URL: https://alquati99-simulatore.pages.dev"
+          echo "Deployment URL: ${{ steps.deploy.outputs.deployment-url }}"
+          echo "Alias URL: ${{ steps.deploy.outputs.pages-deployment-alias-url }}"

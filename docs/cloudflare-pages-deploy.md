@@ -5,6 +5,43 @@ Questo progetto e pronto per essere pubblicato come demo statica su Cloudflare P
 - repo: `https://github.com/alquati99-cell/simulatore`
 - branch: `main`
 
+## Stato attuale
+
+Il progetto Pages live esiste gia:
+
+- project: `alquati99-simulatore`
+- URL stabile: `https://alquati99-simulatore.pages.dev`
+
+Il repository contiene anche il workflow GitHub Actions:
+
+- [.github/workflows/deploy-cloudflare-pages.yml](/Users/matteo7/Desktop/Simulatore%20scenari%20assicurativi/.github/workflows/deploy-cloudflare-pages.yml)
+
+Questo workflow:
+
+- parte a ogni push su `main`
+- esegue `bash scripts/build_pages_bundle.sh`
+- pubblica il contenuto di `public/` su Cloudflare Pages con `wrangler-action`
+- permette anche il rilancio manuale con `workflow_dispatch`
+
+## Secret GitHub richiesti
+
+Nel repository GitHub servono questi 2 secret Actions:
+
+- `CLOUDFLARE_API_TOKEN`
+- `CLOUDFLARE_ACCOUNT_ID`
+
+Valori da usare:
+
+- `CLOUDFLARE_ACCOUNT_ID`: l'account id Cloudflare del progetto
+- `CLOUDFLARE_API_TOKEN`: un token con permesso `Account > Cloudflare Pages > Edit`
+
+Percorso GitHub:
+
+1. `Settings`
+2. `Secrets and variables`
+3. `Actions`
+4. `New repository secret`
+
 ## Percorso consigliato
 
 1. Apri Cloudflare Dashboard
