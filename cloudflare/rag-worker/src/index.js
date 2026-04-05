@@ -376,6 +376,78 @@ function buildContextMeta(env, contextItems) {
   };
 }
 
+function productQueryHints(productId) {
+  const key = normalizeText(productId).toLowerCase();
+  const map = {
+    tcm: [
+      "Temporanea Caso Morte TCM",
+      "quando ha senso proporre TCM",
+      "protezione famiglia decesso reddito"
+    ],
+    income_protection: [
+      "protezione reddito invalidita",
+      "quando ha senso proporre protezione reddito",
+      "blocco reddito obiettivi"
+    ],
+    accident: [
+      "polizza infortuni",
+      "quando ha senso proporre infortuni",
+      "infortunio stop lavoro reddito"
+    ],
+    rc_family: [
+      "RC Famiglia e Casa",
+      "quando ha senso proporre RC Famiglia e Casa",
+      "danni a terzi casa patrimonio"
+    ],
+    ltc: [
+      "Long Term Care LTC",
+      "quando ha senso proporre LTC",
+      "non autosufficienza patrimonio"
+    ],
+    health: [
+      "salute ricoveri",
+      "spese mediche ricoveri",
+      "protezione salute patrimonio"
+    ],
+    mortgage: [
+      "protezione mutuo",
+      "mutuo progetto casa reddito",
+      "continuita mutuo sotto shock"
+    ],
+  };
+  return map[key] || [];
+}
+
+function prioritizeContextForProduct(productId, items) {
+  const hints = productQueryHints(productId);
+  if (!hints.length) {
+    return items;
+  }
+
+  const normalizedHints = hints.map((item) => item.toLowerCase());
+
+  return items
+    .map((item) => {
+      const haystack = `${item.title} ${item.category} ${item.content}`.toLowerCase();
+      let boost = 0;
+      for (const hint of normalizedHints) {
+        if (haystack.includes(hint)) boost += 0.12;
+      }
+      if (String(item.category || "").toLowerCase() === "product") {
+        boost += 0.06;
+      }
+      return {
+        ...item,
+        weightedScore: item.score + boost,
+      };
+    })
+    .sort((left, right) => right.weightedScore - left.weightedScore)
+    .map((item, index) => ({
+      ...item,
+      rank: index + 1,
+    }));
+}
+
 async function runRagCompletion(env, systemPrompt, userPrompt, maxTokens = 550) {
   const llmResult = await env.AI.run(env.RAG_LLM_MODEL, {
     messages: [
@@ -398,12 +470,33 @@ async function handleQuery(request, env) {
   const question = normalizeText(body.question);
   const audience = normalizeText(body.audience) || "advisor";
   const topK = Math.min(10, Math.max(2, toInt(body.topK, toInt(env.RAG_TOP_K, 6))));
+  const productId = normalizeText(body.productId).toLowerCase();
+  const profileSummary = normalizeText(body.profileSummary);
+  const goalName = normalizeText(body.goalName);
+  const scenarioLabel = normalizeText(body.scenarioLabel);
 
   if (!question) {
     return jsonResponse(env, { error: "question obbligatoria" }, 400);
   }
 
-  const contextItems = await retrieveContext(env, question, topK);
+  let contextItems;
+  if (productId) {
+    const productHints = productQueryHints(productId);
+    contextItems = await retrieveContextMulti(
+      env,
+      [
+        question,
+        productHints.join(" "),
+        [productHints[0], profileSummary].filter(Boolean).join(" "),
+        [productHints[0], goalName, scenarioLabel].filter(Boolean).join(" "),
+      ].filter(Boolean),
+      Math.max(3, Math.min(5, topK)),
+      topK
+    );
+    contextItems = prioritizeContextForProduct(productId, contextItems).slice(0, topK);
+  } else {
+    contextItems = await retrieveContext(env, question, topK);
+  }
 
   if (!contextItems.length) {
     return jsonResponse(env, {
@@ -421,6 +514,10 @@ async function handleQuery(request, env) {
     "Rispondi in italiano, con tono chiaro e professionale.",
     "Usa solo il contesto recuperato.",
     "Non inventare premi, benchmark o regole che non sono nel contesto.",
+    productId
+      ? "Resta strettamente focalizzato sulla singola copertura richiesta. Non allargarti ad altre polizze se non come nota marginale."
+      : "Resta focalizzato sul tema richiesto.",
+    "Non contraddire i fatti del profilo ricevuto. Se un'informazione non e nel contesto, non dedurla in modo arbitrario.",
     "Se il contesto contiene gia un benchmark numerico pertinente, apri la risposta dando subito il numero e la sua unita di misura.",
     "Non dire che non puoi rispondere se il contesto offre almeno un benchmark utile; chiarisci semmai quali elementi aggiuntivi servirebbero per affinare la stima.",
     "Se il contesto non basta davvero, dillo chiaramente.",
@@ -432,6 +529,10 @@ async function handleQuery(request, env) {
 
   const userPrompt = [
     `Domanda: ${question}`,
+    productId ? `Copertura richiesta: ${productId}` : null,
+    profileSummary ? `Profilo: ${profileSummary}` : null,
+    goalName ? `Obiettivo in focus: ${goalName}` : null,
+    scenarioLabel ? `Scenario in focus: ${scenarioLabel}` : null,
     "",
     "Contesto recuperato:",
     contextBlock,

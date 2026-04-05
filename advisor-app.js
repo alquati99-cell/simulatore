@@ -544,6 +544,173 @@
     return reasons[product.id] || product.shortDescription || product.detail;
   }
 
+  function joinReadableList(items) {
+    var clean = (items || []).filter(Boolean);
+    if (!clean.length) return "";
+    if (clean.length === 1) return clean[0];
+    if (clean.length === 2) return clean[0] + " e " + clean[1];
+    return clean.slice(0, -1).join(", ") + " e " + clean[clean.length - 1];
+  }
+
+  function activeGoalNames(limit) {
+    if (!S.plan || !S.plan.goals) return [];
+    return S.plan.goals.slice(0, limit || 3).map(function (goal) {
+      return goal.name;
+    });
+  }
+
+  function productKnowledgeTerms(productId) {
+    var map = {
+      tcm: ["tcm", "temporanea caso morte", "famiglia"],
+      income_protection: ["protezione reddito", "invalidita", "reddito"],
+      accident: ["infortuni", "invalidita", "reddito"],
+      rc_family: ["rc famiglia", "casa", "responsabilita"],
+      ltc: ["ltc", "long term care", "non autosufficienza"],
+      health: ["salute", "ricoveri", "spese mediche"],
+      mortgage: ["mutuo", "casa", "reddito"]
+    };
+    return map[productId] || [];
+  }
+
+  function filterPolicyCitations(product, citations) {
+    var list = Array.isArray(citations) ? citations.slice() : [];
+    if (!list.length) return [];
+
+    var terms = productKnowledgeTerms(product.id);
+    var methodology = list.filter(function (citation) {
+      return String((citation && citation.category) || "").toLowerCase() === "methodology";
+    });
+    var filtered = list.filter(function (citation) {
+      var title = String((citation && citation.title) || "").toLowerCase();
+      var category = String((citation && citation.category) || "").toLowerCase();
+      if (category === "methodology") return true;
+      return terms.some(function (term) { return title.indexOf(term) >= 0; });
+    });
+
+    if (filtered.length) return filtered.slice(0, 4);
+    if (methodology.length) return methodology.slice(0, 1);
+    return [];
+  }
+
+  function productPriorityNarrative(product) {
+    if (product.score >= 60) return "e una leva prioritaria";
+    if (product.score >= 45) return "e una copertura coerente";
+    return "resta una copertura complementare";
+  }
+
+  function productRiskFocus(product) {
+    var labels = {
+      tcm: "l'assenza improvvisa del capitale familiare",
+      income_protection: "il blocco del reddito per invalidita",
+      accident: "lo stop lavorativo per infortunio",
+      rc_family: "danni a terzi e imprevisti su casa o vita privata",
+      ltc: "i costi di assistenza di lungo periodo",
+      health: "spese mediche importanti e ricoveri",
+      mortgage: "la continuita del progetto casa e del mutuo"
+    };
+    return labels[product.id] || "un rischio che puo erodere il piano";
+  }
+
+  function productReasons(product, profile, focusGoal) {
+    var reasons = [];
+    var goalNames = activeGoalNames(3);
+
+    if (product.id === "tcm") {
+      if (profile.childrenCount) reasons.push("ci sono " + profile.childrenCount + " figli da proteggere");
+      if (profile.spouseName || profile.maritalStatus === "Coniugato" || profile.maritalStatus === "Convivente") reasons.push("il nucleo familiare puo dipendere dal reddito principale");
+      if (profile.housingStatus === "Con mutuo") reasons.push("c'e un mutuo che non va lasciato scoperto");
+      if (goalNames.length) reasons.push("obiettivi come " + joinReadableList(goalNames) + " non dovrebbero dipendere solo dal patrimonio accumulato");
+    } else if (product.id === "income_protection") {
+      if (profile.netMonthlyIncome) reasons.push("il piano dipende da un reddito netto mensile di € " + currency(profile.netMonthlyIncome));
+      if (profile.occupationRisk === "alto") reasons.push("la professione ha una rischiosita alta");
+      if (profile.childrenCount) reasons.push("il nucleo ha impegni familiari continuativi");
+      if (goalNames.length) reasons.push("gli obiettivi di medio periodo richiedono continuita di risparmio");
+    } else if (product.id === "accident") {
+      if (profile.occupationRisk !== "basso") reasons.push("la professione espone a uno stop temporaneo piu rilevante");
+      if (profile.netMonthlyIncome) reasons.push("un infortunio potrebbe fermare il flusso di reddito");
+      if (goalNames.length) reasons.push("serve difendere il ritmo di accumulo sugli obiettivi");
+    } else if (product.id === "rc_family") {
+      if (profile.housingStatus !== "Affittuario") reasons.push("il cliente ha un immobile o un progetto casa da proteggere");
+      if (profile.childrenCount) reasons.push("la vita familiare aumenta la possibilita di danni a terzi o eventi domestici");
+      if (profile.totalAssets >= 60000) reasons.push("c'e un patrimonio che non conviene esporre a spese improvvise");
+    } else if (product.id === "ltc") {
+      if (profile.age >= 50) reasons.push("con l'eta cresce il rischio di erodere patrimonio per assistenza");
+      if (focusGoal && focusGoal.id === "retirement") reasons.push("il tema previdenziale richiede protezione anche nella non autosufficienza");
+      if (profile.totalAssets >= 80000) reasons.push("ha senso difendere capitale gia accumulato");
+    } else if (product.id === "health") {
+      if (profile.age >= 45) reasons.push("la probabilita di spese mediche importanti cresce con l'eta");
+      if (profile.netMonthlyIncome) reasons.push("spese straordinarie potrebbero sottrarre risorse al piano");
+      if (goalNames.length) reasons.push("il cliente ha obiettivi che richiedono stabilita di liquidita");
+    } else if (product.id === "mortgage") {
+      if (profile.housingStatus === "Con mutuo") reasons.push("c'e un mutuo che va tenuto in piedi anche sotto shock");
+      if (profile.housingCost) reasons.push("la rata casa pesa gia sul cash flow mensile");
+      if (focusGoal && focusGoal.id === "home") reasons.push("il progetto casa non dovrebbe saltare se il reddito si interrompe");
+    }
+
+    if (!reasons.length && goalNames.length) {
+      reasons.push("serve proteggere obiettivi come " + joinReadableList(goalNames));
+    }
+    if (!reasons.length) {
+      reasons.push("aiuta a non usare il capitale destinato agli obiettivi per assorbire un imprevisto");
+    }
+
+    return reasons.slice(0, 3);
+  }
+
+  function scenarioBlockForProduct(product, activeScenario, focusGoal) {
+    if (!activeScenario) {
+      return "Questa copertura protegge il piano sul rischio " + productRiskFocus(product) + ".";
+    }
+
+    var gapText = activeScenario.noCoverage.goalGap
+      ? "puo aprire un gap di € " + currency(activeScenario.noCoverage.goalGap)
+      : "non apre un gap immediato, ma indebolisce comunque il piano";
+    var baseSentence = "Nello scenario attivo \"" + activeScenario.label + "\" il cliente senza copertura " + gapText + " su " + (focusGoal ? "\"" + focusGoal.name + "\"" : "questo obiettivo") + " e la probabilita scende al " + activeScenario.noCoverage.achievement + "%.";
+
+    if (productMatchesScenario(product, activeScenario)) {
+      return baseSentence + " Questa polizza interviene proprio sul punto di fragilita legato a " + productRiskFocus(product) + ".";
+    }
+
+    return baseSentence + " Anche se non e la leva piu diretta su questo scenario, resta utile per non lasciare scoperto " + productRiskFocus(product) + ".";
+  }
+
+  function economicBlockForProduct(product) {
+    var lines = [];
+    lines.push("Il motore stima un premio indicativo di " + premiumRangeLabel(product) + ".");
+    if (product.detail) lines.push(product.detail + ".");
+    if (product.secondaryDetail) lines.push(product.secondaryDetail + ".");
+    lines.push("Senza copertura il cliente dovrebbe tenere circa € " + currency(product.selfFundMonthlyEquivalent) + "/mese di auto-cuscinetto sul rischio.");
+    return lines.join(" ");
+  }
+
+  function buildPolicyInsightBlocks(product, activeScenario) {
+    var profile = S.plan.profile;
+    var focusGoal = S.analysis && S.analysis.focusGoal ? S.analysis.focusGoal : (S.plan.goals && S.plan.goals[0]);
+    var headlineFacts = [];
+
+    if (profile.name) headlineFacts.push(profile.name);
+    if (profile.age) headlineFacts.push(profile.age + " anni");
+    if (profile.childrenCount) headlineFacts.push(profile.childrenCount + " figli");
+    if (profile.housingStatus) headlineFacts.push("casa " + profile.housingStatus.toLowerCase());
+    if (profile.netMonthlyIncome) headlineFacts.push("reddito netto € " + currency(profile.netMonthlyIncome) + "/mese");
+    var subject = headlineFacts.length ? joinReadableList(headlineFacts) : "questo cliente";
+
+    return [
+      {
+        label: "Perche qui",
+        body: "Per " + subject + ", " + product.name + " " + productPriorityNarrative(product) + " perche " + joinReadableList(productReasons(product, profile, focusGoal)) + "."
+      },
+      {
+        label: "Che cosa protegge",
+        body: scenarioBlockForProduct(product, activeScenario, focusGoal)
+      },
+      {
+        label: "Lettura economica",
+        body: economicBlockForProduct(product)
+      }
+    ];
+  }
+
   function resetRagInsight() {
     S.ragInsight = null;
     renderRagInsightPanel();
@@ -699,11 +866,7 @@
   }
 
   async function requestRagExplanation(question) {
-    return requestRag({
-      question: question,
-      audience: "advisor",
-      topK: 4
-    }, RAG_QUERY_ENDPOINT, RAG_TIMEOUT_MS);
+    return requestRag(question, RAG_QUERY_ENDPOINT, RAG_TIMEOUT_MS);
   }
 
   async function requestChatRagInsight(profile, text) {
@@ -785,15 +948,19 @@
 
     if (insight.status === "error") {
       panel.innerHTML =
-        '<div class="rag-panel-ey">RAG consulenziale</div>' +
+        '<div class="rag-panel-ey">Lettura consulenziale</div>' +
         '<div class="rag-panel-head"><div><div class="rag-panel-title">Non sono riuscito a generare la spiegazione</div><div class="rag-panel-sub">' + esc(insight.message || "Il servizio RAG non ha risposto in tempo utile.") + '</div></div><div class="rag-panel-pill error">Riprova</div></div>';
       return;
     }
 
     panel.innerHTML =
-      '<div class="rag-panel-ey">RAG consulenziale</div>' +
-      '<div class="rag-panel-head"><div><div class="rag-panel-title">Perche ' + esc(insight.productName) + ' e coerente con questo caso</div><div class="rag-panel-sub">Risposta costruita con contenuti recuperati dal knowledge base, non con formule del motore.</div></div><div class="rag-panel-pill">Fonti ' + esc((insight.citations || []).length) + '</div></div>' +
-      '<div class="rag-panel-body"><p>' + esc(insight.answer || "").replace(/\n{2,}/g, "</p><p>").replace(/\n/g, "<br>") + '</p></div>' +
+      '<div class="rag-panel-ey">Lettura consulenziale</div>' +
+      '<div class="rag-panel-head"><div><div class="rag-panel-title">Perche ' + esc(insight.productName) + ' e coerente con questo caso</div><div class="rag-panel-sub">Sintesi guidata dal profilo cliente e dal motore assicurativo, con fonti del knowledge base usate come supporto.</div></div><div class="rag-panel-pill">' + esc((insight.citations || []).length ? "Fonti " + (insight.citations || []).length : "Profilo + motore") + '</div></div>' +
+      '<div class="rag-panel-grid">' +
+      (insight.blocks || []).map(function (block) {
+        return '<div class="rag-panel-card"><div class="rag-panel-card-k">' + esc(block.label) + '</div><div class="rag-panel-card-v">' + esc(block.body) + '</div></div>';
+      }).join("") +
+      '</div>' +
       ((insight.citations || []).length
         ? '<div class="rag-citations">' + insight.citations.slice(0, 4).map(function (citation) {
             return '<span class="rag-citation">[' + esc(citation.ref) + '] ' + esc(citation.title) + '</span>';
@@ -813,6 +980,7 @@
     if (!product) return;
 
     var activeScenario = currentActiveScenario();
+    var focusGoal = S.analysis && S.analysis.focusGoal ? S.analysis.focusGoal : (S.plan.goals && S.plan.goals[0]);
     var turnId = ++S.ragTurnId;
     S.ragInsight = {
       status: "loading",
@@ -824,7 +992,16 @@
     renderPolicyBoard(activeScenario);
 
     try {
-      var result = await requestRagExplanation(ragQuestionForProduct(product, activeScenario));
+      var result = await requestRagExplanation({
+        question: ragQuestionForProduct(product, activeScenario),
+        audience: "advisor",
+        topK: 4,
+        productId: product.id,
+        profileSummary: ragProfileSummary(),
+        goalName: focusGoal ? focusGoal.name : "",
+        scenarioLabel: activeScenario ? activeScenario.label : "",
+        scenarioIds: activeScenario ? relevantScenarioIds(activeScenario) : []
+      });
       if (turnId !== S.ragTurnId) return;
 
       S.ragInsight = {
@@ -832,8 +1009,8 @@
         productId: product.id,
         productName: product.name,
         scenarioId: activeScenario ? activeScenario.id : null,
-        answer: result && result.answer ? String(result.answer).trim() : "",
-        citations: result && result.citations ? result.citations : []
+        blocks: buildPolicyInsightBlocks(product, activeScenario),
+        citations: filterPolicyCitations(product, result && result.citations ? result.citations : [])
       };
     } catch (error) {
       if (turnId !== S.ragTurnId) return;
