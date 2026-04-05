@@ -43,7 +43,7 @@ Alternativa molto buona per contenuti multilingua:
 
 Modello suggerito:
 
-- `@cf/zai-org/glm-4.7-flash`
+- `@cf/meta/llama-3.1-8b-instruct-fast`
 
 Perche:
 
@@ -79,7 +79,7 @@ flowchart TD
     B --> C["Embedding query con Workers AI"]
     C --> D["Query su Vectorize"]
     D --> E["Recupero chunk e metadati da D1"]
-    E --> F["Risposta spiegata con GLM-4.7-Flash"]
+    E --> F["Risposta spiegata con Llama 3.1 8B Instruct Fast"]
     F --> G["Frontend mostra spiegazione e fonti"]
     G --> H["Motore deterministico calcola score e scenari"]
 ```

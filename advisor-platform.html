@@ -384,10 +384,26 @@ opacity:.95}
 .policy-side-v{font-size:24px;font-weight:800;color:var(--blue);line-height:1}
 .policy-side-v small{font-size:12px;color:var(--tl);font-weight:700}
 .policy-card-foot{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:auto}
+.policy-rag-btn{padding:10px 13px;border-radius:11px;border:1.5px solid #cfe0f7;background:#eef6ff;color:var(--blue);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .18s}
+.policy-rag-btn:hover{border-color:var(--sky);background:#f4f8ff}
+.policy-rag-btn.on{background:#eaf7f0;border-color:#b7ead5;color:var(--gok)}
+.policy-rag-btn:disabled{opacity:.7;cursor:wait}
 .policy-toggle{padding:10px 13px;border-radius:11px;border:1.5px solid var(--brd);background:#fff;color:var(--tm);font-family:inherit;font-size:11px;font-weight:700;cursor:pointer;transition:all .18s}
 .policy-toggle:hover{border-color:var(--sky);color:var(--blue)}
 .policy-toggle.on{background:var(--teal);border-color:var(--teal);color:#fff}
 .policy-empty{padding:18px;border-radius:16px;border:1.5px dashed var(--brd);background:var(--bgm);font-size:12px;color:var(--tm);line-height:1.7}
+.rag-panel{padding:20px;border-radius:20px;border:1.5px solid var(--brd);background:linear-gradient(180deg,#fff,#f7fbff);box-shadow:var(--sh1);margin-bottom:18px}
+.rag-panel[hidden]{display:none}
+.rag-panel-ey{font-size:10px;font-weight:700;color:var(--sky);letter-spacing:.08em;text-transform:uppercase}
+.rag-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:10px}
+.rag-panel-title{font-family:'Lora',serif;font-size:24px;font-weight:600;color:var(--blue);line-height:1.2}
+.rag-panel-sub{font-size:12.5px;color:var(--tm);line-height:1.7;margin-top:6px;max-width:760px}
+.rag-panel-pill{display:inline-flex;align-items:center;padding:7px 11px;border-radius:999px;background:#eef6ff;border:1px solid #cfe0f7;color:var(--blue);font-size:10px;font-weight:700;white-space:nowrap}
+.rag-panel-pill.error{background:#fff1ef;border-color:#f8c4be;color:var(--red)}
+.rag-panel-body{margin-top:16px;font-size:13.5px;color:var(--td);line-height:1.85}
+.rag-panel-body p + p{margin-top:12px}
+.rag-citations{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.rag-citation{display:inline-flex;align-items:center;padding:7px 10px;border-radius:999px;background:#fff;border:1px solid var(--brd);font-size:10.5px;font-weight:700;color:var(--tm)}
 
 @media (max-width:980px){
   .coverage-band{grid-template-columns:1fr}
@@ -583,7 +599,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;heigh
   .prem-row{flex-direction:column;align-items:flex-start;gap:14px}
   .prem-sep{width:100%;height:1px;margin:0;background:rgba(255,255,255,.2)}
   .mb{max-width:85%}
-  .goal-gauge-head,.policy-group-head{flex-direction:column;align-items:flex-start}
+  .goal-gauge-head,.policy-group-head,.rag-panel-head{flex-direction:column;align-items:flex-start}
 }
 
 @media print{
@@ -868,6 +884,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;heigh
       <div class="policy-grid" id="policyOptionalGrid"></div>
     </div>
   </div>
+
+  <div id="ragInsightPanel" class="rag-panel" hidden></div>
 
   <!-- Sliders -->
   <div class="ctls">

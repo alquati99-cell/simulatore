@@ -13,7 +13,9 @@
     activeGoalId: null,
     coverageTouched: false,
     isRendering: false,
-    pendingTurnId: 0
+    pendingTurnId: 0,
+    ragTurnId: 0,
+    ragInsight: null
   };
   var INITIAL_ASSISTANT_MESSAGE = "Ciao! Scrivi quello che sai del cliente: nome, eta, famiglia, reddito mensile, casa, obiettivi. Anche due righe o appunti veloci vanno bene.";
   var AI_STORAGE_KEYS = {
@@ -23,6 +25,8 @@
   var DEFAULT_GROQ_MODEL = "llama-3.1-8b-instant";
   var GROQ_CHAT_ENDPOINT = "https://api.groq.com/openai/v1/chat/completions";
   var AI_TIMEOUT_MS = 6500;
+  var RAG_QUERY_ENDPOINT = "https://simulatore-rag-api.alquati99.workers.dev/api/rag/query";
+  var RAG_TIMEOUT_MS = 9000;
 
   function byId(id) {
     return document.getElementById(id);
@@ -537,6 +541,165 @@
     return reasons[product.id] || product.shortDescription || product.detail;
   }
 
+  function resetRagInsight() {
+    S.ragInsight = null;
+    renderRagInsightPanel();
+  }
+
+  function currentActiveScenario() {
+    var collection = currentScenarioCollection();
+    return collection ? collection[S.activeScenarioId] : null;
+  }
+
+  function ragProfileSummary() {
+    if (!S.plan) return "";
+    var profile = S.plan.profile;
+    var parts = [];
+
+    if (profile.name) parts.push(profile.name);
+    if (profile.age) parts.push(profile.age + " anni");
+    if (profile.housingStatus) parts.push("stato casa " + profile.housingStatus.toLowerCase());
+    if (profile.childrenCount) parts.push(profile.childrenCount + " figli");
+    if (profile.netMonthlyIncome) parts.push("reddito netto mensile € " + currency(profile.netMonthlyIncome));
+    else if (profile.grossAnnualIncome) parts.push("reddito annuo lordo € " + currency(profile.grossAnnualIncome));
+    if (profile.totalAssets) parts.push("patrimonio € " + currency(profile.totalAssets));
+
+    return parts.join(", ");
+  }
+
+  function ragQuestionForProduct(product, activeScenario) {
+    var focusGoal = S.analysis && S.analysis.focusGoal ? S.analysis.focusGoal : featuredGoal(S.plan.goals);
+    var profileSummary = ragProfileSummary();
+    var scenarioLabel = activeScenario ? activeScenario.label : "scenario principale";
+    return (
+      "Spiega in italiano, per un consulente assicurativo, perche per il cliente " +
+      profileSummary +
+      " ha senso valutare la copertura " +
+      product.name +
+      ". " +
+      "Resta focalizzato sull'obiettivo " +
+      (focusGoal ? focusGoal.name : "principale") +
+      " e sullo scenario " +
+      scenarioLabel +
+      ". " +
+      "Usa solo il contesto davvero rilevante e non allargarti su polizze non pertinenti."
+    );
+  }
+
+  async function requestRagExplanation(question) {
+    if (typeof root.fetch !== "function") {
+      throw new Error("Fetch non disponibile in questo browser");
+    }
+
+    var controller = typeof root.AbortController === "function" ? new root.AbortController() : null;
+    var timeoutId = controller ? root.setTimeout(function () { controller.abort(); }, RAG_TIMEOUT_MS) : 0;
+
+    try {
+      var response = await root.fetch(RAG_QUERY_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          question: question,
+          audience: "advisor",
+          topK: 4
+        }),
+        signal: controller ? controller.signal : undefined
+      });
+
+      if (timeoutId) root.clearTimeout(timeoutId);
+      if (!response.ok) throw new Error("Il servizio RAG non ha risposto correttamente");
+      return await response.json();
+    } catch (error) {
+      if (timeoutId) root.clearTimeout(timeoutId);
+      throw error;
+    }
+  }
+
+  function renderRagInsightPanel() {
+    var panel = byId("ragInsightPanel");
+    if (!panel) return;
+
+    var insight = S.ragInsight;
+    if (!insight) {
+      panel.hidden = true;
+      panel.innerHTML = "";
+      return;
+    }
+
+    panel.hidden = false;
+
+    if (insight.status === "loading") {
+      panel.innerHTML =
+        '<div class="rag-panel-ey">RAG consulenziale</div>' +
+        '<div class="rag-panel-head"><div><div class="rag-panel-title">Sto preparando la spiegazione per ' + esc(insight.productName) + '</div><div class="rag-panel-sub">Recupero i contenuti piu rilevanti dal knowledge base assicurativo e li traduco in linguaggio consulenziale.</div></div><div class="rag-panel-pill">In elaborazione</div></div>';
+      return;
+    }
+
+    if (insight.status === "error") {
+      panel.innerHTML =
+        '<div class="rag-panel-ey">RAG consulenziale</div>' +
+        '<div class="rag-panel-head"><div><div class="rag-panel-title">Non sono riuscito a generare la spiegazione</div><div class="rag-panel-sub">' + esc(insight.message || "Il servizio RAG non ha risposto in tempo utile.") + '</div></div><div class="rag-panel-pill error">Riprova</div></div>';
+      return;
+    }
+
+    panel.innerHTML =
+      '<div class="rag-panel-ey">RAG consulenziale</div>' +
+      '<div class="rag-panel-head"><div><div class="rag-panel-title">Perche ' + esc(insight.productName) + ' e coerente con questo caso</div><div class="rag-panel-sub">Risposta costruita con contenuti recuperati dal knowledge base, non con formule del motore.</div></div><div class="rag-panel-pill">Fonti ' + esc((insight.citations || []).length) + '</div></div>' +
+      '<div class="rag-panel-body"><p>' + esc(insight.answer || "").replace(/\n{2,}/g, "</p><p>").replace(/\n/g, "<br>") + '</p></div>' +
+      ((insight.citations || []).length
+        ? '<div class="rag-citations">' + insight.citations.slice(0, 4).map(function (citation) {
+            return '<span class="rag-citation">[' + esc(citation.ref) + '] ' + esc(citation.title) + '</span>';
+          }).join("") + '</div>'
+        : "");
+  }
+
+  async function explainPolicyWithRag(productId) {
+    if (!S.plan) return;
+    var product = S.plan.recommendations.find(function (entry) { return entry.id === productId; });
+    if (!product) return;
+
+    var activeScenario = currentActiveScenario();
+    var turnId = ++S.ragTurnId;
+    S.ragInsight = {
+      status: "loading",
+      productId: product.id,
+      productName: product.name,
+      scenarioId: activeScenario ? activeScenario.id : null
+    };
+    renderRagInsightPanel();
+    renderPolicyBoard(activeScenario);
+
+    try {
+      var result = await requestRagExplanation(ragQuestionForProduct(product, activeScenario));
+      if (turnId !== S.ragTurnId) return;
+
+      S.ragInsight = {
+        status: "ready",
+        productId: product.id,
+        productName: product.name,
+        scenarioId: activeScenario ? activeScenario.id : null,
+        answer: result && result.answer ? String(result.answer).trim() : "",
+        citations: result && result.citations ? result.citations : []
+      };
+    } catch (error) {
+      if (turnId !== S.ragTurnId) return;
+      S.ragInsight = {
+        status: "error",
+        productId: product.id,
+        productName: product.name,
+        scenarioId: activeScenario ? activeScenario.id : null,
+        message: error && error.name === "AbortError"
+          ? "Il servizio RAG ha impiegato troppo tempo. Riprova tra poco."
+          : "Il servizio RAG non e disponibile in questo momento."
+      };
+    }
+
+    renderRagInsightPanel();
+    renderPolicyBoard(currentActiveScenario());
+  }
+
   function scenarioCollectionForMode(analysis, mode) {
     if (!analysis) return {};
     return mode === "bundle" ? analysis.bundles || {} : analysis.scenarios || {};
@@ -730,6 +893,7 @@
     S.activeScenarioId = "rc";
     S.activeScenarioMode = "bundle";
     S.coverageTouched = false;
+    S.ragInsight = null;
     resetRenderedState();
     if (!preserveChat) renderWelcomeChat();
   }
@@ -1284,6 +1448,8 @@
       var matchesCurrentScenario = activeScenario ? productMatchesScenario(product, activeScenario) : false;
       var reserveRatio = reserveMultiple(product);
       var isSuggested = bucket === "suggested";
+      var ragActive = S.ragInsight && S.ragInsight.productId === product.id;
+      var ragLoading = ragActive && S.ragInsight.status === "loading";
       return (
         '<div class="policy-card' + (isSuggested ? " suggested" : "") + (selected ? " on" : "") + '">' +
         '<div class="policy-card-shell">' +
@@ -1308,7 +1474,7 @@
         "</div>" +
         '<div class="policy-card-side">' +
         '<div class="policy-side-score"><div class="policy-side-k">Coerenza profilo</div><div class="policy-side-v">' + esc(product.score) + '<small>/100</small></div></div>' +
-        '<div class="policy-card-foot"><button class="policy-toggle' + (selected ? " on" : "") + '" onclick="toggleCoverage(\'' + esc(product.id) + '\')">' + esc(selected ? "Disattiva" : "Attiva") + "</button></div>" +
+        '<div class="policy-card-foot"><button class="policy-rag-btn' + (ragActive ? " on" : "") + '" onclick="explainPolicyWithRag(\'' + esc(product.id) + '\')" ' + (ragLoading ? "disabled" : "") + '>' + esc(ragLoading ? "Analizzo..." : (ragActive ? "Aggiorna insight" : "Spiegami perche")) + '</button><button class="policy-toggle' + (selected ? " on" : "") + '" onclick="toggleCoverage(\'' + esc(product.id) + '\')">' + esc(selected ? "Disattiva" : "Attiva") + "</button></div>" +
         "</div>" +
         "</div>" +
         "</div>"
@@ -1317,6 +1483,7 @@
 
     suggestedGrid.innerHTML = suggested.length ? suggested.map(function (product) { return cardMarkup(product, "suggested"); }).join("") : '<div class="policy-empty">Nessuna copertura prioritaria individuata per questo profilo.</div>';
     optionalGrid.innerHTML = optional.length ? optional.map(function (product) { return cardMarkup(product, "optional"); }).join("") : '<div class="policy-empty">Per questo profilo il motore non vede altre coperture opzionali davvero rilevanti.</div>';
+    renderRagInsightPanel();
   }
 
   function renderImpactStage(activeScenario) {
@@ -1846,6 +2013,7 @@
 
   function refreshScenarioAnalysis() {
     if (!S.plan) return;
+    S.ragInsight = null;
     var previousGoalId = S.analysis && S.analysis.focusGoal ? S.analysis.focusGoal.id : null;
     if (!S.activeGoalId || !S.plan.goals.some(function (goal) { return goal.id === S.activeGoalId; })) {
       S.activeGoalId = (featuredGoal(S.plan.goals) || S.plan.goals[0]).id;
@@ -1904,6 +2072,7 @@
 
   function toggleCoverage(productId) {
     if (!S.plan) return;
+    resetRagInsight();
     S.coverageTouched = true;
     var selectedIds = S.plan.selectedCoverageIds.slice();
     var index = selectedIds.indexOf(productId);
@@ -1918,15 +2087,18 @@
   }
 
   function selectScenario(scenarioId) {
+    resetRagInsight();
     renderScenario(scenarioId);
   }
 
   function selectGoal(goalId) {
+    resetRagInsight();
     S.activeGoalId = goalId;
     refreshScenarioAnalysis();
   }
 
   function setScenarioMode(mode) {
+    resetRagInsight();
     S.activeScenarioMode = mode === "single" ? "single" : "bundle";
     ensureScenarioSelection(true);
     renderScenario(S.activeScenarioId);
@@ -2061,6 +2233,7 @@
   root.toggleMic = toggleMic;
   root.syncProfile = syncProfile;
   root.toggleCoverage = toggleCoverage;
+  root.explainPolicyWithRag = explainPolicyWithRag;
   root.selectScenario = selectScenario;
   root.selectGoal = selectGoal;
   root.updateScenarioGoal = updateScenarioGoal;
