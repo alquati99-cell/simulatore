@@ -423,12 +423,22 @@ opacity:.95}
 .rag-citations{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
 .rag-citation{display:inline-flex;align-items:center;padding:7px 10px;border-radius:999px;background:#fff;border:1px solid var(--brd);font-size:10.5px;font-weight:700;color:var(--tm)}
 
+.simple-graph-section{margin-top:18px}
+.simple-graph-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:14px}
+.simple-graph-title{font-family:'Lora',serif;font-size:24px;font-weight:600;color:var(--blue);line-height:1.2}
+.simple-graph-copy{font-size:12.5px;color:var(--tm);line-height:1.7;margin-top:6px;max-width:780px}
+.simple-graph-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.simple-graph-card{background:#fff;border:1.5px solid var(--brd);border-radius:18px;padding:18px;box-shadow:var(--sh1);overflow:hidden}
+.simple-graph-card-title{font-size:18px;font-weight:800;color:var(--td);line-height:1.2}
+.simple-graph-card-sub{font-size:12px;color:var(--tm);line-height:1.6;margin-top:6px;min-height:38px}
+
 @media (max-width:980px){
   .coverage-band{grid-template-columns:1fr}
   .policy-card-shell{grid-template-columns:1fr}
   .policy-card-side{align-items:flex-start}
   .policy-side-score{text-align:left;align-items:flex-start}
   .policy-card-foot{justify-content:flex-start}
+  .simple-graph-grid{grid-template-columns:1fr}
 }
 
 @media (max-width:760px){
@@ -907,117 +917,36 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:17px;heigh
     </div>
   </div>
 
-  <!-- Sliders -->
-  <div class="ctls">
-    <div class="ctlg">
-      <div class="ctll">Patrimonio attuale</div>
-      <input type="range" min="20000" max="300000" step="5000" value="80000" id="slP">
-      <div class="ctlv">€ <span id="vP">80.000</span></div>
+  <div class="simple-graph-section">
+    <div class="simple-graph-head">
+      <div>
+        <div class="goal-story-ey">Simulazione nel tempo</div>
+        <div class="simple-graph-title">Due grafici semplici per leggere lo scenario</div>
+        <div class="simple-graph-copy" id="scenarioSimpleIntro">I grafici mostrano come evolve il piano sull'obiettivo selezionato se il cliente resta scoperto oppure attiva il set di coperture scelto.</div>
+      </div>
     </div>
-    <div class="ctlg">
-      <div class="ctll">Risparmio mensile</div>
-      <input type="range" min="200" max="3000" step="50" value="800" id="slR">
-      <div class="ctlv">€ <span id="vR">800</span> <small>/mese</small></div>
-    </div>
-    <div class="ctlg">
-      <div class="ctll">Orizzonte temporale</div>
-      <input type="range" min="2" max="25" value="10" id="slA">
-      <div class="ctlv"><span id="vA">10</span> <small>anni</small></div>
+    <div class="simple-graph-grid">
+      <div class="simple-graph-card">
+        <div class="simple-graph-card-title">Capitale verso l'obiettivo</div>
+        <div class="simple-graph-card-sub" id="simplePathLabel"></div>
+        <div class="ca" style="height:240px"><canvas id="pathC"></canvas></div>
+        <div class="lr">
+          <div class="li"><div class="ll" style="background:#e57373"></div>Senza copertura</div>
+          <div class="li"><div class="ll" style="background:var(--teal)"></div>Con copertura</div>
+          <div class="li"><div class="ll" style="background:var(--gold)"></div>Target</div>
+        </div>
+      </div>
+      <div class="simple-graph-card">
+        <div class="simple-graph-card-title">Gap residuo nel tempo</div>
+        <div class="simple-graph-card-sub" id="simpleGapLabel"></div>
+        <div class="ca" style="height:240px"><canvas id="gapC"></canvas></div>
+        <div class="lr">
+          <div class="li"><div class="ll" style="background:#fca5a5"></div>Gap senza copertura</div>
+          <div class="li"><div class="ll" style="background:#34d399"></div>Gap con copertura</div>
+        </div>
+      </div>
     </div>
   </div>
-
-  <div class="scenario-toolbar">
-    <div class="mode-tabs" id="scenarioModeTabs"></div>
-    <button class="bgho" onclick="goTo(2)">← Torna al questionario</button>
-  </div>
-
-  <div class="bundle-grid" id="bundleGrid"></div>
-  <div class="evg" id="eventGrid"></div>
-  <div class="impact-stage" id="impactStage"></div>
-
-  <div class="p3grid">
-
-    <div class="cc">
-      <div class="cch"><div class="cchi" style="background:#e8f4fd">⚖️</div><div class="ccht">Confronto impatto sul capitale obiettivo</div></div>
-      <div class="vs2">
-        <div class="vsp n">❌ Senza polizza</div>
-        <div class="vsp y">✅ Con polizza</div>
-      </div>
-      <div class="ca" style="height:190px"><canvas id="barC"></canvas></div>
-      <div class="dv"></div>
-      <div class="mg4">
-        <div class="mt nr">
-          <div class="ml2">Capitale disponibile</div>
-          <div class="mv r" id="mNP">€ 55.000</div>
-          <div class="ms2">Alla data obiettivo senza polizza</div>
-          <div class="mk kr" id="mND">Gap € 20.000</div>
-        </div>
-        <div class="mt ny">
-          <div class="ml2">Capitale disponibile</div>
-          <div class="mv g" id="mYP">€ 80.000</div>
-          <div class="ms2">Alla data obiettivo con polizza</div>
-          <div class="mk kg" id="mYD">Target protetto</div>
-        </div>
-        <div class="mt nr">
-          <div class="ml2">Prob. raggiung. obiettivo</div>
-          <div class="mv r" id="mNPct">34%</div>
-          <div class="ms2">Senza polizza</div>
-        </div>
-        <div class="mt ny">
-          <div class="ml2">Prob. raggiung. obiettivo</div>
-          <div class="mv g" id="mYPct">87%</div>
-          <div class="ms2">Con polizza</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="cc">
-      <div class="cch"><div class="cchi" style="background:#eaf7f0">💡</div><div class="ccht">Break-even tra premio e auto-accantonamento</div></div>
-      <div class="value-note" id="valueNarrative"></div>
-      <div class="ca" style="height:230px"><canvas id="liqC"></canvas></div>
-      <div class="lr">
-        <div class="li"><div class="ll" style="background:#fca5a5"></div>Auto-accantonamento mensile</div>
-        <div class="li"><div class="ll" style="background:var(--teal)"></div>Premio mensile polizza</div>
-      </div>
-      <div class="dv"></div>
-      <div style="font-size:10px;font-weight:700;color:var(--tl);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Come cambia il piano attivando le coperture</div>
-      <div id="benefitBars"></div>
-      <div class="dv"></div>
-      <div class="mg4" style="margin-top:14px">
-        <div class="mt nr">
-          <div class="ml2">Gap residuo</div>
-          <div class="mv r" id="gapNoV">€ 38.000</div>
-          <div class="ms2">Senza polizza</div>
-        </div>
-        <div class="mt ny">
-          <div class="ml2">Gap residuo</div>
-          <div class="mv g" id="gapYesV">€ 6.000</div>
-          <div class="ms2">Con polizza</div>
-        </div>
-        <div class="mt nr">
-          <div class="ml2">Ritardo stimato</div>
-          <div class="mv r" id="delayNoV">3,4a</div>
-          <div class="ms2">Senza polizza</div>
-        </div>
-        <div class="mt ny">
-          <div class="ml2">Ritardo stimato</div>
-          <div class="mv g" id="delayYesV">0,7a</div>
-          <div class="ms2">Con polizza</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="cc p3full">
-      <div class="cch"><div class="cchi" style="background:#e8f4fd">📈</div><div class="ccht">Proiezione patrimoniale nel tempo — con e senza coperture</div></div>
-      <div class="ca" style="height:210px"><canvas id="tlC"></canvas></div>
-      <div class="lr">
-        <div class="li"><div class="ll" style="background:#e57373"></div>Senza copertura</div>
-        <div class="li"><div class="ll" style="background:var(--teal)"></div>Con copertura</div>
-        <div class="li"><div class="ll" style="background:var(--gold)"></div>Target obiettivo</div>
-      </div>
-    </div>
-
-  </div><!-- /p3grid -->
 </div>
 </div>
 

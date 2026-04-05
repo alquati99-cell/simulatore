@@ -1137,12 +1137,9 @@
       "coverageSummaryBand",
       "policySuggestedGrid",
       "policyOptionalGrid",
-      "impactStage",
-      "scenarioModeTabs",
-      "bundleGrid",
-      "eventGrid",
-      "benefitBars",
-      "valueNarrative",
+      "scenarioSimpleIntro",
+      "simplePathLabel",
+      "simpleGapLabel",
       "printSheet"
     ].forEach(function (id) {
       var node = byId(id);
@@ -1157,22 +1154,7 @@
       "policySuggestedBadge",
       "policyOptionalBadge",
       "p3ClientName",
-      "p3GoalName",
-      "at",
-      "ad",
-      "vP",
-      "vR",
-      "vA",
-      "mNP",
-      "mYP",
-      "mND",
-      "mYD",
-      "mNPct",
-      "mYPct",
-      "gapNoV",
-      "gapYesV",
-      "delayNoV",
-      "delayYesV"
+      "p3GoalName"
     ].forEach(function (id) {
       var node = byId(id);
       if (node) node.textContent = "";
@@ -1200,12 +1182,6 @@
     ].forEach(function (entry) {
       var node = byId(entry[0]);
       if (node) node.value = entry[1];
-    });
-
-    ["slP", "slR", "slA"].forEach(function (id) {
-      var node = byId(id);
-      if (!node) return;
-      node.value = node.defaultValue || node.value;
     });
 
     Object.keys(S.ch).forEach(function (chartId) {
@@ -1667,23 +1643,17 @@
   }
 
   function updateSliderBase(keepCurrentValues) {
-    if (!S.plan) return;
-    var profile = S.plan.profile;
-    var primaryGoal = featuredGoal(S.plan.goals);
-    var targetHorizon = primaryGoal ? clamp(primaryGoal.years + 2, 2, 25) : 10;
-
-    if (!keepCurrentValues) {
-      byId("slP").value = clamp(roundStep(profile.totalAssets, 5000), 20000, 300000);
-      byId("slR").value = clamp(roundStep(profile.monthlySavings, 50), 200, 3000);
-      byId("slA").value = targetHorizon;
-    }
+    return keepCurrentValues;
   }
 
   function currentOverrides() {
+    var activeGoal = S.plan && S.plan.goals
+      ? (S.plan.goals.find(function (goal) { return goal.id === S.activeGoalId; }) || featuredGoal(S.plan.goals) || S.plan.goals[0])
+      : null;
     return {
-      totalAssets: parseInt(byId("slP").value, 10) || S.plan.profile.totalAssets,
-      monthlySavings: parseInt(byId("slR").value, 10) || S.plan.profile.monthlySavings,
-      horizonYears: parseInt(byId("slA").value, 10) || 10,
+      totalAssets: S.plan.profile.totalAssets,
+      monthlySavings: S.plan.profile.monthlySavings,
+      horizonYears: activeGoal ? clamp(activeGoal.years + 2, 2, 25) : 10,
       goalId: S.activeGoalId
     };
   }
@@ -1834,6 +1804,177 @@
     suggestedGrid.innerHTML = suggested.length ? suggested.map(function (product) { return cardMarkup(product, "suggested"); }).join("") : '<div class="policy-empty">Nessuna copertura prioritaria individuata per questo profilo.</div>';
     optionalGrid.innerHTML = optional.length ? optional.map(function (product) { return cardMarkup(product, "optional"); }).join("") : '<div class="policy-empty">Per questo profilo il motore non vede altre coperture opzionali davvero rilevanti.</div>';
     renderRagInsightPanel();
+  }
+
+  function yearlyLabelsFromPath(path) {
+    return path.map(function (_, index) {
+      return index === 0 ? "Oggi" : "Anno " + Math.round(index / 12);
+    }).filter(function (_, index) {
+      return index === 0 || index % 12 === 0;
+    });
+  }
+
+  function yearlyValues(path) {
+    return path.filter(function (_, index) {
+      return index === 0 || index % 12 === 0;
+    });
+  }
+
+  function drawScenarioPathChart(activeScenario) {
+    var canvas = byId("pathC");
+    if (!canvas) return;
+    destroyChart("path");
+    var labels = yearlyLabelsFromPath(activeScenario.withCoverage.path);
+    var noData = yearlyValues(activeScenario.noCoverage.path);
+    var yesData = yearlyValues(activeScenario.withCoverage.path);
+    var targetData = yearlyValues(activeScenario.targetPath);
+    var ctx = canvas.getContext("2d");
+
+    S.ch.path = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Senza copertura",
+            data: noData,
+            borderColor: "#e57373",
+            backgroundColor: "rgba(229,115,115,.08)",
+            fill: true,
+            tension: 0.35,
+            borderWidth: 2.5,
+            pointRadius: 2.5,
+            pointBackgroundColor: "#e57373"
+          },
+          {
+            label: "Con copertura",
+            data: yesData,
+            borderColor: "#00857c",
+            backgroundColor: "rgba(0,133,124,.08)",
+            fill: true,
+            tension: 0.35,
+            borderWidth: 2.5,
+            pointRadius: 2.5,
+            pointBackgroundColor: "#00857c"
+          },
+          {
+            label: "Target",
+            data: targetData,
+            borderColor: "#e8a000",
+            borderDash: [6, 4],
+            fill: false,
+            tension: 0,
+            borderWidth: 2,
+            pointRadius: 0
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                return "€ " + context.parsed.y.toLocaleString("it-IT");
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8", maxTicksLimit: 8 } },
+          y: { grid: { color: "rgba(212,227,245,.5)" }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8", callback: function (value) { return "€" + Math.round(value / 1000) + "k"; } } }
+        },
+        animation: { duration: 650, easing: "easeInOutQuart" }
+      }
+    });
+  }
+
+  function drawScenarioGapChart(activeScenario) {
+    var canvas = byId("gapC");
+    if (!canvas) return;
+    destroyChart("gap");
+    var labels = yearlyLabelsFromPath(activeScenario.withCoverage.path);
+    var noData = yearlyValues(activeScenario.noCoverage.path);
+    var yesData = yearlyValues(activeScenario.withCoverage.path);
+    var targetData = yearlyValues(activeScenario.targetPath);
+    var noGap = targetData.map(function (target, index) {
+      return Math.max(0, target - (noData[index] || 0));
+    });
+    var yesGap = targetData.map(function (target, index) {
+      return Math.max(0, target - (yesData[index] || 0));
+    });
+    var ctx = canvas.getContext("2d");
+
+    S.ch.gap = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: "Gap senza copertura",
+            data: noGap,
+            borderColor: "#f87171",
+            backgroundColor: "rgba(248,113,113,.12)",
+            fill: true,
+            tension: 0.3,
+            borderWidth: 2.5,
+            pointRadius: 2.5,
+            pointBackgroundColor: "#f87171"
+          },
+          {
+            label: "Gap con copertura",
+            data: yesGap,
+            borderColor: "#34d399",
+            backgroundColor: "rgba(52,211,153,.12)",
+            fill: true,
+            tension: 0.3,
+            borderWidth: 2.5,
+            pointRadius: 2.5,
+            pointBackgroundColor: "#34d399"
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: function (context) {
+                return "€ " + context.parsed.y.toLocaleString("it-IT");
+              }
+            }
+          }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8", maxTicksLimit: 8 } },
+          y: { grid: { color: "rgba(212,227,245,.5)" }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8", callback: function (value) { return "€" + Math.round(value / 1000) + "k"; } } }
+        },
+        animation: { duration: 650, easing: "easeInOutQuart" }
+      }
+    });
+  }
+
+  function renderSimpleScenarioGraphs(activeScenario) {
+    var intro = byId("scenarioSimpleIntro");
+    var pathLabel = byId("simplePathLabel");
+    var gapLabel = byId("simpleGapLabel");
+    if (intro) {
+      intro.textContent = 'I grafici leggono lo scenario "' + activeScenario.label + '" sull\'obiettivo "' + S.analysis.focusGoal.name + '". Rosso = cliente scoperto, verde = coperture attive.';
+    }
+    if (pathLabel) {
+      pathLabel.textContent = "Confronto tra patrimonio disponibile e target obiettivo lungo l'orizzonte simulato.";
+    }
+    if (gapLabel) {
+      gapLabel.textContent = "Quanto capitale manca ancora anno dopo anno per arrivare al target.";
+    }
+    drawScenarioPathChart(activeScenario);
+    drawScenarioGapChart(activeScenario);
   }
 
   function renderImpactStage(activeScenario) {
@@ -2370,20 +2511,9 @@
     }
     var overrides = currentOverrides();
 
-    byId("vP").textContent = currency(overrides.totalAssets);
-    byId("vR").textContent = currency(overrides.monthlySavings);
-    byId("vA").textContent = overrides.horizonYears;
-
     S.analysis = FamilyAdvisorEngine.analyzeScenarios(S.plan, overrides);
-    if (S.activeScenarioMode === "bundle" && !(S.analysis.bundleOrder || []).length) {
-      S.activeScenarioMode = "single";
-    }
+    S.activeScenarioMode = (S.analysis.bundleOrder || []).length ? "bundle" : "single";
     ensureScenarioSelection(previousGoalId !== S.analysis.focusGoal.id);
-
-    renderGoalFocusGrid();
-    renderScenarioModeTabs();
-    renderBundleCards();
-    renderEventButtons();
     renderScenario(S.activeScenarioId);
   }
 
@@ -2394,18 +2524,10 @@
     S.activeScenarioId = scenarioId;
     var activeScenario = collection[scenarioId];
     renderGoalFocusGrid();
-    renderScenarioModeTabs();
-    renderBundleCards();
-    renderEventButtons();
     renderGoalGaugeGrid();
     renderCoverageSummaryBand();
     renderPolicyBoard(activeScenario);
-    renderImpactStage(activeScenario);
-    renderScenarioMetrics(activeScenario);
-    renderBenefitBars(activeScenario);
-    drawBar(activeScenario);
-    drawLiquidityChart(activeScenario);
-    drawTimeline(activeScenario);
+    renderSimpleScenarioGraphs(activeScenario);
   }
 
   function syncProfile() {
@@ -2562,7 +2684,8 @@
 
   function bindEvents() {
     ["slP", "slR", "slA"].forEach(function (id) {
-      byId(id).addEventListener("input", refreshScenarioAnalysis);
+      var node = byId(id);
+      if (node) node.addEventListener("input", refreshScenarioAnalysis);
     });
     root.addEventListener("afterprint", function () {
       document.body.classList.remove("print-mode");
