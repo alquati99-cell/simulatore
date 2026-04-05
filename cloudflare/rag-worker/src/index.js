@@ -331,7 +331,9 @@ async function handleQuery(request, env) {
     "Rispondi in italiano, con tono chiaro e professionale.",
     "Usa solo il contesto recuperato.",
     "Non inventare premi, benchmark o regole che non sono nel contesto.",
-    "Se il contesto non basta, dillo chiaramente.",
+    "Se il contesto contiene gia un benchmark numerico pertinente, apri la risposta dando subito il numero e la sua unita di misura.",
+    "Non dire che non puoi rispondere se il contesto offre almeno un benchmark utile; chiarisci semmai quali elementi aggiuntivi servirebbero per affinare la stima.",
+    "Se il contesto non basta davvero, dillo chiaramente.",
     "Non sostituirti al motore matematico: il motore deterministico resta il riferimento per punteggi e simulazioni.",
     audience === "client"
       ? "Scrivi per un cliente finale, con frasi semplici e molto concrete."
@@ -345,6 +347,7 @@ async function handleQuery(request, env) {
     contextBlock,
     "",
     "Restituisci una risposta sintetica con massimo 3 paragrafi e cita tra parentesi quadre i riferimenti [1], [2] quando usi un passaggio del contesto.",
+    "Se la domanda chiede 'quanto costa', 'qual e il benchmark' o 'quanto serve', rispondi nel primo periodo con il numero principale ricavabile dal contesto.",
   ].join("\n");
 
   const llmResult = await env.AI.run(env.RAG_LLM_MODEL, {

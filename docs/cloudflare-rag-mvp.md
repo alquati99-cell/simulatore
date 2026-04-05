@@ -71,6 +71,11 @@ Da tenere in `D1` e nel motore:
 - formule di score
 - scenari e priorita polizze
 
+Nel progetto attuale facciamo una cosa ibrida utile:
+
+- `D1 + motore` restano la fonte strutturata per i calcoli
+- `Vectorize` riceve anche delle schede benchmark generate dai dataset ufficiali, cosi il RAG puo spiegare e citare numeri reali senza toccare la logica matematica
+
 ## Flusso applicativo
 
 ```mermaid
@@ -90,6 +95,18 @@ flowchart TD
 - config worker: [wrangler.jsonc](/Users/matteo7/Desktop/Simulatore%20scenari%20assicurativi/cloudflare/rag-worker/wrangler.jsonc)
 - schema D1 RAG: [rag-schema.sql](/Users/matteo7/Desktop/Simulatore%20scenari%20assicurativi/cloudflare/d1/rag-schema.sql)
 - seed iniziale: [knowledge-seed.json](/Users/matteo7/Desktop/Simulatore%20scenari%20assicurativi/cloudflare/rag-worker/seed/knowledge-seed.json)
+- corpus benchmark generato: [knowledge-benchmarks.generated.json](/Users/matteo7/Desktop/Simulatore%20scenari%20assicurativi/cloudflare/rag-worker/seed/knowledge-benchmarks.generated.json)
+- corpus completo pronto per ingest: [knowledge-base.json](/Users/matteo7/Desktop/Simulatore%20scenari%20assicurativi/cloudflare/rag-worker/seed/knowledge-base.json)
+- builder benchmark -> RAG: [build_rag_knowledge_base.py](/Users/matteo7/Desktop/Simulatore%20scenari%20assicurativi/scripts/build_rag_knowledge_base.py)
+- uploader batch verso worker live: [push_rag_knowledge.py](/Users/matteo7/Desktop/Simulatore%20scenari%20assicurativi/scripts/push_rag_knowledge.py)
+
+Oggi il corpus generato contiene:
+
+- `215` documenti totali
+- `14` citta per benchmark casa/studi
+- benchmark casa da OMI
+- benchmark universita da MUR
+- benchmark spesa/reddito/patrimonio da Banca d'Italia
 
 ## Endpoint pronti
 
@@ -182,13 +199,22 @@ wrangler deploy
 
 ### 5. Ingest iniziale
 
-Chiama:
+Se vuoi solo il seed manuale, chiama:
 
 ```bash
 curl -X POST https://<worker-url>/api/rag/ingest \
   -H "Content-Type: application/json" \
   --data @cloudflare/rag-worker/seed/knowledge-seed.json
 ```
+
+Per il corpus completo benchmark-driven usa invece:
+
+```bash
+python3 scripts/build_rag_knowledge_base.py
+python3 scripts/push_rag_knowledge.py
+```
+
+Lo script di upload invia il file in batch da `25` documenti per rispettare il limite attuale dell'endpoint `POST /api/rag/ingest`.
 
 ## Roadmap consigliata
 
