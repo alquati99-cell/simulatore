@@ -3267,7 +3267,10 @@ nav{
 }
 
 .coverage-band{
-  padding:18px;
+  padding:16px 18px;
+}
+.coverage-band-grid{
+  gap:8px;
 }
 .coverage-band-title,
 .policy-group-title,
@@ -3280,6 +3283,12 @@ nav{
 .simple-graph-copy,
 .goal-story-copy{
   color:var(--tm);
+}
+.coverage-band-copy{
+  font-size:11px;
+  line-height:1.5;
+  margin-top:4px;
+  max-width:430px;
 }
 .coverage-band-metric.premium{
   background:#F3F7FD;
@@ -3295,28 +3304,69 @@ nav{
 }
 
 .policy-group{
-  padding:14px;
+  padding:12px;
+}
+.policy-group-head{
+  margin-bottom:8px;
+}
+.policy-group-copy{
+  font-size:9px;
+  line-height:1.35;
+  margin-top:2px;
 }
 .policy-card{
-  padding:10px;
+  padding:8px 9px;
   background:#FBFCFE;
 }
 .policy-card-shell{
-  grid-template-columns:minmax(0,1.12fr) minmax(148px,.72fr) 90px;
+  grid-template-columns:minmax(0,1.2fr) minmax(138px,.64fr) 78px;
+  gap:8px;
 }
 .policy-card-flag{
   background:#EEF4FF;
   border-color:#DCE7F8;
   color:#0A5BC8;
+  padding:4px 7px;
+  font-size:8px;
 }
 .policy-card-flag.optional{
   background:#F5F7FA;
   border-color:#E6EAF0;
   color:#68717E;
 }
+.policy-card-main{
+  gap:4px;
+}
+.policy-card-top{
+  gap:7px;
+}
+.policy-card-icon{
+  width:30px;
+  height:30px;
+  border-radius:10px;
+}
+.policy-card-name{
+  font-size:12.5px;
+  line-height:1.12;
+}
+.policy-card-copy{
+  font-size:9px;
+  line-height:1.25;
+  -webkit-line-clamp:1;
+  color:#5A6678;
+}
+.policy-tags{
+  gap:4px;
+}
+.policy-tag{
+  padding:3px 6px;
+  font-size:8px;
+}
 .policy-mini{
   background:#fff;
   border-color:#E8EDF4;
+  padding:6px 7px;
+  border-radius:10px;
 }
 .policy-mini.reserve{
   background:#FFFBE7;
@@ -3330,10 +3380,45 @@ nav{
   background:#fff;
   border-color:#DCE7F8;
   color:#315E9F;
+  min-width:66px;
+  padding:7px 9px;
+  font-size:9px;
+  border-radius:9px;
 }
 .policy-toggle.on{
   background:var(--blue);
   border-color:var(--blue);
+}
+.policy-mini-k,
+.policy-side-k{
+  font-size:8px;
+}
+.policy-mini-v{
+  font-size:11px;
+  margin-top:3px;
+}
+.policy-mini-s{
+  font-size:7.6px;
+  line-height:1.15;
+  margin-top:1px;
+}
+.policy-card-metrics{
+  gap:5px;
+}
+.policy-card-side{
+  gap:5px;
+}
+.policy-side-v{
+  font-size:15px;
+}
+.policy-side-v small{
+  font-size:10px;
+}
+.policy-side-hint{
+  font-size:7.6px;
+  line-height:1.15;
+  max-width:72px;
+  color:#7B8796;
 }
 
 .simple-graph-card{
@@ -3607,7 +3692,7 @@ nav{
       <div>
         <div class="goal-story-ey">Raggiungimento obiettivi</div>
         <div class="coverage-stage-title">Quanto ogni obiettivo resta in piedi</div>
-        <div class="goal-gauge-copy">Ogni gauge mostra il punteggio da 0 a 100 del singolo obiettivo. Il valore non va mai a zero in automatico: parte dalla base finanziaria reale del cliente e poi sale o scende in base alla tenuta del piano quando attivi o disattivi le coperture.</div>
+        <div class="goal-gauge-copy">Score 0-100 di ogni obiettivo: il set polizze fa salire o scendere la tenuta del piano.</div>
       </div>
       <button class="pdf-btn" onclick="exportScenarioPdf()">Esporta PDF</button>
     </div>
@@ -3622,7 +3707,7 @@ nav{
         <div>
           <div class="goal-story-ey">Coperture suggerite</div>
           <div class="policy-group-title">Le prime polizze da valutare</div>
-          <div class="policy-group-copy">Qui compaiono le coperture con priorità più alta per questo cliente. Attivandole vedi subito come migliorano i gauge degli obiettivi.</div>
+          <div class="policy-group-copy">Prime coperture da valutare.</div>
         </div>
         <div class="policy-group-badge suggested" id="policySuggestedBadge">Set consigliato</div>
       </div>
@@ -3633,7 +3718,7 @@ nav{
         <div>
           <div class="goal-story-ey">Coperture opzionali</div>
           <div class="policy-group-title">Completano il piano</div>
-          <div class="policy-group-copy">Non servono tutte insieme: qui restano le soluzioni utili ma meno urgenti, da usare come completamento o secondo passo.</div>
+          <div class="policy-group-copy">Secondo livello di priorità.</div>
         </div>
         <div class="policy-group-badge optional" id="policyOptionalBadge">Opzionali</div>
       </div>

@@ -283,6 +283,47 @@
     return labels[product.id] || product.name;
   }
 
+  function compactProductLabel(product) {
+    var profile = S.plan ? S.plan.profile : {};
+    var labels = {
+      tcm: profile && (profile.childrenCount || profile.spouseName) ? "Tutela famiglia" : "Tutela capitale",
+      income_protection: "Protegge reddito",
+      rc_family: profile && profile.housingStatus !== "Affittuario" ? "Casa e responsabilita" : "Responsabilita civile",
+      ltc: "Long term care",
+      health: "Spese salute",
+      accident: "Copre infortuni",
+      mortgage: "Protegge mutuo"
+    };
+    return labels[product.id] || product.shortDescription || product.name;
+  }
+
+  function compactProductMetric(product) {
+    var amount = Math.max(0, product.coverAmount || 0);
+    if (product.id === "income_protection" || product.id === "ltc") {
+      return "Rendita € " + currency(amount) + "/mese";
+    }
+    if (product.id === "tcm") {
+      return "Capitale € " + currency(amount);
+    }
+    if (product.id === "rc_family") {
+      return "Massimale € " + currency(amount);
+    }
+    if (product.id === "health") {
+      return "Spese fino a € " + currency(amount);
+    }
+    if (product.id === "accident") {
+      return "Indennizzo € " + currency(amount);
+    }
+    if (product.id === "mortgage") {
+      return "Debito € " + currency(amount);
+    }
+    return "";
+  }
+
+  function compactDeductibleLabel(product) {
+    return product.deductibleRate ? "Detraibile 19%" : "Non detraibile";
+  }
+
   function householdCoreBurn(profile) {
     return profile.housingCost + profile.fixedExpenses + 350 + profile.childrenCount * 140 + (profile.spouseName ? 180 : 0);
   }
@@ -332,9 +373,9 @@
   }
 
   function priorityMeta(score) {
-    if (score >= 60) return { label: "Priorita alta", key: "high" };
-    if (score >= 45) return { label: "Priorita media", key: "medium" };
-    return { label: "Priorita bassa", key: "low" };
+    if (score >= 60) return { label: "Alta", key: "high" };
+    if (score >= 45) return { label: "Media", key: "medium" };
+    return { label: "Bassa", key: "low" };
   }
 
   function goalInputValue(goal, field) {
@@ -513,32 +554,28 @@
   function scenarioCoverageReason(product, activeScenario) {
     var profile = S.plan.profile;
     var reasons = {
-      tcm: profile.childrenCount || profile.spouseName
-        ? "Tiene in piedi la sicurezza del nucleo se il reddito principale viene meno."
-        : "Trasferisce un rischio grave senza usare il capitale destinato agli obiettivi.",
-      income_protection: "Se il lavoro si ferma, evita di bruciare i risparmi per sostenere il tenore di vita.",
-      accident: "Copre eventi accidentali che possono bloccare il lavoro e creare spese improvvise.",
-      rc_family: profile.housingStatus !== "Affittuario"
-        ? "Ha una casa: protegge immobile, danni a terzi e spese legali improvvise."
-        : "Evita che un danno a terzi costringa a usare la liquidita del piano.",
-      ltc: "Riduce l'impatto di assistenza di lungo periodo sul patrimonio familiare.",
-      health: "Riduce esborsi medici straordinari che sottraggono risorse agli obiettivi.",
-      mortgage: "Protegge la continuita del progetto casa se mutuo o reddito entrano in crisi."
+      tcm: profile.childrenCount || profile.spouseName ? "Capitale immediato alla famiglia" : "Protegge il capitale del piano",
+      income_protection: "Sostiene il piano se il reddito si ferma",
+      accident: "Riduce lo stop da infortunio",
+      rc_family: profile.housingStatus !== "Affittuario" ? "Tutela casa, terzi e vita privata" : "Tutela i danni verso terzi",
+      ltc: "Riduce il peso dell'assistenza futura",
+      health: "Assorbe spese mediche straordinarie",
+      mortgage: "Tiene in piedi il progetto casa"
     };
 
     if (product.id === "rc_family" && activeScenario && activeScenario.id === "home_damage") {
-      return "E la copertura piu naturale se il cliente ha un immobile da proteggere da danni e responsabilita.";
+      return "La piu coerente sul rischio casa";
     }
     if (product.id === "income_protection" && activeScenario && activeScenario.id === "income_stop") {
-      return "Qui e la leva piu importante: il rischio vero non e la spesa, ma il blocco del reddito.";
+      return "La leva chiave sul blocco reddito";
     }
     if (product.id === "accident" && activeScenario && relevantScenarioIds(activeScenario).indexOf("ip") >= 0) {
-      return "Rinforza la protezione sul rischio invalidita quando il cliente lavora molto sul proprio reddito.";
+      return "Rinforza la protezione da infortunio";
     }
     if (product.id === "tcm" && activeScenario && activeScenario.id === "death") {
-      return "Serve a trasformare un evento irreversibile in capitale immediato per la famiglia.";
+      return "Trasforma il decesso in capitale";
     }
-    return reasons[product.id] || product.shortDescription || product.detail;
+    return reasons[product.id] || compactProductLabel(product);
   }
 
   function joinReadableList(items) {
@@ -1321,10 +1358,10 @@
         return (
           "<tr>" +
           '<td><div class="cov-ic2" style="background:' + recommendation.tint + '">' + esc(recommendation.icon) + "</div></td>" +
-          '<td><div class="cov-nm">' + esc(recommendation.name) + '</div><div class="cov-ds">' + esc(recommendation.detail) + "</div></td>" +
-          '<td><div class="cov-ds">' + esc(recommendation.secondaryDetail) + "<br>Coerenza profilo: " + recommendation.score + "/100</div></td>" +
+          '<td><div class="cov-nm">' + esc(recommendation.name) + '</div><div class="cov-ds">' + esc(compactProductLabel(recommendation)) + "</div></td>" +
+          '<td><div class="cov-ds">' + esc(compactProductMetric(recommendation)) + " · Fit " + recommendation.score + "/100</div></td>" +
           '<td><div class="cov-eur">€ ' + recommendation.monthlyPremium + '/mese</div></td>' +
-          '<td><div class="cov-ded' + (recommendation.deductibleRate ? "" : " no") + '">' + esc(recommendation.deductibleLabel) + "</div></td>" +
+          '<td><div class="cov-ded' + (recommendation.deductibleRate ? "" : " no") + '">' + esc(compactDeductibleLabel(recommendation)) + '</div></td>' +
           '<td><button class="tog' + (active ? " on" : "") + '" onclick="toggleCoverage(\'' + esc(recommendation.id) + '\')"></button></td>' +
           "</tr>"
         );
@@ -1426,7 +1463,7 @@
     if (!snapshot.selectedCount) {
       band.innerHTML =
         '<div class="coverage-band empty">' +
-        '<div><div class="coverage-band-ey">Set polizze</div><div class="coverage-band-title">Nessuna copertura attiva</div><div class="coverage-band-copy">Attiva una o piu polizze qui sotto e vedrai subito il costo mensile totale del set rispetto a quanto il cliente dovrebbe auto-accantonare da solo.</div></div>' +
+        '<div><div class="coverage-band-ey">Set polizze</div><div class="coverage-band-title">Nessuna copertura attiva</div><div class="coverage-band-copy">Attiva le coperture da valutare.</div></div>' +
         '<div class="coverage-band-grid">' +
         '<div class="coverage-band-metric"><div class="coverage-band-k">Obiettivi in simulazione</div><div class="coverage-band-v">' + esc(selectedGoalCount) + '</div></div>' +
         '<div class="coverage-band-metric"><div class="coverage-band-k">Set attivo</div><div class="coverage-band-v">€ 0/mese</div></div>' +
@@ -1437,7 +1474,7 @@
 
     band.innerHTML =
       '<div class="coverage-band">' +
-      '<div><div class="coverage-band-ey">Set polizze attivo</div><div class="coverage-band-title">Con ' + esc(snapshot.selectedCount) + ' copertur' + (snapshot.selectedCount === 1 ? "a" : "e") + ' attiv' + (snapshot.selectedCount === 1 ? "a" : "e") + ' il cliente spende € ' + esc(currency(snapshot.totalPremium)) + '/mese</div><div class="coverage-band-copy">Per reggere gli stessi rischi senza polizze dovrebbe assorbire circa € ' + esc(currency(snapshot.selfFundMonthly)) + '/mese di auto-cuscinetto. La differenza resta disponibile per sostenere gli obiettivi scelti.</div></div>' +
+      '<div><div class="coverage-band-ey">Set polizze attivo</div><div class="coverage-band-title">Con ' + esc(snapshot.selectedCount) + ' copertur' + (snapshot.selectedCount === 1 ? "a" : "e") + ' attiv' + (snapshot.selectedCount === 1 ? "a" : "e") + ' il cliente spende € ' + esc(currency(snapshot.totalPremium)) + '/mese</div><div class="coverage-band-copy">Confronto diretto tra premio e cuscinetto richiesto senza polizze.</div></div>' +
       '<div class="coverage-band-grid">' +
       '<div class="coverage-band-metric premium"><div class="coverage-band-k">Costo totale set</div><div class="coverage-band-v">€ ' + esc(currency(snapshot.totalPremium)) + '/mese</div></div>' +
       '<div class="coverage-band-metric reserve"><div class="coverage-band-k">Senza polizze</div><div class="coverage-band-v">€ ' + esc(currency(snapshot.selfFundMonthly)) + '/mese</div></div>' +
@@ -1478,25 +1515,25 @@
         '<div class="policy-card' + (isSuggested ? " suggested" : "") + (selected ? " on" : "") + '">' +
         '<div class="policy-card-shell">' +
         '<div class="policy-card-main">' +
-        '<div class="policy-card-flag' + (isSuggested ? "" : " optional") + '">' + esc(isSuggested ? "✓ Consigliata" : "Opzionale") + "</div>" +
+        '<div class="policy-card-flag' + (isSuggested ? "" : " optional") + '">' + esc(isSuggested ? "Suggerita" : "Opzionale") + "</div>" +
         '<div class="policy-card-top">' +
         '<div class="policy-card-icon" style="background:' + esc(product.tint) + '">' + esc(product.icon) + "</div>" +
         '<div style="flex:1;min-width:0"><div class="policy-card-name">' + esc(product.name) + '</div><div class="policy-card-copy">' + esc(scenarioCoverageReason(product, activeScenario)) + "</div></div>" +
         "</div>" +
         '<div class="policy-tags">' +
         '<span class="policy-tag ' + esc(priority.key) + '">' + esc(priority.label) + "</span>" +
-        '<span class="policy-tag">' + esc(matchesCurrentScenario ? "utile nello scenario attivo" : "utile sul profilo") + "</span>" +
+        '<span class="policy-tag">' + esc(matchesCurrentScenario ? "Scenario" : "Profilo") + "</span>" +
         "</div>" +
         "</div>" +
         '<div class="policy-card-stats">' +
         '<div class="policy-card-metrics">' +
-        '<div class="policy-mini premium"><div class="policy-mini-k">Costo mensile</div><div class="policy-mini-v">' + esc(premiumRangeLabel(product)) + '</div><div class="policy-mini-s">' + esc(product.deductibleLabel) + "</div></div>" +
-        '<div class="policy-mini reserve"><div class="policy-mini-k">Auto-cuscinetto</div><div class="policy-mini-v">€ ' + esc(currency(product.selfFundMonthlyEquivalent)) + '/mese</div><div class="policy-mini-s">Quanto dovrebbe tenere da parte da solo</div></div>' +
+        '<div class="policy-mini premium"><div class="policy-mini-k">Premio</div><div class="policy-mini-v">' + esc(premiumRangeLabel(product)) + '</div><div class="policy-mini-s">' + esc(compactDeductibleLabel(product)) + "</div></div>" +
+        '<div class="policy-mini reserve"><div class="policy-mini-k">Cuscinetto</div><div class="policy-mini-v">€ ' + esc(currency(product.selfFundMonthlyEquivalent)) + '/mese</div><div class="policy-mini-s">Senza polizza</div></div>' +
         "</div>" +
         "</div>" +
         '<div class="policy-card-side">' +
-        '<div class="policy-side-score"><div class="policy-side-k">Coerenza profilo</div><div class="policy-side-v">' + esc(product.score) + '<small>/100</small></div></div>' +
-        '<div class="policy-side-hint">' + esc(matchesCurrentScenario ? "Impatta subito sullo scenario selezionato" : "Rafforza il profilo in modo trasversale") + "</div>" +
+        '<div class="policy-side-score"><div class="policy-side-k">Fit</div><div class="policy-side-v">' + esc(product.score) + '<small>/100</small></div></div>' +
+        '<div class="policy-side-hint">' + esc(compactProductMetric(product)) + "</div>" +
         '<div class="policy-card-foot"><button class="policy-toggle' + (selected ? " on" : "") + '" onclick="toggleCoverage(\'' + esc(product.id) + '\')">' + esc(selected ? "Disattiva" : "Attiva") + "</button></div>" +
         "</div>" +
         "</div>" +
