@@ -501,18 +501,46 @@
     return "bilanciato";
   }
 
+  function cleanNameCandidate(value) {
+    var candidate = String(value || "")
+      .replace(/^(?:nome(?:\s+e\s+cognome)?|cliente|profilo completo|mi chiamo|si chiama|sono)\s*[:\-]?\s*/i, "")
+      .replace(/[,:;.\-]+$/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!candidate || /\d/.test(candidate)) return "";
+
+    var normalizedCandidate = normalizeText(candidate);
+    var blockedSingles = [
+      "single", "sposato", "convivente", "divorziato", "vedovo",
+      "affittuario", "proprietario", "mutuo", "reddito", "patrimonio",
+      "obiettivi", "obiettivo", "pensione", "casa", "salute", "emergenze",
+      "medico", "ingegnere", "impiegato", "consulente", "avvocato",
+      "imprenditore", "artigiano", "docente", "operaio", "pensionato",
+      "studente", "manager", "dirigente", "commercialista", "architetto"
+    ];
+    if (blockedSingles.indexOf(normalizedCandidate) >= 0) return "";
+
+    var tokens = candidate.split(/\s+/).filter(Boolean);
+    if (!tokens.length || tokens.length > 3) return "";
+    if (!tokens.every(function (token) { return /^[A-Za-zÀ-ÿ'’\-]+$/.test(token); })) return "";
+
+    return titleCase(candidate);
+  }
+
   function extractName(text) {
     var original = String(text || "").trim();
     var patterns = [
       /profilo completo:\s*([^,.\n]+)/i,
-      /^([A-Za-zÀ-ÿ'’]+\s+[A-Za-zÀ-ÿ'’]+(?:\s+[A-Za-zÀ-ÿ'’]+)?)$/,
-      /^([A-Za-zÀ-ÿ'’]+\s+[A-Za-zÀ-ÿ'’]+(?:\s+[A-Za-zÀ-ÿ'’]+)?)(?=,|\s+\d{1,2}\s+anni)/,
-      /nome(?:\s+e\s+cognome)?[:\s]+([A-Za-zÀ-ÿ'’]+\s+[A-Za-zÀ-ÿ'’]+(?:\s+[A-Za-zÀ-ÿ'’]+)?)/i
+      /(?:nome(?:\s+e\s+cognome)?|cliente)\s*[:\s]+([A-Za-zÀ-ÿ'’\-]+(?:\s+[A-Za-zÀ-ÿ'’\-]+){0,2})/i,
+      /(?:mi\s+chiamo|si\s+chiama|sono)\s+([A-Za-zÀ-ÿ'’\-]+(?:\s+[A-Za-zÀ-ÿ'’\-]+){0,2})/i,
+      /^([A-Za-zÀ-ÿ'’\-]+(?:\s+[A-Za-zÀ-ÿ'’\-]+){0,2})$/,
+      /^([A-Za-zÀ-ÿ'’\-]+(?:\s+[A-Za-zÀ-ÿ'’\-]+){0,2})(?=,|\s+\d{1,2}\s+anni|\s+(?:sposat|single|convivent|divorziat|vedov)|$)/i
     ];
     for (var i = 0; i < patterns.length; i += 1) {
       var match = original.match(patterns[i]);
       if (match && match[1]) {
-        return titleCase(match[1].replace(/[:\-]/g, " ").trim());
+        var candidate = cleanNameCandidate(match[1]);
+        if (candidate) return candidate;
       }
     }
     return "";
