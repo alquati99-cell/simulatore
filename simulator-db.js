@@ -4,7 +4,8 @@
     meta: {
       appName: "FamilyAdvisor Pro",
       version: "1.0.0",
-      storeKey: "family-advisor-profiles-v1"
+      storeKey: "family-advisor-profiles-v1",
+      proposalStoreKey: "family-advisor-proposals-v1"
     },
     demoChatSeed:
       "Marco Ferretti, 42 anni, sposato con Giulia 38 anni, 2 figli (8 e 5 anni), ingegnere, RAL 65.000€, patrimonio 80.000€, risparmio mensile 800€, affittuario. Obiettivi: pensione integrativa da 65 anni, acquisto prima casa entro 5 anni budget 250k, fondo studi per i figli, protezione reddito familiare.",
@@ -162,6 +163,56 @@
         keywords: ["artigian", "murator", "autist", "opera", "agricol", "elettric", "idraulic"]
       }
     ],
+    personaCatalog: [
+      {
+        id: "single_no_children",
+        name: "Single senza figli",
+        householdType: "single",
+        childrenBand: "0",
+        headline: "Autonomia e obiettivi personali",
+        description: "Profilo concentrato su casa, accumulo ed equilibrio di cassa."
+      },
+      {
+        id: "single_with_children",
+        name: "Single con figli",
+        householdType: "single",
+        childrenBand: "1_plus",
+        headline: "Bilancio familiare monoreddito",
+        description: "Serve difendere la cassa mensile e mettere ordine tra priorita familiari."
+      },
+      {
+        id: "couple_no_children",
+        name: "Coppia senza figli",
+        householdType: "couple",
+        childrenBand: "0",
+        headline: "Costruzione del progetto di coppia",
+        description: "Casa, risparmio e protezione patrimonio guidano la trattativa."
+      },
+      {
+        id: "family_one_child",
+        name: "Famiglia con 1 figlio",
+        householdType: "family_1",
+        childrenBand: "1",
+        headline: "Protezione del progetto familiare",
+        description: "Reddito, studi e casa vanno letti insieme, con poche leve molto chiare."
+      },
+      {
+        id: "family_two_plus",
+        name: "Famiglia con 2+ figli",
+        householdType: "family_2_plus",
+        childrenBand: "2_plus",
+        headline: "Famiglia numerosa e piano sotto pressione",
+        description: "La robustezza del piano dipende dalla tenuta del reddito e dalla qualita del cuscinetto."
+      },
+      {
+        id: "extended_household",
+        name: "Nucleo esteso / maturo",
+        householdType: "extended",
+        childrenBand: "0",
+        headline: "Patrimonio e stabilita da proteggere",
+        description: "Profilo piu strutturato dove contano tenuta patrimoniale, LTC e continuita del piano."
+      }
+    ],
     segments: [
       {
         id: "family-builder",
@@ -193,6 +244,12 @@
         description: "La stabilita del reddito dipende direttamente dalla persona e va difesa.",
         priorities: ["income_protection", "health", "retirement"]
       }
+    ],
+    solutionTierCatalog: [
+      { id: "essential", name: "Essential", multiplier: 0.82, accent: "soft" },
+      { id: "smart", name: "Smart", multiplier: 1, accent: "core" },
+      { id: "plus", name: "Plus", multiplier: 1.24, accent: "plus" },
+      { id: "elite", name: "Elite", multiplier: 1.52, accent: "top" }
     ],
     goalCatalog: [
       {
@@ -235,6 +292,7 @@
       {
         id: "tcm",
         name: "Temporanea Caso Morte (TCM)",
+        areaId: "protection",
         icon: "💀",
         tint: "#e8f4fd",
         deductibleRate: 0.19,
@@ -245,6 +303,7 @@
       {
         id: "income_protection",
         name: "Invalidita & Protezione reddito",
+        areaId: "health",
         icon: "🦽",
         tint: "#fff7e6",
         deductibleRate: 0.19,
@@ -255,6 +314,7 @@
       {
         id: "rc_family",
         name: "RC Famiglia & Casa",
+        areaId: "home",
         icon: "🏡",
         tint: "#eaf7f0",
         deductibleRate: 0,
@@ -265,6 +325,7 @@
       {
         id: "ltc",
         name: "Long Term Care (LTC)",
+        areaId: "protection",
         icon: "🏥",
         tint: "#fdf0ef",
         deductibleRate: 0.19,
@@ -275,6 +336,7 @@
       {
         id: "health",
         name: "Salute ricoveri",
+        areaId: "health",
         icon: "🩺",
         tint: "#eef5ff",
         deductibleRate: 0.19,
@@ -285,6 +347,7 @@
       {
         id: "accident",
         name: "Infortuni quotidiani",
+        areaId: "health",
         icon: "🦺",
         tint: "#eefbf4",
         deductibleRate: 0.19,
@@ -295,6 +358,7 @@
       {
         id: "mortgage",
         name: "Protezione mutuo",
+        areaId: "home",
         icon: "🏠",
         tint: "#fff5ea",
         deductibleRate: 0.19,
@@ -302,6 +366,74 @@
         scenarioIds: ["morte", "ip"],
         shortDescription: "Riduce il rischio di blocco del piano casa con mutuo."
       }
+    ],
+    offerAreaCatalog: [
+      {
+        id: "home",
+        name: "Casa",
+        accent: "#0A5BC8",
+        accentSoft: "#EAF2FF",
+        visualLabel: "Patrimonio casa",
+        mainVisual: "Protezione immobile e responsabilita",
+        summary: "1 prodotto, 8 coperture attivabili, 4 livelli di soluzione.",
+        productGroupName: "Casa Protetta",
+        linkedProductIds: ["rc_family", "mortgage"],
+        coverages: [
+          { id: "home_rc", name: "RC vita privata", linkedProductIds: ["rc_family"], defaultMonthly: 14 },
+          { id: "home_property_damage", name: "Danni abitazione", linkedProductIds: ["rc_family"], defaultMonthly: 18 },
+          { id: "home_contents", name: "Contenuto e furto", linkedProductIds: ["rc_family"], defaultMonthly: 12 },
+          { id: "home_legal", name: "Tutela legale", linkedProductIds: ["rc_family"], defaultMonthly: 9 },
+          { id: "home_assistance", name: "Assistenza casa", linkedProductIds: ["rc_family"], defaultMonthly: 8 },
+          { id: "home_systems", name: "Impianti e guasti", linkedProductIds: ["rc_family"], defaultMonthly: 7 },
+          { id: "home_events", name: "Eventi naturali", linkedProductIds: ["rc_family"], defaultMonthly: 11 },
+          { id: "home_mortgage", name: "Protezione mutuo", linkedProductIds: ["mortgage"], defaultMonthly: 16 }
+        ]
+      },
+      {
+        id: "health",
+        name: "Salute",
+        accent: "#00857C",
+        accentSoft: "#E9F8F6",
+        visualLabel: "Salute e continuita",
+        mainVisual: "Spese mediche, infortuni e stop lavoro",
+        summary: "1 prodotto, 5 coperture attivabili, 4 livelli di soluzione.",
+        productGroupName: "Salute & Infortuni",
+        linkedProductIds: ["health", "accident", "income_protection"],
+        coverages: [
+          { id: "health_hospital", name: "Ricoveri", linkedProductIds: ["health"], defaultMonthly: 18 },
+          { id: "health_diagnostic", name: "Diagnostica", linkedProductIds: ["health"], defaultMonthly: 12 },
+          { id: "health_specialist", name: "Specialistica", linkedProductIds: ["health"], defaultMonthly: 10 },
+          { id: "health_accident", name: "Infortuni", linkedProductIds: ["accident"], defaultMonthly: 14 },
+          { id: "health_income_stop", name: "Stop lavoro", linkedProductIds: ["income_protection"], defaultMonthly: 22 }
+        ]
+      },
+      {
+        id: "protection",
+        name: "Protection",
+        accent: "#7A3FF2",
+        accentSoft: "#F1EBFF",
+        visualLabel: "Vita e long care",
+        mainVisual: "Protezione del nucleo e della non autosufficienza",
+        summary: "2 prodotti, 2 coperture chiave, 4 livelli di soluzione.",
+        products: [
+          {
+            id: "protection_life",
+            name: "Protezione Vita",
+            linkedProductIds: ["tcm"],
+            coverages: [
+              { id: "protection_tcm", name: "TCM", linkedProductIds: ["tcm"], defaultMonthly: 12 }
+            ]
+          },
+          {
+            id: "protection_ltc",
+            name: "Long Term Care",
+            linkedProductIds: ["ltc"],
+            coverages: [
+              { id: "protection_ltc", name: "LTC", linkedProductIds: ["ltc"], defaultMonthly: 18 }
+            ]
+          }
+        ]
+      },
     ],
     scenarioCatalog: [
       {
