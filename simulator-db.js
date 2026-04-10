@@ -247,9 +247,9 @@
     ],
     solutionTierCatalog: [
       { id: "essential", name: "Essential", multiplier: 0.82, accent: "soft" },
-      { id: "smart", name: "Smart", multiplier: 1, accent: "core" },
-      { id: "plus", name: "Plus", multiplier: 1.24, accent: "plus" },
-      { id: "elite", name: "Elite", multiplier: 1.52, accent: "top" }
+      { id: "plus", name: "Plus", multiplier: 1, accent: "core" },
+      { id: "premium", name: "Premium", multiplier: 1.26, accent: "plus" },
+      { id: "top", name: "Top", multiplier: 1.54, accent: "top" }
     ],
     goalCatalog: [
       {
@@ -376,17 +376,113 @@
         visualLabel: "Patrimonio casa",
         mainVisual: "Protezione immobile e responsabilita",
         summary: "1 prodotto, 8 coperture attivabili, 4 livelli di soluzione.",
-        productGroupName: "Casa Protetta",
-        linkedProductIds: ["rc_family", "mortgage"],
+        productGroupName: "Allianz ULTRA Casa e Patrimonio",
+        linkedProductIds: ["rc_family"],
         coverages: [
-          { id: "home_rc", name: "RC vita privata", linkedProductIds: ["rc_family"], defaultMonthly: 14 },
-          { id: "home_property_damage", name: "Danni abitazione", linkedProductIds: ["rc_family"], defaultMonthly: 18 },
-          { id: "home_contents", name: "Contenuto e furto", linkedProductIds: ["rc_family"], defaultMonthly: 12 },
-          { id: "home_legal", name: "Tutela legale", linkedProductIds: ["rc_family"], defaultMonthly: 9 },
-          { id: "home_assistance", name: "Assistenza casa", linkedProductIds: ["rc_family"], defaultMonthly: 8 },
-          { id: "home_systems", name: "Impianti e guasti", linkedProductIds: ["rc_family"], defaultMonthly: 7 },
-          { id: "home_events", name: "Eventi naturali", linkedProductIds: ["rc_family"], defaultMonthly: 11 },
-          { id: "home_mortgage", name: "Protezione mutuo", linkedProductIds: ["mortgage"], defaultMonthly: 16 }
+          {
+            id: "home_building",
+            name: "Fabbricato",
+            description: "Struttura e impianti della casa contro incendio, acqua e danni principali.",
+            linkedProductIds: ["rc_family"],
+            defaultMonthly: 9,
+            solutions: [
+              { id: "essential", limitLabel: "fino a € 170.000", shortLabel: "170k", description: "danni base a struttura e impianti" },
+              { id: "plus", limitLabel: "fino a € 170.000", shortLabel: "170k", description: "struttura con estensioni base" },
+              { id: "premium", limitLabel: "fino a € 170.000", shortLabel: "170k", description: "include eventi atmosferici, vandalici e vetri" },
+              { id: "top", limitLabel: "fino a € 250.000", shortLabel: "250k", description: "massimale piu alto e set piu completo" }
+            ]
+          },
+          {
+            id: "home_contents",
+            name: "Contenuto",
+            description: "Arredi e beni presenti in casa contro danni principali.",
+            linkedProductIds: ["rc_family"],
+            defaultMonthly: 5,
+            solutions: [
+              { id: "essential", limitLabel: "fino a € 10.000", shortLabel: "10k", description: "copertura base sul contenuto" },
+              { id: "plus", limitLabel: "fino a € 20.000", shortLabel: "20k", description: "copertura intermedia sul contenuto" },
+              { id: "premium", limitLabel: "fino a € 30.000", shortLabel: "30k", description: "include eventi atmosferici e vandalici" },
+              { id: "top", limitLabel: "fino a € 50.000", shortLabel: "50k", description: "protezione alta sui beni domestici" }
+            ]
+          },
+          {
+            id: "home_theft",
+            name: "Furto e rapina",
+            description: "Tutela il valore dei beni rubati e i danni causati dai ladri.",
+            linkedProductIds: ["rc_family"],
+            defaultMonthly: 4,
+            solutions: [
+              { id: "essential", available: false, limitLabel: "non previsto", shortLabel: "-", description: "non disponibile in Essential" },
+              { id: "plus", limitLabel: "fino a € 2.500", shortLabel: "2,5k", description: "protezione base furto" },
+              { id: "premium", limitLabel: "fino a € 5.000", shortLabel: "5k", description: "include preziosi e guasti causati dai ladri" },
+              { id: "top", limitLabel: "fino a € 10.000", shortLabel: "10k", description: "livello piu ampio sul furto" }
+            ]
+          },
+          {
+            id: "home_catastrophe",
+            name: "Catastrofi naturali",
+            description: "Terremoti, alluvioni e inondazioni che possono colpire fabbricato e contenuto.",
+            linkedProductIds: ["rc_family"],
+            defaultMonthly: 7,
+            solutions: [
+              { id: "essential", available: false, limitLabel: "non previsto", shortLabel: "-", description: "non disponibile in Essential" },
+              { id: "plus", limitLabel: "su valore assicurato", shortLabel: "base", description: "copertura base eventi naturali" },
+              { id: "premium", limitLabel: "su valore assicurato", shortLabel: "estesa", description: "copertura piu ampia su eventi naturali" },
+              { id: "top", limitLabel: "su valore assicurato", shortLabel: "max", description: "versione piu completa per eventi naturali" }
+            ]
+          },
+          {
+            id: "home_rc_house",
+            name: "RC casa",
+            description: "Danni a vicini o ospiti causati dall'abitazione di proprieta.",
+            linkedProductIds: ["rc_family"],
+            defaultMonthly: 5,
+            solutions: [
+              { id: "essential", available: false, limitLabel: "non previsto", shortLabel: "-", description: "l'ambito prevede solo Plus" },
+              { id: "plus", limitLabel: "fino a € 500.000", shortLabel: "500k", description: "soluzione disponibile sul sito Allianz" },
+              { id: "premium", available: false, limitLabel: "non previsto", shortLabel: "-", description: "non disponibile come livello separato" },
+              { id: "top", available: false, limitLabel: "non previsto", shortLabel: "-", description: "non disponibile come livello separato" }
+            ]
+          },
+          {
+            id: "home_rc_family",
+            name: "RC famiglia",
+            description: "Vita privata, figli, bici, sci e danni involontari a terzi.",
+            linkedProductIds: ["rc_family"],
+            defaultMonthly: 4,
+            solutions: [
+              { id: "essential", limitLabel: "fino a € 500.000", shortLabel: "500k", description: "protezione base della vita privata" },
+              { id: "plus", limitLabel: "fino a € 750.000", shortLabel: "750k", description: "massimale piu alto" },
+              { id: "premium", limitLabel: "fino a € 1.000.000", shortLabel: "1M", description: "raccomandazione per famiglie esposte" },
+              { id: "top", limitLabel: "fino a € 1.500.000", shortLabel: "1,5M", description: "massima tranquillita sui danni a terzi" }
+            ]
+          },
+          {
+            id: "home_legal",
+            name: "Tutela legale",
+            description: "Spese legali per controversie legate alla casa e alla vita privata.",
+            linkedProductIds: ["rc_family"],
+            defaultMonthly: 3,
+            solutions: [
+              { id: "essential", limitLabel: "fino a € 10.000", shortLabel: "10k", description: "copertura legale essenziale" },
+              { id: "plus", limitLabel: "fino a € 15.000", shortLabel: "15k", description: "copertura legale intermedia" },
+              { id: "premium", limitLabel: "fino a € 20.000", shortLabel: "20k", description: "livello consigliato per piu patrimonio" },
+              { id: "top", limitLabel: "fino a € 30.000", shortLabel: "30k", description: "massimale piu alto per controversie" }
+            ]
+          },
+          {
+            id: "home_pets",
+            name: "Animali domestici",
+            description: "Spese veterinarie e danni causati dall'animale a terzi.",
+            linkedProductIds: ["rc_family"],
+            defaultMonthly: 2,
+            solutions: [
+              { id: "essential", available: false, limitLabel: "non previsto", shortLabel: "-", description: "non disponibile in Essential" },
+              { id: "plus", limitLabel: "fino a € 10.000", shortLabel: "10k", description: "protezione base per animali domestici" },
+              { id: "premium", limitLabel: "fino a € 15.000", shortLabel: "15k", description: "copertura piu ampia per spese e danni" },
+              { id: "top", limitLabel: "fino a € 20.000", shortLabel: "20k", description: "massimo livello per il pet" }
+            ]
+          }
         ]
       },
       {
@@ -397,14 +493,74 @@
         visualLabel: "Salute e continuita",
         mainVisual: "Spese mediche, infortuni e stop lavoro",
         summary: "1 prodotto, 5 coperture attivabili, 4 livelli di soluzione.",
-        productGroupName: "Salute & Infortuni",
+        productGroupName: "Allianz ULTRA Salute",
         linkedProductIds: ["health", "accident", "income_protection"],
         coverages: [
-          { id: "health_hospital", name: "Ricoveri", linkedProductIds: ["health"], defaultMonthly: 18 },
-          { id: "health_diagnostic", name: "Diagnostica", linkedProductIds: ["health"], defaultMonthly: 12 },
-          { id: "health_specialist", name: "Specialistica", linkedProductIds: ["health"], defaultMonthly: 10 },
-          { id: "health_accident", name: "Infortuni", linkedProductIds: ["accident"], defaultMonthly: 14 },
-          { id: "health_income_stop", name: "Stop lavoro", linkedProductIds: ["income_protection"], defaultMonthly: 22 }
+          {
+            id: "health_severe_events",
+            name: "Spese mediche eventi gravi",
+            description: "Grandi interventi, malattie gravi e macrolesioni con rimborso dedicato.",
+            linkedProductIds: ["health"],
+            defaultMonthly: 18,
+            solutions: [
+              { id: "essential", available: false, limitLabel: "non previsto", shortLabel: "-", description: "alternativo alle spese mediche classiche" },
+              { id: "plus", limitLabel: "fino a € 150.000", shortLabel: "150k", description: "copertura alta per eventi gravi" },
+              { id: "premium", limitLabel: "fino a € 250.000", shortLabel: "250k", description: "livello mostrato negli esempi Allianz" },
+              { id: "top", limitLabel: "fino a € 500.000", shortLabel: "500k", description: "massimale massimo per eventi gravi" }
+            ]
+          },
+          {
+            id: "health_medical",
+            name: "Spese mediche",
+            description: "Ricovero, alta diagnostica, visite e riabilitazione.",
+            linkedProductIds: ["health"],
+            defaultMonthly: 12,
+            solutions: [
+              { id: "essential", limitLabel: "fino a € 5.000", shortLabel: "5k", description: "ricovero e prestazioni base" },
+              { id: "plus", limitLabel: "fino a € 10.000", shortLabel: "10k", description: "copertura intermedia salute" },
+              { id: "premium", limitLabel: "fino a € 20.000", shortLabel: "20k", description: "piu spazio su visite e ricoveri" },
+              { id: "top", limitLabel: "fino a € 30.000", shortLabel: "30k", description: "livello alto per spese mediche" }
+            ]
+          },
+          {
+            id: "health_daily_allowance",
+            name: "Diaria da ricovero",
+            description: "Indennita giornaliera per ricovero, convalescenza e ingessatura.",
+            linkedProductIds: ["health"],
+            defaultMonthly: 6,
+            solutions: [
+              { id: "essential", limitLabel: "€ 100/giorno", shortLabel: "100/g", description: "ricovero e convalescenza base" },
+              { id: "plus", limitLabel: "€ 150/giorno", shortLabel: "150/g", description: "indennita intermedia" },
+              { id: "premium", limitLabel: "€ 200/giorno", shortLabel: "200/g", description: "livello consigliato" },
+              { id: "top", limitLabel: "€ 250/giorno", shortLabel: "250/g", description: "massima diaria giornaliera" }
+            ]
+          },
+          {
+            id: "health_disability_accident",
+            name: "Invalidita permanente da infortunio",
+            description: "Capitale se un infortunio compromette in modo permanente l'autonomia.",
+            linkedProductIds: ["accident"],
+            defaultMonthly: 11,
+            solutions: [
+              { id: "essential", limitLabel: "fino a € 100.000", shortLabel: "100k", description: "liquida di piu nelle invalidita gravi" },
+              { id: "plus", limitLabel: "fino a € 150.000", shortLabel: "150k", description: "soluzione intermedia" },
+              { id: "premium", limitLabel: "fino a € 300.000", shortLabel: "300k", description: "raccomandata per proteggere il reddito" },
+              { id: "top", limitLabel: "fino a € 500.000", shortLabel: "500k", description: "massimale piu ampio" }
+            ]
+          },
+          {
+            id: "health_disability_illness",
+            name: "Invalidita permanente da malattia",
+            description: "Capitale dedicato quando una malattia riduce in modo permanente la capacita lavorativa.",
+            linkedProductIds: ["income_protection"],
+            defaultMonthly: 9,
+            solutions: [
+              { id: "essential", available: false, limitLabel: "non previsto", shortLabel: "-", description: "non disponibile in Essential" },
+              { id: "plus", limitLabel: "fino a € 100.000", shortLabel: "100k", description: "copertura base malattia" },
+              { id: "premium", limitLabel: "fino a € 200.000", shortLabel: "200k", description: "livello consigliato" },
+              { id: "top", limitLabel: "fino a € 300.000", shortLabel: "300k", description: "massimo livello per invalidita da malattia" }
+            ]
+          }
         ]
       },
       {

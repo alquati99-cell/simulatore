@@ -12,6 +12,8 @@
     activeScenarioMode: "bundle",
     activeGoalId: null,
     coverageTouched: false,
+    premiumOverrides: {},
+    proposalLibraryOpen: false,
     isRendering: false,
     pendingTurnId: 0,
     ragInsight: null,
@@ -410,6 +412,19 @@
     return S.plan.goals.map(function (goal) { return goal.id; });
   }
 
+  function cloneOfferSelections(offerSelections) {
+    if (!offerSelections) return null;
+    try {
+      return JSON.parse(JSON.stringify(offerSelections));
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function currentOfferSelections() {
+    return S.plan && S.plan.offerSelections ? cloneOfferSelections(S.plan.offerSelections) : null;
+  }
+
   function readSelectedGoalIdsFromDom() {
     var tiles = Array.from(document.querySelectorAll("#goalGrid .goal-tile"));
     if (!tiles.length) return null;
@@ -434,6 +449,7 @@
     applyPlan(readProfileFromForm(), {
       selectedGoalIds: selectedGoalIdsFromPlan(),
       selectedCoverageIds: S.plan.selectedCoverageIds.slice(),
+      offerSelections: currentOfferSelections(),
       keepSliderValues: true
     });
   }
@@ -453,6 +469,7 @@
     applyPlan(readProfileFromForm(), {
       selectedGoalIds: selectedGoalIds,
       selectedCoverageIds: S.plan.selectedCoverageIds.slice(),
+      offerSelections: currentOfferSelections(),
       keepSliderValues: true
     });
   }
@@ -768,6 +785,131 @@
       intakeCitationsMarkup(S.chatRagInsight.citations, 3);
   }
 
+  function formatSavedAt(value) {
+    if (!value) return "";
+    var date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleString("it-IT", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  }
+
+  function renderProposalShelf() {
+    var shelf = byId("proposalShelf");
+    if (!shelf) return;
+    var proposals = FamilyAdvisorEngine.listStoredProposals ? FamilyAdvisorEngine.listStoredProposals() : [];
+
+    shelf.innerHTML =
+      '<div class="proposal-shelf-head">' +
+      '<div><div class="proposal-shelf-ey">Post vendita essenziale</div><div class="proposal-shelf-title">Salva e riprendi le proposte offline</div></div>' +
+      '<div class="proposal-shelf-actions">' +
+      '<button class="proposal-btn primary" onclick="saveCurrentProposal()">Salva proposta</button>' +
+      '<button class="proposal-btn" onclick="toggleProposalLibrary()">' + esc(S.proposalLibraryOpen ? "Chiudi archivio" : "Riprendi proposta") + "</button>" +
+      "</div></div>" +
+      '<div class="proposal-shelf-copy">Le proposte restano salvate in locale sul dispositivo del consulente e possono essere riaperte per una nuova trattativa.</div>' +
+      (
+        S.proposalLibraryOpen
+          ? (
+              proposals.length
+                ? '<div class="proposal-list">' + proposals.slice(0, 10).map(function (proposal) {
+                    var clientName = (proposal.profile && proposal.profile.name) || "Cliente";
+                    return (
+                      '<button class="proposal-card" onclick="loadProposal(\'' + esc(proposal.id) + '\')">' +
+                      '<div class="proposal-card-top"><div class="proposal-card-name">' + esc(clientName) + '</div><div class="proposal-card-date">' + esc(formatSavedAt(proposal.savedAt)) + "</div></div>" +
+                      '<div class="proposal-card-meta">' +
+                      '<span>' + esc((proposal.selectedGoalIds || []).length) + " obiettivi</span>" +
+                      '<span>' + esc((proposal.selectedCoverageIds || []).length) + " coperture</span>" +
+                      '<span>€ ' + esc(currency((proposal.snapshot && proposal.snapshot.totalPremium) || 0)) + '/mese</span>' +
+                      "</div>" +
+                      "</button>"
+                    );
+                  }).join("") + "</div>"
+                : '<div class="proposal-empty">Nessuna proposta salvata per ora.</div>'
+            )
+          : ""
+      );
+  }
+
+  function renderPersonaInsight() {
+    var panel = byId("personaInsight");
+    if (!panel) return;
+    if (!S.plan || !S.plan.persona) {
+      panel.innerHTML = "";
+      return;
+    }
+
+    var persona = S.plan.persona;
+    var distribution = (S.plan.personaDistribution || []).slice(0, 6);
+    panel.innerHTML =
+      '<div class="persona-shell">' +
+      '<div class="persona-main">' +
+      '<div class="persona-ey">Persona profilo tipo</div>' +
+      '<div class="persona-title">' + esc(persona.name) + '</div>' +
+      '<div class="persona-copy">' + esc(persona.headline || persona.description || "") + "</div>" +
+      '<div class="persona-stats">' +
+      '<div class="persona-stat"><div class="persona-k">Distribuzione Italia</div><div class="persona-v">' + esc(String(persona.sharePct || 0).replace(".", ",")) + '%</div></div>' +
+      '<div class="persona-stat"><div class="persona-k">Reddito tipo</div><div class="persona-v">€ ' + esc(currency((persona.typicalAnnualIncome || 0) / 12)) + '/mese</div></div>' +
+      '<div class="persona-stat"><div class="persona-k">Patrimonio tipo</div><div class="persona-v">€ ' + esc(currency(persona.typicalWealth || 0)) + "</div></div>" +
+      "</div>" +
+      '<div class="persona-note">Fatte 100 famiglie simili in Italia, circa <strong>' + esc(String(Math.round(persona.sharePct || 0))) + "</strong> hanno questa configurazione.</div>" +
+      "</div>" +
+      '<div class="persona-dist">' + distribution.map(function (entry) {
+        return '<span class="persona-chip' + (entry.id === persona.id ? " on" : "") + '">' + esc(entry.name) + " " + esc(String(entry.sharePct || 0).replace(".", ",")) + '%</span>';
+      }).join("") + "</div>" +
+      "</div>";
+  }
+
+  function toggleProposalLibrary() {
+    S.proposalLibraryOpen = !S.proposalLibraryOpen;
+    renderProposalShelf();
+  }
+
+  function saveCurrentProposal() {
+    var profile = readProfileFromForm();
+    var selectedGoalIds = readSelectedGoalIdsFromDom() || selectedGoalIdsFromPlan();
+    var selectedCoverageIds = S.plan ? S.plan.selectedCoverageIds.slice() : [];
+    applyPlan(profile, {
+      selectedGoalIds: selectedGoalIds,
+      selectedCoverageIds: selectedCoverageIds,
+      premiumOverrides: Object.assign({}, S.premiumOverrides),
+      offerSelections: currentOfferSelections(),
+      keepSliderValues: true
+    });
+    FamilyAdvisorEngine.saveProposal({
+      title: (S.plan.profile.name || "Cliente") + " · proposta",
+      profile: S.plan.profile,
+      selectedGoalIds: S.plan.selectedGoalIds,
+      selectedCoverageIds: S.plan.selectedCoverageIds,
+      premiumOverrides: S.plan.premiumOverrides || S.premiumOverrides,
+      offerSelections: cloneOfferSelections(S.plan.offerSelections),
+      snapshot: S.plan.snapshot,
+      persona: S.plan.persona
+    });
+    S.proposalLibraryOpen = true;
+    renderProposalShelf();
+  }
+
+  function loadProposal(proposalId) {
+    var proposals = FamilyAdvisorEngine.listStoredProposals ? FamilyAdvisorEngine.listStoredProposals() : [];
+    var proposal = proposals.find(function (entry) { return entry.id === proposalId; });
+    if (!proposal) return;
+    S.premiumOverrides = Object.assign({}, proposal.premiumOverrides || {});
+    S.proposalLibraryOpen = false;
+    S.draftProfile = proposal.profile || FamilyAdvisorEngine.createEmptyProfile();
+    applyPlan(proposal.profile || {}, {
+      selectedGoalIds: (proposal.selectedGoalIds || []).slice(),
+      selectedCoverageIds: (proposal.selectedCoverageIds || []).slice(),
+      premiumOverrides: Object.assign({}, S.premiumOverrides),
+      offerSelections: cloneOfferSelections(proposal.offerSelections),
+      keepSliderValues: true
+    });
+    goTo(2);
+    renderProposalShelf();
+  }
+
   function scenarioCollectionForMode(analysis, mode) {
     if (!analysis) return {};
     return mode === "bundle" ? analysis.bundles || {} : analysis.scenarios || {};
@@ -875,6 +1017,8 @@
       "advisorNarrative",
       "financeSnapshot",
       "goalGrid",
+      "proposalShelf",
+      "personaInsight",
       "coverageTableBody",
       "goalFocusGrid",
       "goalGaugeGrid",
@@ -942,10 +1086,14 @@
     S.activeScenarioId = "rc";
     S.activeScenarioMode = "bundle";
     S.coverageTouched = false;
+    S.premiumOverrides = {};
+    S.proposalLibraryOpen = false;
     S.ragInsight = null;
     S.chatRagInsight = null;
     resetRenderedState();
     renderPage2IntakeInsight();
+    renderProposalShelf();
+    renderPersonaInsight();
     if (!preserveChat) renderWelcomeChat();
   }
 
@@ -1482,6 +1630,108 @@
       "</div></div>";
   }
 
+  function offerProductLinkedRecommendations(product) {
+    if (!S.plan) return [];
+    return S.plan.recommendations.filter(function (recommendation) {
+      return (product.linkedProductIds || []).indexOf(recommendation.id) >= 0;
+    });
+  }
+
+  function offerAreaById(areaId) {
+    return !S.plan ? null : (S.plan.offerAreas || []).find(function (entry) { return entry.id === areaId; }) || null;
+  }
+
+  function offerProductById(areaId, productId) {
+    var area = offerAreaById(areaId);
+    return area ? (area.products || []).find(function (entry) { return entry.id === productId; }) || null : null;
+  }
+
+  function applyOfferSelections(nextOfferSelections) {
+    applyPlan(readProfileFromForm(), {
+      selectedGoalIds: selectedGoalIdsFromPlan(),
+      offerSelections: nextOfferSelections,
+      premiumOverrides: {},
+      keepSliderValues: true
+    });
+  }
+
+  function ensureOfferSelectionNode(nextOfferSelections, areaId, productId) {
+    if (!nextOfferSelections[areaId]) nextOfferSelections[areaId] = { products: {} };
+    if (!nextOfferSelections[areaId].products) nextOfferSelections[areaId].products = {};
+    if (!nextOfferSelections[areaId].products[productId]) {
+      nextOfferSelections[areaId].products[productId] = { selected: false, solutionId: "", coverages: {} };
+    }
+    if (!nextOfferSelections[areaId].products[productId].coverages) {
+      nextOfferSelections[areaId].products[productId].coverages = {};
+    }
+    return nextOfferSelections[areaId].products[productId];
+  }
+
+  function toggleOfferCoverageSelection(areaId, productId, coverageId) {
+    if (!S.plan) return;
+    var product = offerProductById(areaId, productId);
+    if (!product) return;
+    var coverage = (product.coverages || []).find(function (entry) { return entry.id === coverageId; });
+    if (!coverage) return;
+
+    var nextOfferSelections = currentOfferSelections() || {};
+    var productNode = ensureOfferSelectionNode(nextOfferSelections, areaId, productId);
+    var currentNode = productNode.coverages[coverageId] || {};
+    productNode.coverages[coverageId] = {
+      selected: !coverage.selected,
+      solutionId: currentNode.solutionId || coverage.selectedSolutionId || coverage.suggestedSolutionId
+    };
+    applyOfferSelections(nextOfferSelections);
+  }
+
+  function selectOfferCoverageSolution(areaId, productId, coverageId, solutionId) {
+    if (!S.plan) return;
+    var product = offerProductById(areaId, productId);
+    if (!product) return;
+    var coverage = (product.coverages || []).find(function (entry) { return entry.id === coverageId; });
+    if (!coverage) return;
+    var targetSolution = (coverage.solutions || []).find(function (solution) {
+      return solution.id === solutionId && solution.available !== false;
+    });
+    if (!targetSolution) return;
+
+    var nextOfferSelections = currentOfferSelections() || {};
+    var productNode = ensureOfferSelectionNode(nextOfferSelections, areaId, productId);
+    productNode.coverages[coverageId] = {
+      selected: true,
+      solutionId: solutionId
+    };
+    applyOfferSelections(nextOfferSelections);
+  }
+
+  function toggleOfferProduct(areaId, productId) {
+    if (!S.plan) return;
+    var product = offerProductById(areaId, productId);
+    if (!product) return;
+
+    var nextOfferSelections = currentOfferSelections() || {};
+    var productNode = ensureOfferSelectionNode(nextOfferSelections, areaId, productId);
+    productNode.selected = !product.selected;
+    productNode.solutionId = productNode.solutionId || product.selectedSolutionId || product.suggestedSolutionId;
+    applyOfferSelections(nextOfferSelections);
+  }
+
+  function selectOfferProductSolution(areaId, productId, solutionId) {
+    if (!S.plan) return;
+    var product = offerProductById(areaId, productId);
+    if (!product) return;
+    var targetSolution = (product.solutions || []).find(function (solution) {
+      return solution.id === solutionId && solution.available !== false;
+    });
+    if (!targetSolution) return;
+
+    var nextOfferSelections = currentOfferSelections() || {};
+    var productNode = ensureOfferSelectionNode(nextOfferSelections, areaId, productId);
+    productNode.selected = true;
+    productNode.solutionId = solutionId;
+    applyOfferSelections(nextOfferSelections);
+  }
+
   function renderPolicyBoard(activeScenario) {
     if (!S.plan) return;
     var suggestedGrid = byId("policySuggestedGrid");
@@ -1490,59 +1740,109 @@
     var optionalBadge = byId("policyOptionalBadge");
     if (!suggestedGrid || !optionalGrid) return;
 
-    var recommendations = S.plan.recommendations.slice().sort(function (left, right) {
-      var leftSelected = isSelectedProduct(left.id) ? 1 : 0;
-      var rightSelected = isSelectedProduct(right.id) ? 1 : 0;
-      if (rightSelected !== leftSelected) return rightSelected - leftSelected;
-      return right.score - left.score;
+    var areas = (S.plan.offerAreas || []).slice();
+    var suggested = areas.filter(function (area) {
+      return area.fitScore >= 56 || area.selectedCoverageCount > 0;
     });
-    var suggested = recommendations.filter(function (product, index) {
-      return product.score >= 52 || isSelectedProduct(product.id) || index < 2;
-    });
-    var optional = recommendations.filter(function (product) {
-      return suggested.indexOf(product) < 0;
+    var optional = areas.filter(function (area) {
+      return suggested.indexOf(area) < 0;
     });
 
-    suggestedBadge.textContent = suggested.length + " suggerite";
-    optionalBadge.textContent = optional.length ? optional.length + " opzionali" : "Nessuna opzionale";
+    suggestedBadge.textContent = suggested.length + " aree suggerite";
+    optionalBadge.textContent = optional.length ? optional.length + " aree da valutare" : "Nessuna area secondaria";
 
-    function cardMarkup(product, bucket) {
-      var priority = priorityMeta(product.score);
-      var selected = isSelectedProduct(product.id);
-      var matchesCurrentScenario = activeScenario ? productMatchesScenario(product, activeScenario) : false;
-      var isSuggested = bucket === "suggested";
+    function solutionChipsMarkup(solutions, selectedId, areaId, productId, coverageId) {
+      return (solutions || []).map(function (solution) {
+        var disabled = solution.available === false;
+        var isActive = solution.id === selectedId;
+        var action = coverageId
+          ? 'selectOfferCoverageSolution(\'' + esc(areaId) + '\', \'' + esc(productId) + '\', \'' + esc(coverageId) + '\', \'' + esc(solution.id) + '\')'
+          : 'selectOfferProductSolution(\'' + esc(areaId) + '\', \'' + esc(productId) + '\', \'' + esc(solution.id) + '\')';
+        return (
+          '<button class="offer-solution-chip ' + esc(solution.accent || "") + (isActive ? " on" : "") + (disabled ? " disabled" : "") + '"' +
+          (disabled ? " disabled" : ' onclick="' + action + '"') + ">" +
+          '<span>' + esc(solution.name) + "</span>" +
+          '<small>' + esc(solution.shortLabel || solution.limitLabel || "") + "</small>" +
+          "</button>"
+        );
+      }).join("");
+    }
+
+    function coverageMarkup(area, product, coverage) {
+      var tone = scoreTone(coverage.fitScore);
       return (
-        '<div class="policy-card' + (isSuggested ? " suggested" : "") + (selected ? " on" : "") + '">' +
-        '<div class="policy-card-shell">' +
-        '<div class="policy-card-main">' +
-        '<div class="policy-card-flag' + (isSuggested ? "" : " optional") + '">' + esc(isSuggested ? "Suggerita" : "Opzionale") + "</div>" +
-        '<div class="policy-card-top">' +
-        '<div class="policy-card-icon" style="background:' + esc(product.tint) + '">' + esc(product.icon) + "</div>" +
-        '<div style="flex:1;min-width:0"><div class="policy-card-name">' + esc(product.name) + '</div><div class="policy-card-copy">' + esc(scenarioCoverageReason(product, activeScenario)) + "</div></div>" +
+        '<div class="offer-coverage-card' + (coverage.selected ? " on" : "") + '">' +
+        '<div class="offer-coverage-main">' +
+        '<div class="offer-coverage-head">' +
+        '<div><div class="offer-coverage-name">' + esc(coverage.name) + '</div><div class="offer-coverage-copy">' + esc(coverage.description || "") + "</div></div>" +
+        '<div class="offer-coverage-score ' + esc(tone.key) + '">' + esc(coverage.fitScore) + "/100</div>" +
         "</div>" +
-        '<div class="policy-tags">' +
-        '<span class="policy-tag ' + esc(priority.key) + '">' + esc(priority.label) + "</span>" +
-        '<span class="policy-tag">' + esc(matchesCurrentScenario ? "Scenario" : "Profilo") + "</span>" +
-        "</div>" +
-        "</div>" +
-        '<div class="policy-card-stats">' +
-        '<div class="policy-card-metrics">' +
-        '<div class="policy-mini premium"><div class="policy-mini-k">Premio</div><div class="policy-mini-v">' + esc(premiumRangeLabel(product)) + '</div><div class="policy-mini-s">' + esc(compactDeductibleLabel(product)) + "</div></div>" +
-        '<div class="policy-mini reserve"><div class="policy-mini-k">Cuscinetto</div><div class="policy-mini-v">€ ' + esc(currency(product.selfFundMonthlyEquivalent)) + '/mese</div><div class="policy-mini-s">Senza polizza</div></div>' +
+        '<div class="offer-coverage-meta">' +
+        '<div class="offer-coverage-limit"><span>Soluzione attiva</span><strong>' + esc(coverage.selectedSolutionLabel || "Da scegliere") + "</strong></div>" +
+        '<div class="offer-coverage-premium"><span>Premio mensile</span><strong>' + esc(coverage.selected ? "€ " + currency(coverage.selectedMonthlyPremium) : "Non attiva") + "</strong></div>" +
+        '<button class="policy-toggle' + (coverage.selected ? " on" : "") + '" onclick="toggleOfferCoverageSelection(\'' + esc(area.id) + '\', \'' + esc(product.id) + '\', \'' + esc(coverage.id) + '\')">' + esc(coverage.selected ? "Disattiva" : "Attiva") + "</button>" +
         "</div>" +
         "</div>" +
-        '<div class="policy-card-side">' +
-        '<div class="policy-side-score"><div class="policy-side-k">Fit</div><div class="policy-side-v">' + esc(product.score) + '<small>/100</small></div></div>' +
-        '<div class="policy-side-hint">' + esc(compactProductMetric(product)) + "</div>" +
-        '<div class="policy-card-foot"><button class="policy-toggle' + (selected ? " on" : "") + '" onclick="toggleCoverage(\'' + esc(product.id) + '\')">' + esc(selected ? "Disattiva" : "Attiva") + "</button></div>" +
-        "</div>" +
-        "</div>" +
+        '<div class="offer-solution-row compact">' + solutionChipsMarkup(coverage.solutions, coverage.selectedSolutionId, area.id, product.id, coverage.id) + "</div>" +
         "</div>"
       );
     }
 
-    suggestedGrid.innerHTML = suggested.length ? suggested.map(function (product) { return cardMarkup(product, "suggested"); }).join("") : '<div class="policy-empty">Nessuna copertura prioritaria individuata per questo profilo.</div>';
-    optionalGrid.innerHTML = optional.length ? optional.map(function (product) { return cardMarkup(product, "optional"); }).join("") : '<div class="policy-empty">Per questo profilo il motore non vede altre coperture opzionali davvero rilevanti.</div>';
+    function protectionProductMarkup(area, product) {
+      var linked = offerProductLinkedRecommendations(product);
+      var activeSolution = (product.solutions || []).find(function (solution) {
+        return solution.id === product.selectedSolutionId;
+      });
+      return (
+        '<div class="offer-product-card' + (product.selected ? " on" : "") + '">' +
+        '<div class="offer-product-head">' +
+        '<div><div class="offer-product-name">' + esc(product.name) + '</div><div class="offer-product-copy">' + esc(linked.length ? joinReadableList(linked.map(function (recommendation) { return shortProductLabel(recommendation); })) : "Copertura configurabile") + "</div></div>" +
+        '<div class="offer-product-score">' + esc(product.fitScore) + "/100</div>" +
+        "</div>" +
+        '<div class="offer-product-meta slim">' +
+        '<div class="offer-product-meta-block"><span>Premio</span><strong>' + esc(product.selected ? "€ " + currency(product.selectedMonthlyPremium) + "/mese" : "Non attiva") + "</strong></div>" +
+        '<div class="offer-product-meta-block"><span>Soluzione</span><strong>' + esc(activeSolution ? activeSolution.name : "Da scegliere") + "</strong></div>" +
+        '<div class="offer-product-actions"><button class="policy-toggle' + (product.selected ? " on" : "") + '" onclick="toggleOfferProduct(\'' + esc(area.id) + '\', \'' + esc(product.id) + '\')">' + esc(product.selected ? "Disattiva" : "Attiva") + '</button></div>' +
+        "</div>" +
+        '<div class="offer-solution-row">' + solutionChipsMarkup(product.solutions, product.selectedSolutionId, area.id, product.id, "") + "</div>" +
+        "</div>"
+      );
+    }
+
+    function productMarkup(area, product) {
+      if (product.presentation === "coverage-matrix") {
+        return (
+          '<div class="offer-group-card">' +
+          '<div class="offer-group-head">' +
+          '<div><div class="offer-product-name">' + esc(product.name) + '</div><div class="offer-product-copy">' + esc((product.coverages || []).filter(function (coverage) { return coverage.selected; }).length) + " ambiti attivi · premio totale € " + esc(currency(product.selectedMonthlyPremium || 0)) + '/mese</div></div>' +
+          '<div class="offer-product-score">' + esc(product.fitScore) + "/100</div>" +
+          "</div>" +
+          '<div class="offer-coverage-grid">' + (product.coverages || []).map(function (coverage) { return coverageMarkup(area, product, coverage); }).join("") + "</div>" +
+          "</div>"
+        );
+      }
+      return protectionProductMarkup(area, product);
+    }
+
+    function areaMarkup(area, bucket) {
+      return (
+        '<div class="offer-area-card' + (bucket === "suggested" ? " suggested" : "") + '">' +
+        '<div class="offer-area-top">' +
+        '<div><div class="offer-area-ey">' + esc(area.name) + '</div><div class="offer-area-title">' + esc(area.mainVisual) + '</div><div class="offer-area-copy">' + esc(area.reason) + "</div></div>" +
+        '<div class="offer-area-pill">' + esc(area.status) + "</div>" +
+        "</div>" +
+        '<div class="offer-area-stats">' +
+        '<div class="offer-area-stat"><span>Prodotti</span><strong>' + esc(area.productCount) + "</strong></div>" +
+        '<div class="offer-area-stat"><span>Coperture</span><strong>' + esc(area.coverageCount) + "</strong></div>" +
+        '<div class="offer-area-stat"><span>Attive</span><strong>' + esc(area.selectedCoverageCount) + "</strong></div>" +
+        "</div>" +
+        '<div class="offer-product-stack">' + area.products.map(function (product) { return productMarkup(area, product); }).join("") + "</div>" +
+        "</div>"
+      );
+    }
+
+    suggestedGrid.innerHTML = suggested.length ? suggested.map(function (area) { return areaMarkup(area, "suggested"); }).join("") : '<div class="policy-empty">Nessuna area davvero prioritaria su questo profilo.</div>';
+    optionalGrid.innerHTML = optional.length ? optional.map(function (area) { return areaMarkup(area, "optional"); }).join("") : '<div class="policy-empty">Non ci sono altre aree secondarie da aprire adesso.</div>';
   }
 
   function yearlyLabelsFromPath(path) {
@@ -2267,6 +2567,7 @@
     var selectedGoalIds = readSelectedGoalIdsFromDom();
     var options = {
       selectedCoverageIds: S.plan ? S.plan.selectedCoverageIds.slice() : [],
+      offerSelections: currentOfferSelections(),
       keepSliderValues: true
     };
     if (selectedGoalIds && selectedGoalIds.length) options.selectedGoalIds = selectedGoalIds;
@@ -2285,6 +2586,7 @@
     applyPlan(readProfileFromForm(), {
       selectedGoalIds: selectedGoalIdsFromPlan(),
       selectedCoverageIds: selectedIds,
+      offerSelections: null,
       keepSliderValues: true
     });
   }
@@ -2370,6 +2672,7 @@
     var selectedGoalIds = readSelectedGoalIdsFromDom();
     var options = {
       selectedCoverageIds: S.coverageTouched && S.plan ? S.plan.selectedCoverageIds.slice() : [],
+      offerSelections: S.coverageTouched ? null : currentOfferSelections(),
       keepSliderValues: false
     };
     if (selectedGoalIds && selectedGoalIds.length) options.selectedGoalIds = selectedGoalIds;
@@ -2388,6 +2691,16 @@
     options = options || {};
     var questionnaireProfile = profile;
     var planOptions = {};
+    if (Object.prototype.hasOwnProperty.call(options, "premiumOverrides")) {
+      S.premiumOverrides = Object.assign({}, options.premiumOverrides || {});
+    } else if (
+      !Object.keys(S.premiumOverrides || {}).length &&
+      S.plan &&
+      S.plan.premiumOverrides &&
+      !(S.plan.offerSelections && Object.keys(S.plan.offerSelections).length)
+    ) {
+      S.premiumOverrides = Object.assign({}, S.plan.premiumOverrides);
+    }
     if (Object.prototype.hasOwnProperty.call(options, "selectedCoverageIds")) {
       planOptions.selectedCoverageIds = options.selectedCoverageIds;
     } else if (S.plan) {
@@ -2398,12 +2711,20 @@
     } else if (S.plan && S.plan.selectedGoalIds) {
       planOptions.selectedGoalIds = S.plan.selectedGoalIds.slice();
     }
+    if (Object.prototype.hasOwnProperty.call(options, "offerSelections")) {
+      planOptions.offerSelections = cloneOfferSelections(options.offerSelections);
+    } else if (S.plan && S.plan.offerSelections) {
+      planOptions.offerSelections = cloneOfferSelections(S.plan.offerSelections);
+    }
+    planOptions.premiumOverrides = Object.assign({}, S.premiumOverrides || {});
 
     S.plan = FamilyAdvisorEngine.buildPlan(profile, planOptions);
     S.draftProfile = S.plan.profile;
     FamilyAdvisorEngine.saveProfile(S.plan.profile);
 
     fillFormFromProfile(questionnaireProfile || S.plan.profile);
+    renderProposalShelf();
+    renderPersonaInsight();
     renderProfileSummary();
     renderGoals();
     renderCoverageTable();
@@ -2426,6 +2747,7 @@
   function boot() {
     bindEvents();
     resetClientWorkspace(false);
+    renderProposalShelf();
   }
 
   root.goTo = goTo;
@@ -2445,6 +2767,13 @@
   root.handlePage2PrimaryAction = handlePage2PrimaryAction;
   root.newClient = newClient;
   root.toggleGoalSelection = toggleGoalSelection;
+  root.toggleProposalLibrary = toggleProposalLibrary;
+  root.saveCurrentProposal = saveCurrentProposal;
+  root.loadProposal = loadProposal;
+  root.toggleOfferProduct = toggleOfferProduct;
+  root.toggleOfferCoverageSelection = toggleOfferCoverageSelection;
+  root.selectOfferCoverageSolution = selectOfferCoverageSolution;
+  root.selectOfferProductSolution = selectOfferProductSolution;
 
   document.addEventListener("DOMContentLoaded", boot);
 })(window);
