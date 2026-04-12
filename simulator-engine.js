@@ -1292,14 +1292,62 @@
     };
   }
 
-  function selfFundEquivalent(productId, needs) {
-    if (productId === "tcm") return roundStep(needs.deathCapital / 240, 10);
-    if (productId === "income_protection") return roundStep(needs.invalidityCapital / 120, 10);
-    if (productId === "rc_family") return roundStep(needs.rcClaimLoss / 60, 10);
-    if (productId === "ltc") return roundStep(needs.ltcCapital / 72, 10);
-    if (productId === "health") return roundStep(needs.healthCapital / 72, 10);
-    if (productId === "accident") return roundStep(needs.invalidityCapital / 180, 10);
-    if (productId === "mortgage") return roundStep(needs.mortgageBalance / 180, 10);
+  function getRiskEntry(age) {
+    var fasceEta = (DB.riskDb && DB.riskDb.fasce_eta) || [];
+    var result = fasceEta[0] || {};
+    for (var i = 0; i < fasceEta.length; i++) {
+      if (age >= parseInt(fasceEta[i].id, 10)) result = fasceEta[i];
+      else break;
+    }
+    return result;
+  }
+
+  function rataComposta(capitale, mesi, tassoAnnuo) {
+    var r = tassoAnnuo / 12;
+    if (r <= 0 || mesi <= 0) return roundStep(capitale / Math.max(mesi, 1), 10);
+    return roundStep(capitale * r / (Math.pow(1 + r, mesi) - 1), 10);
+  }
+
+  function selfFundEquivalent(productId, needs, profile) {
+    var TASSO = 0.03;
+    var eta = profile ? (profile.age || 40) : 40;
+    var entry = getRiskEntry(eta);
+
+    if (productId === "tcm") {
+      var pAnnua = (entry.mortalita.prob_morte_annua_pct || 0.3) / 100;
+      var pCum = 1 - Math.pow(1 - pAnnua, 20);
+      return rataComposta(needs.deathCapital * pCum, 240, TASSO);
+    }
+    if (productId === "income_protection") {
+      // indice INAIL injuries only × 3.5 per coprire IP da malattia
+      var ipBase = (entry.infortuni_permanenti.indice_x1000_assicurati_privati || 0.45) / 1000;
+      var pCum = 1 - Math.pow(1 - ipBase * 3.5, 10);
+      return rataComposta(needs.invalidityCapital * pCum, 120, TASSO);
+    }
+    if (productId === "rc_family") {
+      // RC: costo atteso annuo — non accumulo lineare
+      return roundStep(needs.rcClaimLoss * 0.008 / 12, 10);
+    }
+    if (productId === "ltc") {
+      var entryFutura = getRiskEntry(Math.max(eta + 25, 65));
+      var pCum = (entryFutura.non_autosufficienza.prevalenza_pct || 14.6) / 100;
+      return rataComposta(needs.ltcCapital * pCum, 72, TASSO);
+    }
+    if (productId === "health") {
+      var pAnnua = (entry.mortalita.prob_morte_annua_pct || 0.3) / 100 * 3;
+      var pCum = 1 - Math.pow(1 - pAnnua, 6);
+      return rataComposta(needs.healthCapital * pCum, 72, TASSO);
+    }
+    if (productId === "accident") {
+      var pAnnua = (entry.infortuni_permanenti.indice_x1000_assicurati_privati || 0.45) / 1000;
+      var pCum = 1 - Math.pow(1 - pAnnua, 15);
+      return rataComposta(needs.invalidityCapital * pCum, 180, TASSO);
+    }
+    if (productId === "mortgage") {
+      var pAnnua = (entry.mortalita.prob_morte_annua_pct || 0.3) / 100;
+      var pCum = 1 - Math.pow(1 - pAnnua, 15);
+      return rataComposta(needs.mortgageBalance * pCum, 180, TASSO);
+    }
     return 0;
   }
 
@@ -1393,7 +1441,7 @@
       annualTaxSaving: Math.round(premium * 12 * productMeta.deductibleRate),
       detail: detail,
       secondaryDetail: secondaryDetail,
-      selfFundMonthlyEquivalent: selfFundEquivalent(productMeta.id, needs),
+      selfFundMonthlyEquivalent: selfFundEquivalent(productMeta.id, needs, profile),
       selectedByDefault: false,
       selectedByDefaultReason: ""
     };
