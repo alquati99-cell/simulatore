@@ -1,0 +1,291 @@
+{
+  "metadata": {
+    "titolo": "Database probabilità sinistri per fascia d'età — Italia",
+    "versione": "1.0",
+    "data_aggiornamento": "2026-04",
+    "fonti": {
+      "mortalita": {
+        "ente": "ISTAT",
+        "dataset": "Tavole di mortalità della popolazione residente",
+        "url": "https://demo.istat.it",
+        "anno_riferimento": 2022,
+        "nota": "qx = probabilità di morte nell'anno per 1.000 persone, per età singola riaggregata per fascia quinquennale"
+      },
+      "infortuni_permanenti": {
+        "ente": "INAIL",
+        "dataset": "Casellario Centrale Infortuni — statistiche per invalidità permanente",
+        "url": "https://casellario.inail.it/portale/it/banca-dati/statistiche-on-line.html",
+        "dataset_opendata": "https://dati.inail.it/portale/it/dataset/infortuni-sul-lavoro.html",
+        "periodo_riferimento": "2015-2024",
+        "nota": "Distribuzione % degli infortuni con esito invalidità permanente (IP) per fascia d'età. Indice di incidenza espresso per 1.000 addetti (lavoro) e per 1.000 assicurati (polizze private RC Auto + Infortuni)"
+      },
+      "non_autosufficienza": {
+        "ente_primario": "ISTAT",
+        "pubblicazione": "Le condizioni di salute della popolazione anziana in Italia",
+        "anno_riferimento": 2021,
+        "url": "https://www.istat.it/it/archivio/anziani",
+        "ente_secondario": "CERGAS SDA Bocconi",
+        "pubblicazione_secondaria": "L'assistenza agli anziani non autosufficienti — Osservatorio Long Term Care",
+        "anno_secondario": 2024,
+        "nota": "Prevalenza = % di persone con gravi limitazioni funzionali (ADL/IADL) incapaci di svolgere autonomamente ≥1 attività di cura personale. Dati ISTAT diretti solo per fascia 65+. Fascia <65 da ISTAT Indagine Multiscopo (metodologia non completamente omogenea)"
+      }
+    }
+  },
+  "fasce_eta": [
+    {
+      "id": "0_17",
+      "label": "Minori",
+      "range": "0–17",
+      "mortalita": {
+        "qx_maschi_per_mille": 0.24,
+        "qx_femmine_per_mille": 0.19,
+        "qx_totale_per_mille": 0.22,
+        "prob_morte_annua_pct": 0.022,
+        "note": "Media pesata fasce 0–4 / 5–9 / 10–14 / 15–17. ISTAT 2022"
+      },
+      "infortuni_permanenti": {
+        "quota_casi_pct": 1.0,
+        "indice_x1000_addetti_lavoro": 0.2,
+        "indice_x1000_assicurati_privati": 0.1,
+        "note": "Quota minima; prevalentemente incidenti scolastici e sportivi"
+      },
+      "non_autosufficienza": {
+        "prevalenza_pct": 0.5,
+        "fonte_qualita": "stima",
+        "note": "Principalmente disabilità congenite o da incidente. Dato ISTAT Multiscopo, non confrontabile con metodologia over-65"
+      },
+      "indice_rischio_combinato": {
+        "valore": 1,
+        "scala": "1-10",
+        "commento": "Rischio molto basso su tutti e tre gli assi"
+      }
+    },
+    {
+      "id": "18_24",
+      "label": "Giovani",
+      "range": "18–24",
+      "mortalita": {
+        "qx_maschi_per_mille": 0.62,
+        "qx_femmine_per_mille": 0.22,
+        "qx_totale_per_mille": 0.43,
+        "prob_morte_annua_pct": 0.043,
+        "note": "ISTAT 2022 — mortalità prevalentemente da incidenti stradali"
+      },
+      "infortuni_permanenti": {
+        "quota_casi_pct": 12.0,
+        "indice_x1000_addetti_lavoro": 1.55,
+        "indice_x1000_assicurati_privati": 0.55,
+        "note": "Fascia con alta incidenza IP da lavoro, prevalentemente settori manifatturiero e costruzioni"
+      },
+      "non_autosufficienza": {
+        "prevalenza_pct": 0.5,
+        "fonte_qualita": "stima",
+        "note": "NA trascurabile in questa fascia; ISTAT Multiscopo"
+      },
+      "indice_rischio_combinato": {
+        "valore": 2,
+        "scala": "1-10",
+        "commento": "IP da lavoro principale rischio; mortalità maschile sensibile"
+      }
+    },
+    {
+      "id": "25_34",
+      "label": "Adulti giovani",
+      "range": "25–34",
+      "mortalita": {
+        "qx_maschi_per_mille": 0.79,
+        "qx_femmine_per_mille": 0.35,
+        "qx_totale_per_mille": 0.58,
+        "prob_morte_annua_pct": 0.058,
+        "note": "ISTAT 2022 — media fasce 25–29 e 30–34"
+      },
+      "infortuni_permanenti": {
+        "quota_casi_pct": 21.0,
+        "indice_x1000_addetti_lavoro": 1.4,
+        "indice_x1000_assicurati_privati": 0.5,
+        "note": "Alta numerosità per ampiezza della fascia lavorativa; IP di media gravità"
+      },
+      "non_autosufficienza": {
+        "prevalenza_pct": 1.0,
+        "fonte_qualita": "stima",
+        "note": "NA ancora bassa; ISTAT Multiscopo"
+      },
+      "indice_rischio_combinato": {
+        "valore": 2,
+        "scala": "1-10",
+        "commento": "IP significativo; mortalità in crescita lenta"
+      }
+    },
+    {
+      "id": "35_44",
+      "label": "Adulti",
+      "range": "35–44",
+      "mortalita": {
+        "qx_maschi_per_mille": 1.47,
+        "qx_femmine_per_mille": 0.84,
+        "qx_totale_per_mille": 1.15,
+        "prob_morte_annua_pct": 0.115,
+        "note": "ISTAT 2022 — media fasce 35–39 e 40–44"
+      },
+      "infortuni_permanenti": {
+        "quota_casi_pct": 22.0,
+        "indice_x1000_addetti_lavoro": 1.33,
+        "indice_x1000_assicurati_privati": 0.45,
+        "note": "Fascia a più alta numerosità assoluta; IP da malattia inizia a comparire"
+      },
+      "non_autosufficienza": {
+        "prevalenza_pct": 1.5,
+        "fonte_qualita": "stima",
+        "note": "ISTAT Multiscopo; NA ancora residuale"
+      },
+      "indice_rischio_combinato": {
+        "valore": 3,
+        "scala": "1-10",
+        "commento": "Crescita graduale mortalità e IP; NA ancora residuale"
+      }
+    },
+    {
+      "id": "45_54",
+      "label": "Adulti maturi",
+      "range": "45–54",
+      "mortalita": {
+        "qx_maschi_per_mille": 4.13,
+        "qx_femmine_per_mille": 2.27,
+        "qx_totale_per_mille": 3.19,
+        "prob_morte_annua_pct": 0.319,
+        "note": "ISTAT 2022 — media fasce 45–49 e 50–54; accelerazione per patologie cardiovascolari"
+      },
+      "infortuni_permanenti": {
+        "quota_casi_pct": 24.0,
+        "indice_x1000_addetti_lavoro": 1.38,
+        "indice_x1000_assicurati_privati": 0.48,
+        "note": "Fascia con più IP in valore assoluto; IP da malattia (oncologico, cardiovascolare) inizia a pesare"
+      },
+      "non_autosufficienza": {
+        "prevalenza_pct": 1.5,
+        "fonte_qualita": "stima",
+        "note": "ISTAT Multiscopo; NA in leggera crescita per comorbilità croniche"
+      },
+      "indice_rischio_combinato": {
+        "valore": 4,
+        "scala": "1-10",
+        "commento": "Fascia critica per IP assoluto; prima accelerazione mortalità"
+      }
+    },
+    {
+      "id": "55_64",
+      "label": "Pre-pensionamento",
+      "range": "55–64",
+      "mortalita": {
+        "qx_maschi_per_mille": 11.3,
+        "qx_femmine_per_mille": 5.8,
+        "qx_totale_per_mille": 8.5,
+        "prob_morte_annua_pct": 0.85,
+        "note": "ISTAT 2022 — media fasce 55–59 e 60–64; forte differenziale M/F"
+      },
+      "infortuni_permanenti": {
+        "quota_casi_pct": 18.0,
+        "indice_x1000_addetti_lavoro": 1.2,
+        "indice_x1000_assicurati_privati": 0.42,
+        "note": "Frequenza in calo (meno esposti) ma gravità in aumento; IP da malattia diventa preponderante"
+      },
+      "non_autosufficienza": {
+        "prevalenza_pct": 3.8,
+        "fonte_qualita": "stima",
+        "note": "ISTAT Multiscopo; NA in crescita per malattie croniche e muscoloscheletriche"
+      },
+      "indice_rischio_combinato": {
+        "valore": 5,
+        "scala": "1-10",
+        "commento": "Mortalità in forte accelerazione; NA inizia a pesare"
+      }
+    },
+    {
+      "id": "65_74",
+      "label": "Anziani",
+      "range": "65–74",
+      "mortalita": {
+        "qx_maschi_per_mille": 23.1,
+        "qx_femmine_per_mille": 11.55,
+        "qx_totale_per_mille": 17.0,
+        "prob_morte_annua_pct": 1.7,
+        "note": "ISTAT 2022 — fonte diretta tavole di mortalità"
+      },
+      "infortuni_permanenti": {
+        "quota_casi_pct": 2.0,
+        "indice_x1000_addetti_lavoro": null,
+        "indice_x1000_assicurati_privati": 0.35,
+        "note": "Prevalentemente non più in età lavorativa; IP da polizze private RC Auto e Infortuni"
+      },
+      "non_autosufficienza": {
+        "prevalenza_pct": 14.6,
+        "fonte_qualita": "dato_diretto_ISTAT",
+        "pubblicazione": "ISTAT — Le condizioni di salute della popolazione anziana in Italia, 2021",
+        "note": "Dato ISTAT diretto — gravi limitazioni funzionali ADL/IADL"
+      },
+      "indice_rischio_combinato": {
+        "valore": 7,
+        "scala": "1-10",
+        "commento": "Svolta: NA diventa rischio primario; mortalità elevata"
+      }
+    },
+    {
+      "id": "75_84",
+      "label": "Grandi anziani",
+      "range": "75–84",
+      "mortalita": {
+        "qx_maschi_per_mille": 89.65,
+        "qx_femmine_per_mille": 56.48,
+        "qx_totale_per_mille": 70.95,
+        "prob_morte_annua_pct": 7.095,
+        "note": "ISTAT 2022 — media fasce 75–79 e 80–84"
+      },
+      "infortuni_permanenti": {
+        "quota_casi_pct": null,
+        "indice_x1000_addetti_lavoro": null,
+        "indice_x1000_assicurati_privati": 0.25,
+        "note": "Dato residuale; prevalentemente cadute con esito IP da polizze private"
+      },
+      "non_autosufficienza": {
+        "prevalenza_pct": 32.5,
+        "fonte_qualita": "dato_diretto_ISTAT",
+        "pubblicazione": "ISTAT — Le condizioni di salute della popolazione anziana in Italia, 2021",
+        "note": "Dato ISTAT diretto — circa 1 su 3 non è autosufficiente"
+      },
+      "indice_rischio_combinato": {
+        "valore": 9,
+        "scala": "1-10",
+        "commento": "Rischio NA e mortalità molto elevati; LTC principale bisogno"
+      }
+    },
+    {
+      "id": "85_plus",
+      "label": "Longevi",
+      "range": "85+",
+      "mortalita": {
+        "qx_maschi_per_mille": 231.0,
+        "qx_femmine_per_mille": 181.0,
+        "qx_totale_per_mille": 202.0,
+        "prob_morte_annua_pct": 20.2,
+        "note": "ISTAT 2022 — media fasce 85–89 e 90+; altissima mortalità"
+      },
+      "infortuni_permanenti": {
+        "quota_casi_pct": null,
+        "indice_x1000_addetti_lavoro": null,
+        "indice_x1000_assicurati_privati": null,
+        "note": "Fascia non rilevante per IP assicurativo standard"
+      },
+      "non_autosufficienza": {
+        "prevalenza_pct": 63.8,
+        "fonte_qualita": "dato_diretto_ISTAT",
+        "pubblicazione": "ISTAT — Le condizioni di salute della popolazione anziana in Italia, 2021",
+        "note": "Dato ISTAT diretto — quasi 2 su 3 non autosufficienti. Stima pop. NA 85+: ~1,15 milioni (CERGAS 2024)"
+      },
+      "indice_rischio_combinato": {
+        "valore": 10,
+        "scala": "1-10",
+        "commento": "Fase di massimo rischio: NA dominante, mortalità elevatissima"
+      }
+    }
+  ]
+}
