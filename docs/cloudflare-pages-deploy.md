@@ -69,6 +69,14 @@ Lo script [build_pages_bundle.sh](/Users/matteo7/Desktop/Simulatore%20scenari%20
 - `simulator-db.js`
 - `simulator-engine.js`
 - `data/processed/bdi_benchmarks_2022.js`
+- eventuali file `risk_db_*.json` presenti nella root del repository dentro `public/data/uploads/`
+- eventuali file `.json` in `data/uploads/` dentro `public/data/uploads/`
+
+## Regola pratica per chi carica dati
+
+- non modificare direttamente `public/`, perche viene rigenerata a ogni deploy
+- modificare sempre i file sorgente in root oppure aggiungere i dataset in `data/uploads/`
+- i dataset caricati vengono pubblicati su Pages in `https://alquati99-simulatore.pages.dev/data/uploads/...`
 
 ## Output atteso
 
