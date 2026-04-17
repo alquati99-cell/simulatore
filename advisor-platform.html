@@ -1346,6 +1346,60 @@ nav{
   --sh1:0 28px 80px rgba(8,16,28,.08);
   --sh2:0 32px 90px rgba(8,16,28,.12);
   --sh3:0 44px 110px rgba(8,16,28,.18);
+
+  /* ── SPACING TOKENS (8pt grid) ── */
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:20px;
+  --space-6:24px;
+  --space-8:32px;
+  --space-10:40px;
+  --space-12:48px;
+  --space-16:64px;
+
+  /* ── RADIUS TOKENS ── */
+  --r-xs:4px;
+  --r-sm:8px;
+  --r-md:12px;
+  --r-lg:16px;
+  --r-xl:20px;
+  --r-2xl:28px;
+  --r-3xl:34px;
+  --r-full:9999px;
+
+  /* ── MOTION TOKENS ── */
+  --dur-instant:80ms;
+  --dur-fast:150ms;
+  --dur-normal:250ms;
+  --dur-slow:400ms;
+  --dur-slower:600ms;
+  --ease-default:cubic-bezier(0.25,0.46,0.45,0.94);
+  --ease-spring:cubic-bezier(0.34,1.56,0.64,1);
+  --ease-smooth:cubic-bezier(0.4,0,0.2,1);
+  --ease-enter:cubic-bezier(0,0,0.2,1);
+  --ease-exit:cubic-bezier(0.4,0,1,1);
+
+  /* ── FOCUS RING ── */
+  --focus-ring:0 0 0 3px rgba(24,54,95,.28);
+}
+
+/* ── DARK MODE ── */
+@media (prefers-color-scheme:dark){
+  :root{
+    --td:#e8edf4;
+    --tm:#9aa3b2;
+    --tl:#6a7385;
+    --bgm:#0e1520;
+    --brd:rgba(255,255,255,.08);
+    --brddk:rgba(255,255,255,.14);
+    --bgs:#1a2333;
+    --sh1:0 28px 80px rgba(0,0,0,.32);
+    --sh2:0 32px 90px rgba(0,0,0,.42);
+    --sh3:0 44px 110px rgba(0,0,0,.54);
+    --focus-ring:0 0 0 3px rgba(109,134,170,.4);
+  }
 }
 
 body{
@@ -3637,6 +3691,100 @@ button{
   .print-row:last-child{border-bottom:none}
   .print-row strong{font-size:12px;color:#0d1f3c}
 }
+
+/* ── FOCUS VISIBLE — accessibilità tastiera ── */
+*:focus{outline:none}
+*:focus-visible{
+  outline:none;
+  box-shadow:var(--focus-ring) !important;
+}
+button:focus-visible,
+[role="button"]:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible{
+  outline:none;
+  box-shadow:var(--focus-ring) !important;
+  border-radius:inherit;
+}
+
+/* ── REDUCED MOTION ── */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+  }
+  body::before,body::after{animation:none !important}
+  .chatbox::before,.profile-hero::before,.impact-stage::before,
+  .goal-gauge-section::before,.coverage-band::before{animation:none !important}
+  .ldot{animation:none !important}
+}
+
+/* ── SKELETON SHIMMER — loading state ── */
+@keyframes shimmer{
+  0%{background-position:200% center}
+  100%{background-position:-200% center}
+}
+.skeleton{
+  background:linear-gradient(90deg,
+    rgba(12,22,36,.06) 25%,
+    rgba(12,22,36,.12) 37%,
+    rgba(12,22,36,.06) 63%
+  );
+  background-size:400% 100%;
+  animation:shimmer 1.6s linear infinite;
+  border-radius:var(--r-md);
+  color:transparent;
+  user-select:none;
+}
+
+/* ── CLICK FEEDBACK — stati attivi premium ── */
+.chip:active,
+.goal-tile:active,
+.bundle-card:active,
+.gfocus-card:active{
+  transform:scale(0.97) !important;
+  transition-duration:var(--dur-instant) !important;
+}
+.bpri:active,
+.pdf-btn:active,
+.bsnd:active{
+  transform:scale(0.96) !important;
+  opacity:.88;
+  transition-duration:var(--dur-instant) !important;
+}
+.bmic:active{
+  transform:scale(0.94) !important;
+  transition-duration:var(--dur-instant) !important;
+}
+
+/* ── TRANSITION NORMALISATION — usa motion token ── */
+.chip,.goal-tile,.bundle-card,.gfocus-card,.coverage-card{
+  transition:
+    transform var(--dur-normal) var(--ease-smooth),
+    box-shadow var(--dur-normal) var(--ease-smooth),
+    border-color var(--dur-normal) var(--ease-smooth),
+    background var(--dur-normal) var(--ease-smooth);
+}
+.bpri,.pdf-btn,.bsnd,.nrb,.bgho,.bmic{
+  transition:
+    transform var(--dur-fast) var(--ease-spring),
+    box-shadow var(--dur-fast) var(--ease-default),
+    opacity var(--dur-fast) var(--ease-default),
+    background var(--dur-fast) var(--ease-default);
+}
+.fi,.cta{
+  transition:
+    border-color var(--dur-fast) var(--ease-default),
+    box-shadow var(--dur-fast) var(--ease-default);
+}
+:is(.chatbox,.ph,.fcard,.goal-gauge-section,.coverage-band,.policy-group,.simple-graph-card){
+  transition:
+    transform var(--dur-slow) var(--ease-smooth),
+    box-shadow var(--dur-slow) var(--ease-smooth);
+}
 </style>
 </head>
 <body data-page="1">
@@ -3647,13 +3795,13 @@ button{
     <div class="nlm">FA</div>
     <div><div class="nb">FamilyAdvisor Pro</div><div class="nt">Piattaforma goal-based · Allianz</div></div>
   </div>
-  <div class="nsteps">
-    <div class="ns on" id="n1" onclick="goTo(1)"><div class="nn">1</div>Raccolta dati</div>
-    <div class="nar">›</div>
-    <div class="ns" id="n2" onclick="goTo(2)"><div class="nn">2</div>Profilo cliente</div>
-    <div class="nar">›</div>
-    <div class="ns" id="n3" onclick="goTo(3)"><div class="nn">3</div>Scenari & Impatto</div>
-  </div>
+  <nav class="nsteps" aria-label="Passi del flusso">
+    <div class="ns on" id="n1" onclick="goTo(1)" role="button" tabindex="0" aria-current="step"><div class="nn" aria-hidden="true">1</div>Raccolta dati</div>
+    <div class="nar" aria-hidden="true">›</div>
+    <div class="ns" id="n2" onclick="goTo(2)" role="button" tabindex="0"><div class="nn" aria-hidden="true">2</div>Profilo cliente</div>
+    <div class="nar" aria-hidden="true">›</div>
+    <div class="ns" id="n3" onclick="goTo(3)" role="button" tabindex="0"><div class="nn" aria-hidden="true">3</div>Scenari & Impatto</div>
+  </nav>
   <div class="nra">
     <button class="nrb" onclick="newClient()">Nuovo cliente</button>
     <div class="nbd">⚠️ Dati esemplificativi</div>
@@ -3672,7 +3820,7 @@ button{
       <div class="cav">🤖</div>
       <div><div class="cnm">Assistente FamilyAdvisor</div><div class="cst"><div class="ldot"></div>In ascolto</div></div>
     </div>
-    <div class="msgs" id="chatMsgs">
+    <div class="msgs" id="chatMsgs" role="log" aria-live="polite" aria-label="Conversazione con l'assistente">
       <div class="msg ai"><div class="mav">🤖</div>
         <div class="mb">Ciao! Scrivi quello che sai del cliente: nome, età, famiglia, reddito mensile, casa, obiettivi. Anche due righe o appunti veloci vanno bene.</div>
       </div>
@@ -3684,9 +3832,9 @@ button{
       <button class="chip" onclick="qS('Profilo completo: Marco Ferretti, 42 anni, sposato con Giulia 38 anni, 2 figli (8 e 5 anni), ingegnere, RAL 65.000€, patrimonio 80.000€, risparmio mensile 800€, affittuario. Obiettivi: pensione integrativa da 65 anni, acquisto prima casa entro 5 anni budget 250k, fondo studi per i figli, protezione reddito familiare.')">✨ Profilo completo</button>
     </div>
     <div class="cinp">
-      <button class="bmic" id="micBtn" onclick="toggleMic()">🎤</button>
-      <textarea class="cta" id="chatInput" placeholder="Descrivi il cliente liberamente…" rows="1" onkeydown="hKey(event)" oninput="autoH(this)"></textarea>
-      <button class="bsnd" onclick="sendMsg()">➤</button>
+      <button class="bmic" id="micBtn" onclick="toggleMic()" aria-label="Avvia registrazione vocale" title="Registrazione vocale">🎤</button>
+      <textarea class="cta" id="chatInput" placeholder="Descrivi il cliente liberamente…" rows="1" onkeydown="hKey(event)" oninput="autoH(this)" aria-label="Messaggio per l'assistente"></textarea>
+      <button class="bsnd" onclick="sendMsg()" aria-label="Invia messaggio" title="Invia">➤</button>
     </div>
   </div>
 </div>
