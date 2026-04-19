@@ -486,6 +486,170 @@
     );
   }
 
+  function fieldHasValue(id, allowZero) {
+    var node = byId(id);
+    if (!node) return false;
+    var value = String(node.value == null ? "" : node.value).trim();
+    if (allowZero && value === "0") return true;
+    return value !== "";
+  }
+
+  function inferGenderFromName(name) {
+    var firstName = normalizeNameToken(name);
+    if (!firstName) return "neutral";
+
+    var femaleNames = {
+      giulia: true, chiara: true, sara: true, martina: true, francesca: true,
+      anna: true, alessia: true, valentina: true, silvia: true, laura: true,
+      federica: true, eleonora: true, elena: true, claudia: true, beatrice: true
+    };
+    var maleNames = {
+      marco: true, matteo: true, luca: true, andrea: true, francesco: true,
+      alessandro: true, davide: true, stefano: true, giuseppe: true, simone: true,
+      nicola: true, fabio: true, emanuele: true, filippo: true, carlo: true
+    };
+
+    if (femaleNames[firstName]) return "female";
+    if (maleNames[firstName]) return "male";
+    if (/a$/.test(firstName) && !/luca|andrea|nicola|mattia|elia/.test(firstName)) return "female";
+    if (/o$|e$|i$/.test(firstName)) return "male";
+    return "neutral";
+  }
+
+  function normalizeNameToken(name) {
+    return String(name || "")
+      .trim()
+      .split(/\s+/)[0]
+      .toLowerCase()
+      .replace(/[^a-zà-ÿ]/g, "");
+  }
+
+  function resolvedQuestionnaireGender() {
+    var genderNode = byId("fGender");
+    if (!genderNode) return "neutral";
+    if (genderNode.dataset.manual === "1" && genderNode.value) return genderNode.value;
+    return inferGenderFromName(byId("fNome") ? byId("fNome").value : "");
+  }
+
+  function questionnaireCompletionState() {
+    var blocks = [
+      {
+        label: "Identita",
+        complete: fieldHasValue("fNome") && fieldHasValue("fEta")
+      },
+      {
+        label: "Nucleo",
+        complete: fieldHasValue("fSt") && fieldHasValue("fFi", true)
+      },
+      {
+        label: "Professione",
+        complete: fieldHasValue("fProfession")
+      },
+      {
+        label: "Abitazione",
+        complete: fieldHasValue("fAb")
+      },
+      {
+        label: "Reddito",
+        complete: fieldHasValue("fRnet")
+      },
+      {
+        label: "Cuscinetto",
+        complete: fieldHasValue("fRi") || fieldHasValue("fPat")
+      }
+    ];
+    var completed = blocks.filter(function (block) { return block.complete; }).length;
+    return {
+      blocks: blocks,
+      completed: completed,
+      total: blocks.length,
+      completion: Math.round((completed / blocks.length) * 100),
+      missing: blocks.filter(function (block) { return !block.complete; }).map(function (block) { return block.label; })
+    };
+  }
+
+  function completionAvatarSvg(gender) {
+    if (gender === "female") {
+      return '' +
+        '<svg viewBox="0 0 160 160" aria-hidden="true">' +
+        '<path d="M50 42c0-22 15-32 30-32s30 10 30 32c0 12-2 20-6 28H56c-4-8-6-16-6-28Z" fill="currentColor" opacity=".18"/>' +
+        '<circle cx="80" cy="52" r="24" fill="currentColor"/>' +
+        '<path d="M46 138c2-28 18-44 34-44s32 16 34 44H46Z" fill="currentColor"/>' +
+        '<path d="M39 142c0-18 12-31 22-39 8 18 22 28 39 28 17 0 31-10 39-28 10 8 22 21 22 39H39Z" fill="currentColor" opacity=".2"/>' +
+        '</svg>';
+    }
+    if (gender === "male") {
+      return '' +
+        '<svg viewBox="0 0 160 160" aria-hidden="true">' +
+        '<path d="M56 30c8-10 20-16 34-16 16 0 29 7 37 21l-8 8c-5-10-18-17-31-17-11 0-21 4-28 11l-4-7Z" fill="currentColor" opacity=".2"/>' +
+        '<circle cx="80" cy="52" r="24" fill="currentColor"/>' +
+        '<path d="M48 142c2-28 18-44 32-44s30 16 32 44H48Z" fill="currentColor"/>' +
+        '<path d="M40 142c0-18 12-30 24-38 8 10 18 16 30 16 12 0 22-6 30-16 12 8 24 20 24 38H40Z" fill="currentColor" opacity=".18"/>' +
+        '</svg>';
+    }
+    return '' +
+      '<svg viewBox="0 0 160 160" aria-hidden="true">' +
+      '<circle cx="80" cy="52" r="24" fill="currentColor"/>' +
+      '<path d="M46 142c2-28 18-44 34-44s32 16 34 44H46Z" fill="currentColor"/>' +
+      '<path d="M58 30c6-8 14-12 22-12 11 0 20 4 28 12" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round" opacity=".18"/>' +
+      '</svg>';
+  }
+
+  function renderQuestionnaireProgressCard() {
+    var card = byId("questionnaireProgressCard");
+    if (!card) return;
+
+    var state = questionnaireCompletionState();
+    var gender = resolvedQuestionnaireGender();
+    var profileName = byId("fNome") && byId("fNome").value.trim() ? byId("fNome").value.trim() : "cliente";
+    var completion = clamp(state.completion, 0, 100);
+
+    card.innerHTML =
+      '<div class="profile-progress-ey">Lettura visiva del profilo</div>' +
+      '<div class="profile-progress-head">' +
+      '<div><div class="profile-progress-title">Scheda di ' + esc(profileName) + '</div><div class="profile-progress-copy">La figura si completa mentre il questionario prende forma. Pochi campi, ma tutti quelli che servono per rendere credibile la simulazione.</div></div>' +
+      '<div class="profile-progress-percent">' + esc(completion) + '%</div>' +
+      '</div>' +
+      '<div class="profile-progress-visual ' + esc(gender) + '">' +
+      '<div class="profile-progress-ring" style="--completion:' + esc(completion) + '">' +
+      '<div class="profile-progress-core">' +
+      '<div class="profile-progress-fill" style="height:' + esc(completion) + '%"></div>' +
+      '<div class="profile-progress-illustration">' + completionAvatarSvg(gender) + "</div>" +
+      "</div></div></div>" +
+      '<div class="profile-progress-gender">' +
+      '<button type="button" class="' + (gender === "neutral" ? "on" : "") + '" onclick="setVisualGender(\'auto\')">Auto</button>' +
+      '<button type="button" class="' + (gender === "female" ? "on" : "") + '" onclick="setVisualGender(\'female\')">Donna</button>' +
+      '<button type="button" class="' + (gender === "male" ? "on" : "") + '" onclick="setVisualGender(\'male\')">Uomo</button>' +
+      "</div>" +
+      '<div class="profile-progress-kpis">' +
+      '<div class="profile-progress-kpi"><span>Blocchi completati</span><strong>' + esc(state.completed) + "/" + esc(state.total) + "</strong></div>" +
+      '<div class="profile-progress-kpi"><span>Pronto per simulare</span><strong>' + esc(completion >= 67 ? "Quasi pronto" : completion >= 34 ? "In costruzione" : "Da completare") + "</strong></div>" +
+      "</div>" +
+      '<div class="profile-progress-list">' +
+      state.blocks.map(function (block) {
+        return '<div class="profile-progress-row' + (block.complete ? " on" : "") + '"><strong>' + esc(block.label) + '</strong><span>' + esc(block.complete ? "completo" : "manca") + "</span></div>";
+      }).join("") +
+      "</div>" +
+      '<div class="profile-progress-foot">' +
+      (state.missing.length
+        ? "Da chiudere ancora: " + esc(joinReadableList(state.missing).toLowerCase()) + "."
+        : "Questionario completo: puoi passare subito alla simulazione scenari.") +
+      "</div>";
+  }
+
+  function setVisualGender(gender) {
+    var node = byId("fGender");
+    if (!node) return;
+    if (gender === "female" || gender === "male") {
+      node.value = gender;
+      node.dataset.manual = "1";
+    } else {
+      node.value = "";
+      node.dataset.manual = "0";
+    }
+    renderQuestionnaireProgressCard();
+  }
+
   function selectedProducts() {
     if (!S.plan) return [];
     return S.plan.recommendations.filter(function (recommendation) {
@@ -1016,6 +1180,7 @@
       "profileSummary",
       "advisorNarrative",
       "financeSnapshot",
+      "questionnaireProgressCard",
       "goalGrid",
       "proposalShelf",
       "personaInsight",
@@ -1050,6 +1215,7 @@
 
     [
       ["fNome", ""],
+      ["fGender", ""],
       ["fDOB", ""],
       ["fEta", ""],
       ["fSt", "Single"],
@@ -1069,7 +1235,10 @@
       ["fFixed", ""]
     ].forEach(function (entry) {
       var node = byId(entry[0]);
-      if (node) node.value = entry[1];
+      if (node) {
+        node.value = entry[1];
+        if (entry[0] === "fGender") node.dataset.manual = "0";
+      }
     });
 
     Object.keys(S.ch).forEach(function (chartId) {
@@ -1094,6 +1263,7 @@
     renderPage2IntakeInsight();
     renderProposalShelf();
     renderPersonaInsight();
+    renderQuestionnaireProgressCard();
     if (!preserveChat) renderWelcomeChat();
   }
 
@@ -1144,6 +1314,7 @@
     topCta.textContent = "Simula scenari →";
     bottomCta.textContent = "Simula scenari →";
     renderPage2IntakeInsight();
+    renderQuestionnaireProgressCard();
   }
 
   function showTyp() {
@@ -1366,8 +1537,13 @@
     byId("fAb").value = profile.housingStatus || "";
     byId("fHomeCost").value = fieldValue(profile.housingCost);
     byId("fFixed").value = fieldValue(profile.fixedExpenses);
+    if (byId("fGender") && byId("fGender").dataset.manual !== "1") {
+      byId("fGender").value = "";
+      byId("fGender").dataset.manual = "0";
+    }
 
     S.isRendering = false;
+    renderQuestionnaireProgressCard();
   }
 
   function renderProfileSummary() {
@@ -1751,92 +1927,83 @@
     suggestedBadge.textContent = suggested.length + " aree suggerite";
     optionalBadge.textContent = optional.length ? optional.length + " aree da valutare" : "Nessuna area secondaria";
 
-    function solutionChipsMarkup(solutions, selectedId, areaId, productId, coverageId) {
+    function buildSelectOptions(solutions, selectedId) {
       return (solutions || []).map(function (solution) {
-        var disabled = solution.available === false;
-        var isActive = solution.id === selectedId;
-        var action = coverageId
-          ? 'selectOfferCoverageSolution(\'' + esc(areaId) + '\', \'' + esc(productId) + '\', \'' + esc(coverageId) + '\', \'' + esc(solution.id) + '\')'
-          : 'selectOfferProductSolution(\'' + esc(areaId) + '\', \'' + esc(productId) + '\', \'' + esc(solution.id) + '\')';
-        return (
-          '<button class="offer-solution-chip ' + esc(solution.accent || "") + (isActive ? " on" : "") + (disabled ? " disabled" : "") + '"' +
-          (disabled ? " disabled" : ' onclick="' + action + '"') + ">" +
-          '<span>' + esc(solution.name) + "</span>" +
-          '<small>' + esc(solution.shortLabel || solution.limitLabel || "") + "</small>" +
-          "</button>"
-        );
+        return '<option value="' + esc(solution.id) + '"' + (solution.id === selectedId ? " selected" : "") + (solution.available === false ? " disabled" : "") + ">" +
+          esc(solution.name + (solution.limitLabel ? " · " + solution.limitLabel : "")) +
+          "</option>";
       }).join("");
     }
 
-    function coverageMarkup(area, product, coverage) {
-      var tone = scoreTone(coverage.fitScore);
+    function coverageRowMarkup(area, product, coverage) {
+      var priority = priorityMeta(coverage.fitScore);
+      var selectedSolutionId = coverage.selectedSolutionId || coverage.suggestedSolutionId || "";
+      var activeSolution = (coverage.solutions || []).find(function (solution) {
+        return solution.id === selectedSolutionId;
+      }) || null;
+      var monthlyPremium = coverage.selected
+        ? coverage.selectedMonthlyPremium
+        : activeSolution
+        ? activeSolution.monthlyPremium
+        : 0;
       return (
-        '<div class="offer-coverage-card' + (coverage.selected ? " on" : "") + '">' +
-        '<div class="offer-coverage-main">' +
-        '<div class="offer-coverage-head">' +
-        '<div><div class="offer-coverage-name">' + esc(coverage.name) + '</div><div class="offer-coverage-copy">' + esc(coverage.description || "") + "</div></div>" +
-        '<div class="offer-coverage-score ' + esc(tone.key) + '">' + esc(coverage.fitScore) + "/100</div>" +
+        '<div class="policy-row' + (coverage.selected ? " on" : "") + '">' +
+        '<div class="policy-row-main">' +
+        '<div class="policy-row-title">' + esc(coverage.name) + '<span class="policy-priority ' + esc(priority.key) + '">' + esc(priority.label) + "</span></div>" +
+        '<div class="policy-row-copy">' + esc(coverage.description || area.reason) + "</div>" +
         "</div>" +
-        '<div class="offer-coverage-meta">' +
-        '<div class="offer-coverage-limit"><span>Soluzione attiva</span><strong>' + esc(coverage.selectedSolutionLabel || "Da scegliere") + "</strong></div>" +
-        '<div class="offer-coverage-premium"><span>Premio mensile</span><strong>' + esc(coverage.selected ? "€ " + currency(coverage.selectedMonthlyPremium) : "Non attiva") + "</strong></div>" +
-        '<button class="policy-toggle' + (coverage.selected ? " on" : "") + '" onclick="toggleOfferCoverageSelection(\'' + esc(area.id) + '\', \'' + esc(product.id) + '\', \'' + esc(coverage.id) + '\')">' + esc(coverage.selected ? "Disattiva" : "Attiva") + "</button>" +
-        "</div>" +
-        "</div>" +
-        '<div class="offer-solution-row compact">' + solutionChipsMarkup(coverage.solutions, coverage.selectedSolutionId, area.id, product.id, coverage.id) + "</div>" +
+        '<div class="policy-row-stat"><span>Premio</span><strong>€ ' + esc(currency(monthlyPremium)) + '/mese</strong></div>' +
+        '<label class="policy-select-wrap"><span>Soluzione</span><select class="policy-select" onchange="selectOfferCoverageSolution(\'' + esc(area.id) + '\', \'' + esc(product.id) + '\', \'' + esc(coverage.id) + '\', this.value)">' +
+        buildSelectOptions(coverage.solutions, selectedSolutionId) +
+        "</select></label>" +
+        '<button class="policy-toggle' + (coverage.selected ? " on" : "") + '" onclick="toggleOfferCoverageSelection(\'' + esc(area.id) + '\', \'' + esc(product.id) + '\', \'' + esc(coverage.id) + '\')">' + esc(coverage.selected ? "Inclusa" : "Attiva") + "</button>" +
         "</div>"
       );
     }
 
-    function protectionProductMarkup(area, product) {
-      var linked = offerProductLinkedRecommendations(product);
+    function productRowMarkup(area, product) {
+      var priority = priorityMeta(product.fitScore);
+      var selectedSolutionId = product.selectedSolutionId || product.suggestedSolutionId || "";
       var activeSolution = (product.solutions || []).find(function (solution) {
-        return solution.id === product.selectedSolutionId;
-      });
+        return solution.id === selectedSolutionId;
+      }) || null;
+      var linked = offerProductLinkedRecommendations(product);
+      var premium = product.selected
+        ? product.selectedMonthlyPremium
+        : activeSolution
+        ? activeSolution.monthlyPremium
+        : 0;
       return (
-        '<div class="offer-product-card' + (product.selected ? " on" : "") + '">' +
-        '<div class="offer-product-head">' +
-        '<div><div class="offer-product-name">' + esc(product.name) + '</div><div class="offer-product-copy">' + esc(linked.length ? joinReadableList(linked.map(function (recommendation) { return shortProductLabel(recommendation); })) : "Copertura configurabile") + "</div></div>" +
-        '<div class="offer-product-score">' + esc(product.fitScore) + "/100</div>" +
+        '<div class="policy-row' + (product.selected ? " on" : "") + '">' +
+        '<div class="policy-row-main">' +
+        '<div class="policy-row-title">' + esc(product.name) + '<span class="policy-priority ' + esc(priority.key) + '">' + esc(priority.label) + "</span></div>" +
+        '<div class="policy-row-copy">' + esc(linked.length ? joinReadableList(linked.map(function (recommendation) { return shortProductLabel(recommendation); })) : area.reason) + "</div>" +
         "</div>" +
-        '<div class="offer-product-meta slim">' +
-        '<div class="offer-product-meta-block"><span>Premio</span><strong>' + esc(product.selected ? "€ " + currency(product.selectedMonthlyPremium) + "/mese" : "Non attiva") + "</strong></div>" +
-        '<div class="offer-product-meta-block"><span>Soluzione</span><strong>' + esc(activeSolution ? activeSolution.name : "Da scegliere") + "</strong></div>" +
-        '<div class="offer-product-actions"><button class="policy-toggle' + (product.selected ? " on" : "") + '" onclick="toggleOfferProduct(\'' + esc(area.id) + '\', \'' + esc(product.id) + '\')">' + esc(product.selected ? "Disattiva" : "Attiva") + '</button></div>' +
-        "</div>" +
-        '<div class="offer-solution-row">' + solutionChipsMarkup(product.solutions, product.selectedSolutionId, area.id, product.id, "") + "</div>" +
+        '<div class="policy-row-stat"><span>Premio</span><strong>€ ' + esc(currency(premium)) + '/mese</strong></div>' +
+        '<label class="policy-select-wrap"><span>Soluzione</span><select class="policy-select" onchange="selectOfferProductSolution(\'' + esc(area.id) + '\', \'' + esc(product.id) + '\', this.value)">' +
+        buildSelectOptions(product.solutions, selectedSolutionId) +
+        "</select></label>" +
+        '<button class="policy-toggle' + (product.selected ? " on" : "") + '" onclick="toggleOfferProduct(\'' + esc(area.id) + '\', \'' + esc(product.id) + '\')">' + esc(product.selected ? "Inclusa" : "Attiva") + "</button>" +
         "</div>"
       );
-    }
-
-    function productMarkup(area, product) {
-      if (product.presentation === "coverage-matrix") {
-        return (
-          '<div class="offer-group-card">' +
-          '<div class="offer-group-head">' +
-          '<div><div class="offer-product-name">' + esc(product.name) + '</div><div class="offer-product-copy">' + esc((product.coverages || []).filter(function (coverage) { return coverage.selected; }).length) + " ambiti attivi · premio totale € " + esc(currency(product.selectedMonthlyPremium || 0)) + '/mese</div></div>' +
-          '<div class="offer-product-score">' + esc(product.fitScore) + "/100</div>" +
-          "</div>" +
-          '<div class="offer-coverage-grid">' + (product.coverages || []).map(function (coverage) { return coverageMarkup(area, product, coverage); }).join("") + "</div>" +
-          "</div>"
-        );
-      }
-      return protectionProductMarkup(area, product);
     }
 
     function areaMarkup(area, bucket) {
+      var rows = area.products.map(function (product) {
+        if (product.presentation === "coverage-matrix") {
+          return (product.coverages || []).map(function (coverage) {
+            return coverageRowMarkup(area, product, coverage);
+          }).join("");
+        }
+        return productRowMarkup(area, product);
+      }).join("");
       return (
-        '<div class="offer-area-card' + (bucket === "suggested" ? " suggested" : "") + '">' +
-        '<div class="offer-area-top">' +
-        '<div><div class="offer-area-ey">' + esc(area.name) + '</div><div class="offer-area-title">' + esc(area.mainVisual) + '</div><div class="offer-area-copy">' + esc(area.reason) + "</div></div>" +
-        '<div class="offer-area-pill">' + esc(area.status) + "</div>" +
+        '<div class="policy-area-compact' + (bucket === "suggested" ? " suggested" : "") + '">' +
+        '<div class="policy-area-header">' +
+        '<div><div class="policy-area-ey">' + esc(area.name) + '</div><div class="policy-area-title">' + esc(area.mainVisual) + '</div><div class="policy-area-copy">' + esc(area.reason) + "</div></div>" +
+        '<div class="policy-area-score">' + esc(area.fitScore) + "/100</div>" +
         "</div>" +
-        '<div class="offer-area-stats">' +
-        '<div class="offer-area-stat"><span>Prodotti</span><strong>' + esc(area.productCount) + "</strong></div>" +
-        '<div class="offer-area-stat"><span>Coperture</span><strong>' + esc(area.coverageCount) + "</strong></div>" +
-        '<div class="offer-area-stat"><span>Attive</span><strong>' + esc(area.selectedCoverageCount) + "</strong></div>" +
-        "</div>" +
-        '<div class="offer-product-stack">' + area.products.map(function (product) { return productMarkup(area, product); }).join("") + "</div>" +
+        '<div class="policy-row-list">' + rows + "</div>" +
         "</div>"
       );
     }
@@ -1869,9 +2036,9 @@
     if (!canvas) return;
     destroyChart("path");
     var labels = yearlyLabelsFromPath(activeScenario.withCoverage.path);
+    var baseData = yearlyValues(activeScenario.base && activeScenario.base.path ? activeScenario.base.path : activeScenario.withCoverage.path);
     var noData = yearlyValues(activeScenario.noCoverage.path);
     var yesData = yearlyValues(activeScenario.withCoverage.path);
-    var targetData = yearlyValues(activeScenario.targetPath);
     var ctx = canvas.getContext("2d");
 
     S.ch.path = new Chart(ctx, {
@@ -1880,36 +2047,37 @@
         labels: labels,
         datasets: [
           {
-            label: "Senza copertura",
+            label: "Piano base",
+            data: baseData,
+            borderColor: "#4d68d8",
+            backgroundColor: "rgba(77,104,216,.08)",
+            fill: false,
+            tension: 0.32,
+            borderWidth: 2.5,
+            pointRadius: 0,
+            pointHoverRadius: 3
+          },
+          {
+            label: "Sinistro scoperto",
             data: noData,
             borderColor: "#e57373",
             backgroundColor: "rgba(229,115,115,.08)",
-            fill: true,
+            fill: false,
             tension: 0.35,
             borderWidth: 2.5,
             pointRadius: 2.5,
             pointBackgroundColor: "#e57373"
           },
           {
-            label: "Con copertura",
+            label: "Sinistro coperto",
             data: yesData,
             borderColor: "#00857c",
             backgroundColor: "rgba(0,133,124,.08)",
-            fill: true,
+            fill: false,
             tension: 0.35,
             borderWidth: 2.5,
             pointRadius: 2.5,
             pointBackgroundColor: "#00857c"
-          },
-          {
-            label: "Target",
-            data: targetData,
-            borderColor: "#e8a000",
-            borderDash: [6, 4],
-            fill: false,
-            tension: 0,
-            borderWidth: 2,
-            pointRadius: 0
           }
         ]
       },
@@ -1940,26 +2108,27 @@
     var canvas = byId("gapC");
     if (!canvas) return;
     destroyChart("gap");
+    var baseCapital = lastValue(activeScenario.base && activeScenario.base.path ? activeScenario.base.path : []);
     var noCapital = lastValue(activeScenario.noCoverage.path);
     var yesCapital = lastValue(activeScenario.withCoverage.path);
-    var target = lastValue(activeScenario.targetPath);
     var ctx = canvas.getContext("2d");
 
     S.ch.gap = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: ["Target", "Senza copertura", "Con copertura"],
+        labels: ["Piano base", "Sinistro scoperto", "Sinistro coperto"],
         datasets: [
           {
-            label: "Valore finale",
-            data: [target, noCapital, yesCapital],
-            backgroundColor: ["#e8a000", "#e57373", "#00857c"],
+            label: "Patrimonio finale",
+            data: [baseCapital, noCapital, yesCapital],
+            backgroundColor: ["#4d68d8", "#e57373", "#00857c"],
             borderRadius: 12,
             maxBarThickness: 58
           }
         ]
       },
       options: {
+        indexAxis: "y",
         responsive: true,
         maintainAspectRatio: false,
         interaction: { mode: "index", intersect: false },
@@ -1968,20 +2137,21 @@
           tooltip: {
             callbacks: {
               label: function (context) {
-                return "€ " + context.parsed.y.toLocaleString("it-IT");
+                return "€ " + context.parsed.x.toLocaleString("it-IT");
               },
               afterBody: function (items) {
                 var label = items && items[0] ? items[0].label : "";
-                if (label === "Senza copertura") return ["Gap residuo: € " + Math.max(0, target - noCapital).toLocaleString("it-IT")];
-                if (label === "Con copertura") return ["Gap residuo: € " + Math.max(0, target - yesCapital).toLocaleString("it-IT")];
+                if (label === "Piano base") return ["Patrimonio atteso senza sinistro."];
+                if (label === "Sinistro scoperto") return ["Capitale eroso dallo shock senza coperture."];
+                if (label === "Sinistro coperto") return ["Capitale preservato grazie al trasferimento del rischio."];
                 return [];
               }
             }
           }
         },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8" } },
-          y: { grid: { color: "rgba(212,227,245,.5)" }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8", callback: function (value) { return "€" + Math.round(value / 1000) + "k"; } } }
+          x: { grid: { color: "rgba(212,227,245,.5)" }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8", callback: function (value) { return "€" + Math.round(value / 1000) + "k"; } } },
+          y: { grid: { display: false }, ticks: { font: { family: "Outfit", size: 10 }, color: "#5f738e" } }
         },
         animation: { duration: 650, easing: "easeInOutQuart" }
       }
@@ -1992,17 +2162,17 @@
     var intro = byId("scenarioSimpleIntro");
     var pathLabel = byId("simplePathLabel");
     var gapLabel = byId("simpleGapLabel");
-    var finalTarget = lastValue(activeScenario.targetPath);
+    var finalBaseCapital = lastValue(activeScenario.base && activeScenario.base.path ? activeScenario.base.path : []);
     var finalNoCapital = lastValue(activeScenario.noCoverage.path);
     var finalYesCapital = lastValue(activeScenario.withCoverage.path);
     if (intro) {
-      intro.textContent = 'Scenario "' + activeScenario.label + '" letto sull\'obiettivo "' + S.analysis.focusGoal.name + '". Prima vedi la traiettoria negli anni, poi dove atterra davvero il piano alla scadenza.';
+      intro.textContent = 'Scenario "' + activeScenario.label + '" letto sull\'obiettivo "' + S.analysis.focusGoal.name + '". Il blu mostra il patrimonio atteso senza shock, il rosso il capitale eroso dal sinistro non coperto, il verde quanto resta in piedi con le coperture attivate.';
     }
     if (pathLabel) {
-      pathLabel.textContent = "Rosso e verde mostrano il capitale disponibile anno per anno. La linea oro e il target da raggiungere.";
+      pathLabel.textContent = "Le tre curve partono dallo stesso patrimonio iniziale e separano chiaramente il costo reale di restare scoperti rispetto a trasferire il rischio.";
     }
     if (gapLabel) {
-      gapLabel.textContent = "A scadenza il target e € " + currency(finalTarget) + ": senza copertura il cliente arriva a € " + currency(finalNoCapital) + ", con copertura a € " + currency(finalYesCapital) + ".";
+      gapLabel.textContent = "Alla data obiettivo il piano base vale € " + currency(finalBaseCapital) + ", scende a € " + currency(finalNoCapital) + " con il sinistro scoperto e risale a € " + currency(finalYesCapital) + " con coperture attive.";
     }
     drawScenarioPathChart(activeScenario);
     drawScenarioGapChart(activeScenario);
@@ -2739,6 +2909,24 @@
       var node = byId(id);
       if (node) node.addEventListener("input", refreshScenarioAnalysis);
     });
+    [
+      "fNome",
+      "fEta",
+      "fSt",
+      "fFi",
+      "fProfession",
+      "fAb",
+      "fRnet",
+      "fRi",
+      "fPat",
+      "fHomeCost",
+      "fFixed"
+    ].forEach(function (id) {
+      var node = byId(id);
+      if (!node) return;
+      node.addEventListener("input", renderQuestionnaireProgressCard);
+      node.addEventListener("change", renderQuestionnaireProgressCard);
+    });
     root.addEventListener("afterprint", function () {
       document.body.classList.remove("print-mode");
     });
@@ -2774,6 +2962,7 @@
   root.toggleOfferCoverageSelection = toggleOfferCoverageSelection;
   root.selectOfferCoverageSolution = selectOfferCoverageSolution;
   root.selectOfferProductSolution = selectOfferProductSolution;
+  root.setVisualGender = setVisualGender;
 
   document.addEventListener("DOMContentLoaded", boot);
 })(window);

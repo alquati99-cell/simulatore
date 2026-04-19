@@ -2543,6 +2543,23 @@
       durationMonths: rawImpact.durationMonths
     };
     var eventYear = scenarioYearForIds(scenarioIds);
+    var baseProjection = runProjection({
+      profile: profile,
+      goals: [focusGoal],
+      scenarioId: scenarioIds[0],
+      eventYear: eventYear,
+      horizonYears: horizonYears,
+      initialCapital: profile.totalAssets,
+      monthlySavings: profile.monthlySavings,
+      premiumDrag: 0,
+      netImpact: {
+        upfrontLoss: 0,
+        monthlyLoss: 0,
+        durationMonths: 0
+      },
+      seedLabel: "base|" + focusGoal.id + "|" + meta.id,
+      consumeCapitalOnGoal: false
+    });
     var noProjection = runProjection({
       profile: profile,
       goals: [focusGoal],
@@ -2578,6 +2595,13 @@
     var yesRetention = profile.totalAssets ? Math.round((Math.max(0, profile.totalAssets - withCoverageImpact.upfrontLoss) / profile.totalAssets) * 100) : 0;
     var noAchievement = Math.round(noProjection.weightedAchievement * 100);
     var yesAchievement = Math.round(yesProjection.weightedAchievement * 100);
+    var baseAchievement = Math.round(baseProjection.weightedAchievement * 100);
+    var baseGoalImpact = buildGoalImpact(
+      focusGoal,
+      baseProjection,
+      Math.max(0, profile.monthlySavings),
+      horizonYears
+    );
     var noGoalImpact = buildGoalImpact(
       focusGoal,
       noProjection,
@@ -2632,6 +2656,13 @@
         sustainability: noSustainability,
         protection: noCoverageProtected,
         path: noProjection.averagePath
+      },
+      base: {
+        goalAvailableCapital: baseGoalImpact.availableCapital,
+        goalGap: baseGoalImpact.goalGap,
+        delayYears: baseGoalImpact.delayYears,
+        achievement: baseAchievement,
+        path: baseProjection.averagePath
       },
       withCoverage: {
         postEventCapital: Math.max(0, profile.totalAssets - withCoverageImpact.upfrontLoss),
