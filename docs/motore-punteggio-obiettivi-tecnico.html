@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Motore punteggio obiettivi - versione tecnica</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      color: #132238;
+      line-height: 1.55;
+      margin: 44px;
+      max-width: 920px;
+    }
+    h1, h2 {
+      color: #0f3f86;
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 28px;
+      margin-top: 0;
+    }
+    h2 {
+      font-size: 18px;
+      margin-top: 26px;
+    }
+    p {
+      margin: 10px 0;
+    }
+    ul {
+      margin: 8px 0 12px 20px;
+    }
+    li {
+      margin: 6px 0;
+    }
+    .formula {
+      margin: 12px 0;
+      padding: 12px 14px;
+      background: #f4f8fd;
+      border: 1px solid #d8e4f2;
+      border-radius: 10px;
+      font-family: "Courier New", monospace;
+      white-space: pre-wrap;
+    }
+    .note {
+      margin: 14px 0;
+      padding: 12px 14px;
+      background: #fff8e7;
+      border: 1px solid #f1dd98;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Motore di punteggio obiettivi - versione tecnica</h1>
+
+  <p>
+    Il punteggio di raggiungimento obiettivo nasce da un motore deterministico.
+    Il RAG non entra nella formula: il suo ruolo e solo spiegare e contestualizzare.
+  </p>
+
+  <h2>1. Foundation score</h2>
+  <p>
+    Per ogni obiettivo il motore costruisce una base finanziaria del cliente
+    prima di simulare qualsiasi evento.
+  </p>
+
+  <div class="formula">capitalCoverage   = quota patrimonio utile / target
+savingsCoverage   = capacita di risparmio sostenibile / target
+liquidityCoverage = liquidita disponibile / soglia di sicurezza
+
+foundationScore =
+  0.45 * capitalCoverage +
+  0.35 * savingsCoverage +
+  0.20 * liquidityCoverage</div>
+
+  <p>
+    Successivamente il punteggio viene corretto con benchmark di famiglie simili
+    per reddito, patrimonio e attivita finanziarie.
+  </p>
+
+  <div class="formula">foundationScore corretta =
+  foundationScore * 0.78 +
+  peerScore * 0.22</div>
+
+  <h2>2. Scelta dello scenario pivot</h2>
+  <p>
+    Per ogni obiettivo non viene usato uno scenario fisso. Il motore ordina gli
+    scenari per priorita e sceglie quello piu rilevante per il profilo.
+  </p>
+
+  <div class="formula">scenarioPriority =
+  (goalGap senza copertura +
+   delayYears * 9000 +
+   totalLossValue * 0.03)
+  * scenarioRelevance</div>
+
+  <p><strong>scenarioRelevance</strong> dipende da:</p>
+  <ul>
+    <li>eta</li>
+    <li>figli o partner</li>
+    <li>casa o mutuo</li>
+    <li>rischio professionale</li>
+    <li>coerenza con il goal analizzato</li>
+  </ul>
+
+  <h2>3. Ramo senza polizza</h2>
+  <p>
+    Il ramo senza polizza applica il danno pieno dello scenario:
+  </p>
+
+  <div class="formula">noCoverageImpact = {
+  upfrontLoss,
+  monthlyLoss,
+  durationMonths
+}</div>
+
+  <p>
+    Il motore proietta poi il capitale fino alla data target del goal.
+  </p>
+
+  <div class="formula">capitale(t) =
+  capitale(t-1) * rendimento atteso
+  + risparmio mensile
+  - perdita mensile da scenario</div>
+
+  <p>Output letti alla scadenza:</p>
+  <ul>
+    <li>availableCapital</li>
+    <li>goalGap</li>
+    <li>delayYears</li>
+    <li>achievement</li>
+  </ul>
+
+  <h2>4. Ramo con polizza</h2>
+  <p>
+    Il ramo con polizza sottrae al danno scenario il supporto economico delle
+    coperture selezionate.
+  </p>
+
+  <div class="formula">withCoverageImpact =
+  noCoverageImpact - supporto economico aggregato delle polizze attive</div>
+
+  <p>Logica di supporto coperture:</p>
+  <ul>
+    <li>TCM -> scenario morte</li>
+    <li>Income protection -> scenario invalidita / blocco reddito</li>
+    <li>RC casa -> scenario RC e scenario casa</li>
+    <li>LTC -> scenario LTC</li>
+    <li>Health -> supporto su IP e LTC</li>
+    <li>Accident -> supporto su IP</li>
+    <li>Mortgage -> supporto su morte o invalidita con mutuo</li>
+  </ul>
+
+  <p>
+    La proiezione con polizza tiene conto sia della riduzione del danno sia del
+    premio mensile che grava sul risparmio.
+  </p>
+
+  <div class="formula">capitale(t) con polizza =
+  capitale(t-1) * rendimento atteso
+  + risparmio mensile
+  - premio polizze
+  - perdita mensile residua dopo supporto</div>
+
+  <h2>5. Costruzione dello score finale</h2>
+  <p>
+    Una volta costruiti i due rami, il motore calcola il punteggio obiettivo
+    su scala 0-100.
+  </p>
+
+  <div class="formula">achievementRatio = achievement / 100
+targetCoverage   = 1 - goalGap / target
+capitalRetention = capitale post-evento / patrimonio totale
+delayScore       = 1 - delayYears / (orizzonte + 3)
+
+resilienceScore =
+  0.40 * targetCoverage +
+  0.25 * achievementRatio +
+  0.20 * capitalRetention +
+  0.15 * delayScore
+
+finalScore =
+  0.45 * foundationScore +
+  0.55 * resilienceScore</div>
+
+  <p>
+    Per evitare un azzeramento innaturale viene applicato un pavimento minimo.
+  </p>
+
+  <div class="formula">floorScore = foundationScore * 0.30
+score finale = max(finalScore, floorScore)</div>
+
+  <h2>6. Come leggere senza polizza vs con polizza</h2>
+  <div class="formula">score senza polizza = goalResilienceScore(..., branch = noCoverage)
+score con polizza   = goalResilienceScore(..., branch = withCoverage)
+
+delta punti = score con polizza - score senza polizza</div>
+
+  <p>
+    Il delta non e un bonus fisso per prodotto. Dipende da quanto la copertura:
+  </p>
+
+  <ul>
+    <li>riduce il gap economico</li>
+    <li>riduce il ritardo</li>
+    <li>preserva capitale</li>
+    <li>aumenta la probabilita di raggiungimento</li>
+  </ul>
+
+  <h2>7. Perche in alcuni casi la polizza aggiunge piu punti</h2>
+  <p>
+    Se una copertura aggiunge molti punti significa che quella copertura agisce
+    proprio sul rischio pivot dell'obiettivo. Esempi:
+  </p>
+
+  <ul>
+    <li>Income protection su obiettivi dipendenti dal reddito</li>
+    <li>TCM su famiglie con figli o partner economicamente dipendenti</li>
+    <li>RC casa su proprietari o clienti con alta esposizione patrimoniale</li>
+  </ul>
+
+  <div class="note">
+    Sintesi tecnica: il motore obiettivo e una composizione tra solidita iniziale
+    del cliente e resilienza del piano sotto scenario rilevante, confrontata in
+    due rami distinti, senza copertura e con copertura.
+  </div>
+</body>
+</html>

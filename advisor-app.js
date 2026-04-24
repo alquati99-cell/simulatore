@@ -9,13 +9,18 @@
     analysis: null,
     page2AnalysisVisible: false,
     activeScenarioId: "rc",
-    activeScenarioMode: "bundle",
+    activeScenarioMode: "single",
     activeGoalId: null,
     coverageTouched: false,
+    premiumOverrides: {},
+    proposalLibraryOpen: false,
     isRendering: false,
     pendingTurnId: 0,
     ragInsight: null,
-    chatRagInsight: null
+    chatRagInsight: null,
+    questionnaireGateMessage: "",
+    policyFocusByArea: {},
+    policyScopeMenuByArea: {}
   };
   var INITIAL_ASSISTANT_MESSAGE = "Ciao! Scrivi quello che sai del cliente: nome, eta, famiglia, reddito mensile, casa, obiettivi. Anche due righe o appunti veloci vanno bene.";
   var AI_STORAGE_KEYS = {
@@ -271,6 +276,91 @@
     });
   }
 
+  var FORM_NOTES_MARKER = "[familyadvisor-form-extra]";
+
+  function parseChildrenAgesInput(value) {
+    return String(value || "")
+      .split(/[^0-9]+/)
+      .map(function (entry) { return parseInt(entry, 10) || 0; })
+      .filter(function (age) { return age > 0 && age < 30; })
+      .slice(0, 8);
+  }
+
+  function readablePetLabel(value) {
+    var labels = {
+      cane: "Cane",
+      gatto: "Gatto",
+      piu_animali: "Piu animali",
+      altro: "Altro animale"
+    };
+    return labels[value] || "";
+  }
+
+  function readableMobilityLabel(value) {
+    var labels = {
+      auto: "Auto",
+      monopattino: "Monopattino",
+      moto: "Moto",
+      bici: "Bici",
+      mezzi: "Mezzi pubblici",
+      misto: "Auto e micromobilita"
+    };
+    return labels[value] || "";
+  }
+
+  function readableSportRiskLabel(value) {
+    var labels = {
+      nessuno: "Nessuno",
+      occasionale: "Saltuario",
+      regolare: "Regolare",
+      intenso: "Molto frequente"
+    };
+    return labels[value] || "";
+  }
+
+  function readableTravelLabel(value) {
+    var labels = {
+      mai: "Quasi mai",
+      mensile: "Qualche volta al mese",
+      settimanale: "Tutte le settimane"
+    };
+    return labels[value] || "";
+  }
+
+  function stripGeneratedFormNotes(notes) {
+    var text = String(notes || "").trim();
+    var markerIndex = text.indexOf(FORM_NOTES_MARKER);
+    return markerIndex >= 0 ? text.slice(0, markerIndex).trim() : text;
+  }
+
+  function buildGeneratedFormNotes(profileDraft) {
+    var lines = [];
+    if (profileDraft.residenceCity) lines.push("Citta di residenza: " + profileDraft.residenceCity + ".");
+    if (profileDraft.partnerNetMonthlyIncome) {
+      lines.push("Reddito netto partner: € " + currency(profileDraft.partnerNetMonthlyIncome) + "/mese.");
+    }
+    if (profileDraft.petType && profileDraft.petType !== "nessuno") {
+      lines.push("Ha un animale domestico: " + readablePetLabel(profileDraft.petType) + ".");
+    }
+    if (profileDraft.mobilityMode) {
+      if (profileDraft.mobilityMode === "monopattino") lines.push("Usa spesso il monopattino.");
+      else lines.push("Mobilita principale: " + readableMobilityLabel(profileDraft.mobilityMode) + ".");
+    }
+    if (profileDraft.sportRiskLevel && profileDraft.sportRiskLevel !== "nessuno") {
+      lines.push("Sport o hobby a rischio: " + readableSportRiskLabel(profileDraft.sportRiskLevel) + ".");
+    }
+    if (profileDraft.travelFrequency && profileDraft.travelFrequency !== "mai") {
+      lines.push("Viaggi di lavoro: " + readableTravelLabel(profileDraft.travelFrequency) + ".");
+    }
+    return lines.join(" ");
+  }
+
+  function mergeGeneratedFormNotes(existingNotes, profileDraft) {
+    var base = stripGeneratedFormNotes(existingNotes);
+    var generated = buildGeneratedFormNotes(profileDraft);
+    return [base, generated ? FORM_NOTES_MARKER + "\n" + generated : ""].filter(Boolean).join("\n").trim();
+  }
+
   function shortProductLabel(product) {
     var labels = {
       tcm: "Decesso / TCM",
@@ -344,6 +434,62 @@
     return delayYears.toFixed(1).replace(".", ",") + "a";
   }
 
+  function durationLabelFromMonths(months) {
+    if (!months) return "";
+    if (months < 12) return months + " mesi";
+    var years = Math.round(months / 12);
+    return years === 1 ? "1 anno" : years + " anni";
+  }
+
+  function impactSummaryLine(entry) {
+    if (!entry) return "";
+    var parts = [];
+    if (entry.upfrontLoss) parts.push("€ " + currency(entry.upfrontLoss) + " subito");
+    if (entry.monthlyLoss) {
+      parts.push("€ " + currency(entry.monthlyLoss) + "/mese" + (entry.durationMonths ? " per " + durationLabelFromMonths(entry.durationMonths) : ""));
+    }
+    return parts.join(" + ") || "nessuna perdita stimata";
+  }
+
+  function supportSummaryLine(entry) {
+    if (!entry) return "";
+    var parts = [];
+    if (entry.upfront) parts.push("€ " + currency(entry.upfront) + " subito");
+    if (entry.monthly) {
+      parts.push("€ " + currency(entry.monthly) + "/mese" + (entry.durationMonths ? " per " + durationLabelFromMonths(entry.durationMonths) : ""));
+    }
+    return parts.join(" + ") || "nessun recupero";
+  }
+
+  function groupedSupportEntries(activeScenario) {
+    var groups = {};
+    ((activeScenario && activeScenario.supportBreakdown) || []).forEach(function (entry) {
+      var groupKey = entry.sourceId || entry.productId;
+      if (!groups[groupKey]) {
+        groups[groupKey] = {
+          productId: groupKey,
+          productName: entry.productName + (entry.solutionName ? " · " + entry.solutionName : ""),
+          upfront: 0,
+          monthly: 0,
+          durationMonths: 0,
+          scenarioLabels: []
+        };
+      }
+      groups[groupKey].upfront += entry.upfront || 0;
+      groups[groupKey].monthly += entry.monthly || 0;
+      groups[groupKey].durationMonths = Math.max(groups[groupKey].durationMonths, entry.durationMonths || 0);
+      if (groups[groupKey].scenarioLabels.indexOf(entry.scenarioLabel) < 0) {
+        groups[groupKey].scenarioLabels.push(entry.scenarioLabel);
+      }
+    });
+
+    return Object.keys(groups).map(function (key) {
+      return groups[key];
+    }).sort(function (left, right) {
+      return (right.upfront + right.monthly * Math.max(1, right.durationMonths)) - (left.upfront + left.monthly * Math.max(1, left.durationMonths));
+    });
+  }
+
   function scoreTone(score) {
     if (score <= 40) {
       return { key: "red", label: "Basso", color: "#c0392b" };
@@ -410,6 +556,19 @@
     return S.plan.goals.map(function (goal) { return goal.id; });
   }
 
+  function cloneOfferSelections(offerSelections) {
+    if (!offerSelections) return null;
+    try {
+      return JSON.parse(JSON.stringify(offerSelections));
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function currentOfferSelections() {
+    return S.plan && S.plan.offerSelections ? cloneOfferSelections(S.plan.offerSelections) : null;
+  }
+
   function readSelectedGoalIdsFromDom() {
     var tiles = Array.from(document.querySelectorAll("#goalGrid .goal-tile"));
     if (!tiles.length) return null;
@@ -434,6 +593,7 @@
     applyPlan(readProfileFromForm(), {
       selectedGoalIds: selectedGoalIdsFromPlan(),
       selectedCoverageIds: S.plan.selectedCoverageIds.slice(),
+      offerSelections: currentOfferSelections(),
       keepSliderValues: true
     });
   }
@@ -453,6 +613,7 @@
     applyPlan(readProfileFromForm(), {
       selectedGoalIds: selectedGoalIds,
       selectedCoverageIds: S.plan.selectedCoverageIds.slice(),
+      offerSelections: currentOfferSelections(),
       keepSliderValues: true
     });
   }
@@ -467,6 +628,218 @@
       '<div class="progress-note">' + esc(note) + "</div>" +
       "</div>"
     );
+  }
+
+  function fieldHasValue(id, allowZero) {
+    var node = byId(id);
+    if (!node) return false;
+    var value = String(node.value == null ? "" : node.value).trim();
+    if (allowZero && value === "0") return true;
+    return value !== "";
+  }
+
+  function inferGenderFromName(name) {
+    var firstName = normalizeNameToken(name);
+    if (!firstName) return "neutral";
+
+    var femaleNames = {
+      giulia: true, chiara: true, sara: true, martina: true, francesca: true,
+      anna: true, alessia: true, valentina: true, silvia: true, laura: true,
+      federica: true, eleonora: true, elena: true, claudia: true, beatrice: true
+    };
+    var maleNames = {
+      marco: true, matteo: true, luca: true, andrea: true, francesco: true,
+      alessandro: true, davide: true, stefano: true, giuseppe: true, simone: true,
+      nicola: true, fabio: true, emanuele: true, filippo: true, carlo: true
+    };
+
+    if (femaleNames[firstName]) return "female";
+    if (maleNames[firstName]) return "male";
+    if (/a$/.test(firstName) && !/luca|andrea|nicola|mattia|elia/.test(firstName)) return "female";
+    if (/o$|e$|i$/.test(firstName)) return "male";
+    return "neutral";
+  }
+
+  function normalizeNameToken(name) {
+    return String(name || "")
+      .trim()
+      .split(/\s+/)[0]
+      .toLowerCase()
+      .replace(/[^a-zà-ÿ]/g, "");
+  }
+
+  function resolvedQuestionnaireGender() {
+    var genderNode = byId("fGender");
+    if (!genderNode) return "neutral";
+    if (genderNode.dataset.manual === "1" && genderNode.value) return genderNode.value;
+    return inferGenderFromName(byId("fNome") ? byId("fNome").value : "");
+  }
+
+  function questionnaireCompletionState() {
+    var maritalStatus = byId("fSt") ? byId("fSt").value : "";
+    var hasPartner =
+      maritalStatus === "Sposato" ||
+      maritalStatus === "Convivente" ||
+      fieldHasValue("fSpouseName") ||
+      fieldHasValue("fPartnerIncome");
+    var childrenAges = parseChildrenAgesInput(byId("fChildrenAges") ? byId("fChildrenAges").value : "");
+    var childrenCount = parseInt((byId("fFi") && byId("fFi").value) || "", 10) || childrenAges.length || 0;
+    var required = [
+      { id: "fNome", label: "Nome e cognome", complete: fieldHasValue("fNome") },
+      { id: "fEta", label: "Eta o data di nascita", complete: fieldHasValue("fEta") || fieldHasValue("fDOB") },
+      { id: "fCity", label: "Citta di residenza", complete: fieldHasValue("fCity") },
+      { id: "fSt", label: "Stato civile", complete: fieldHasValue("fSt") },
+      { id: "fProfession", label: "Professione", complete: fieldHasValue("fProfession") },
+      { id: "fAb", label: "Situazione abitativa", complete: fieldHasValue("fAb") },
+      { id: "fRnet", label: "Reddito cliente", complete: fieldHasValue("fRnet") },
+      { id: "fRi", label: "Risparmio o patrimonio", complete: fieldHasValue("fRi") || fieldHasValue("fPat") }
+    ];
+    var optional = [
+      { id: "fSpouseName", label: "Nome partner", relevant: hasPartner, complete: !hasPartner || fieldHasValue("fSpouseName") },
+      { id: "fPartnerIncome", label: "Reddito partner", relevant: hasPartner, complete: !hasPartner || fieldHasValue("fPartnerIncome") },
+      { id: "fChildrenAges", label: "Eta figli", relevant: childrenCount > 0, complete: !(childrenCount > 0) || fieldHasValue("fChildrenAges") },
+      { id: "fPet", label: "Animali domestici", relevant: true, complete: fieldHasValue("fPet") },
+      { id: "fVehicle", label: "Mobilita personale", relevant: true, complete: fieldHasValue("fVehicle") },
+      { id: "fSportRisk", label: "Sport / hobby a rischio", relevant: true, complete: fieldHasValue("fSportRisk") },
+      { id: "fTravel", label: "Viaggi per lavoro", relevant: true, complete: fieldHasValue("fTravel") }
+    ];
+    var requiredCompleted = required.filter(function (entry) { return entry.complete; }).length;
+    var optionalRelevant = optional.filter(function (entry) { return entry.relevant !== false; });
+    var optionalCompleted = optionalRelevant.filter(function (entry) { return entry.complete; }).length;
+    var totalWeight = required.length * 2 + optionalRelevant.length;
+    var nextRequired = required.find(function (entry) { return !entry.complete; });
+    return {
+      required: required,
+      optional: optional,
+      requiredCompleted: requiredCompleted,
+      requiredTotal: required.length,
+      requiredMissing: required.filter(function (entry) { return !entry.complete; }).map(function (entry) { return entry.label; }),
+      optionalCompleted: optionalCompleted,
+      optionalTotal: optionalRelevant.length,
+      optionalPending: optionalRelevant.filter(function (entry) { return !entry.complete; }).map(function (entry) { return entry.label; }),
+      completion: totalWeight ? Math.round(((requiredCompleted * 2) + optionalCompleted) / totalWeight * 100) : 0,
+      nextRequiredFieldId: nextRequired ? nextRequired.id : "",
+      hasPartner: hasPartner,
+      childrenCount: childrenCount
+    };
+  }
+
+  function completionAvatarSvg(gender, completion) {
+    var bodyPath = gender === "female"
+      ? "M59 82c-11 0-20 9-20 20v24c0 8 6 14 14 14h10l-16 78c-2 10 4 18 13 19 8 1 15-4 17-12l5-28 5 28c2 8 9 13 17 12 9-1 15-9 13-19l-16-78h10c8 0 14-6 14-14v-24c0-11-9-20-20-20H59Z"
+      : gender === "male"
+        ? "M57 82c-12 0-22 10-22 22v34c0 10 8 18 18 18h7l-10 66c-1 10 5 18 15 19 8 1 15-5 16-13l9-55 9 55c1 8 8 14 16 13 10-1 16-9 15-19l-10-66h7c10 0 18-8 18-18v-34c0-12-10-22-22-22H57Z"
+        : "M58 82c-11 0-21 10-21 21v30c0 10 8 17 17 17h8l-12 72c-2 9 4 17 13 18 8 1 14-4 16-12l8-50 8 50c2 8 8 13 16 12 9-1 15-9 13-18l-12-72h8c9 0 17-7 17-17v-30c0-11-10-21-21-21H58Z";
+    var fillTop = 236 - Math.round(clamp(completion, 0, 100) * 1.72);
+    var fillHeight = 260 - fillTop;
+    var waveY = fillTop + 8;
+    return '' +
+      '<svg viewBox="0 0 160 260" aria-hidden="true">' +
+      '<defs>' +
+      '<linearGradient id="profileWater" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a7deff"></stop><stop offset="100%" stop-color="#3566df"></stop></linearGradient>' +
+      '<clipPath id="profileFigureClip">' +
+      '<circle cx="80" cy="44" r="24"></circle>' +
+      '<path d="' + bodyPath + '"></path>' +
+      '</clipPath>' +
+      '</defs>' +
+      '<g clip-path="url(#profileFigureClip)">' +
+      '<rect x="0" y="0" width="160" height="260" fill="#f8fbff"></rect>' +
+      '<rect x="0" y="' + fillTop + '" width="160" height="' + fillHeight + '" fill="url(#profileWater)"></rect>' +
+      '<path d="M-10 ' + waveY + ' C 18 ' + (waveY - 8) + ', 46 ' + (waveY + 8) + ', 74 ' + waveY + ' S 128 ' + (waveY - 10) + ', 170 ' + waveY + ' L 170 260 L -10 260 Z" fill="rgba(255,255,255,.52)"></path>' +
+      '</g>' +
+      '<circle cx="80" cy="44" r="24" fill="none" stroke="currentColor" stroke-width="8"></circle>' +
+      '<path d="' + bodyPath + '" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"></path>' +
+      (gender === "female"
+        ? '<path d="M60 96c7 5 14 8 20 8s13-3 20-8" fill="none" stroke="currentColor" stroke-width="4" opacity=".16" stroke-linecap="round"></path>'
+        : gender === "male"
+          ? '<path d="M60 97h40" fill="none" stroke="currentColor" stroke-width="4" opacity=".16" stroke-linecap="round"></path>'
+          : "") +
+      '</svg>';
+  }
+
+  function renderQuestionnaireProgressCard() {
+    var card = byId("questionnaireProgressCard");
+    if (!card) return;
+
+    var state = questionnaireCompletionState();
+    var gender = resolvedQuestionnaireGender();
+    var profileName = byId("fNome") && byId("fNome").value.trim() ? byId("fNome").value.trim() : "cliente";
+    var completion = clamp(state.completion, 0, 100);
+    var requiredRows = state.required.map(function (entry) {
+      return '<div class="profile-progress-row' + (entry.complete ? " on" : "") + '"><strong>' + esc(entry.label) + '</strong><span>' + esc(entry.complete ? "ok" : "manca") + "</span></div>";
+    }).join("");
+    var optionalRows = state.optional.map(function (entry) {
+      var rowState = entry.relevant === false ? " na" : entry.complete ? " on" : "";
+      var rowLabel = entry.relevant === false ? "n/a" : entry.complete ? "ok" : "vuoto";
+      return '<div class="profile-progress-row' + rowState + '"><strong>' + esc(entry.label) + '</strong><span>' + esc(rowLabel) + "</span></div>";
+    }).join("");
+    var footText = state.requiredMissing.length
+      ? "Per simulare bene servono ancora: " + joinReadableList(state.requiredMissing) + "."
+      : state.optionalPending.length
+        ? "Base completa. Se vuoi una lettura piu ricca, aggiungi ancora: " + joinReadableList(state.optionalPending) + "."
+        : "Profilo completo: puoi entrare negli scenari con una scheda molto piu solida.";
+
+    card.innerHTML =
+      '<div class="profile-progress-ey">Lettura visiva del profilo</div>' +
+      '<div class="profile-progress-head">' +
+      '<div><div class="profile-progress-title">Scheda di ' + esc(profileName) + '</div><div class="profile-progress-copy">La sagoma si riempie come un bicchiere di acqua: prima chiudi la base obbligatoria, poi arricchisci il profilo con dettagli di famiglia e vita quotidiana.</div></div>' +
+      '<div class="profile-progress-percent">' + esc(completion) + '%</div>' +
+      '</div>' +
+      '<div class="profile-progress-visual ' + esc(gender) + '">' +
+      '<div class="profile-progress-figure-shell">' +
+      '<div class="profile-progress-figure-level">Livello ' + esc(completion) + '%</div>' +
+      '<div class="profile-progress-illustration">' + completionAvatarSvg(gender, completion) + "</div>" +
+      "</div></div>" +
+      '<div class="profile-progress-water-note">Piu informazioni inserisci, piu sale il livello della figura.</div>' +
+      '<div class="profile-progress-gender">' +
+      '<button type="button" class="' + (gender === "neutral" ? "on" : "") + '" onclick="setVisualGender(\'auto\')">Auto</button>' +
+      '<button type="button" class="' + (gender === "female" ? "on" : "") + '" onclick="setVisualGender(\'female\')">Donna</button>' +
+      '<button type="button" class="' + (gender === "male" ? "on" : "") + '" onclick="setVisualGender(\'male\')">Uomo</button>' +
+      "</div>" +
+      '<div class="profile-progress-kpis">' +
+      '<div class="profile-progress-kpi"><span>Base obbligatoria</span><strong>' + esc(state.requiredCompleted) + "/" + esc(state.requiredTotal) + "</strong></div>" +
+      '<div class="profile-progress-kpi"><span>Extra utili</span><strong>' + esc(state.optionalCompleted) + "/" + esc(state.optionalTotal) + "</strong></div>" +
+      "</div>" +
+      (S.questionnaireGateMessage ? '<div class="profile-progress-alert">' + esc(S.questionnaireGateMessage) + "</div>" : "") +
+      '<div class="profile-progress-section"><div class="profile-progress-section-title">Campi obbligatori</div><div class="profile-progress-list">' + requiredRows + "</div></div>" +
+      '<div class="profile-progress-section"><div class="profile-progress-section-title">Domande extra</div><div class="profile-progress-list">' + optionalRows + "</div></div>" +
+      '<div class="profile-progress-foot">' +
+      esc(footText) +
+      "</div>";
+  }
+
+  function setVisualGender(gender) {
+    var node = byId("fGender");
+    if (!node) return;
+    if (gender === "female" || gender === "male") {
+      node.value = gender;
+      node.dataset.manual = "1";
+    } else {
+      node.value = "";
+      node.dataset.manual = "0";
+    }
+    renderQuestionnaireProgressCard();
+  }
+
+  function ensureQuestionnaireBaseReady() {
+    var state = questionnaireCompletionState();
+    var card = byId("questionnaireProgressCard");
+    if (!state.requiredMissing.length) {
+      S.questionnaireGateMessage = "";
+      renderQuestionnaireProgressCard();
+      return true;
+    }
+
+    S.questionnaireGateMessage = "Compila prima i campi obbligatori: " + joinReadableList(state.requiredMissing) + ".";
+    renderQuestionnaireProgressCard();
+
+    if (state.nextRequiredFieldId && byId(state.nextRequiredFieldId) && typeof byId(state.nextRequiredFieldId).focus === "function") {
+      byId(state.nextRequiredFieldId).focus();
+    }
+    if (card && typeof card.scrollIntoView === "function") {
+      card.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+    return false;
   }
 
   function selectedProducts() {
@@ -768,6 +1141,242 @@
       intakeCitationsMarkup(S.chatRagInsight.citations, 3);
   }
 
+  function formatSavedAt(value) {
+    if (!value) return "";
+    var date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleString("it-IT", {
+      day: "2-digit",
+      month: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+  }
+
+  function goalDisplayLabel(goal) {
+    if (!goal) return "";
+    var labels = {
+      retirement: "Pensione",
+      home: "Casa",
+      education: "Studi figli",
+      emergency: "Emergenze",
+      wealth: "Capitale"
+    };
+    return goal.name || labels[goal.id] || goal.id || "";
+  }
+
+  function savedClientMeta(profile) {
+    var current = profile || {};
+    var parts = [];
+    if (current.age) parts.push(current.age + " anni");
+    if (current.profession) parts.push(current.profession);
+    if (current.maritalStatus) parts.push(current.maritalStatus);
+    if (current.childrenCount) parts.push(current.childrenCount + " figli");
+    if (current.housingStatus) parts.push(current.housingStatus);
+    return parts.join(" · ");
+  }
+
+  function savedClientFinancialLine(profile) {
+    var current = profile || {};
+    var parts = [];
+    if (current.netMonthlyIncome) parts.push("Reddito € " + currency(current.netMonthlyIncome) + "/mese");
+    if (current.totalAssets) parts.push("Patrimonio € " + currency(current.totalAssets));
+    if (current.monthlySavings) parts.push("Risparmio € " + currency(current.monthlySavings) + "/mese");
+    return parts.join(" · ");
+  }
+
+  function renderSavedClientsLibrary() {
+    var panel = byId("savedClientsLibrary");
+    var countBadge = byId("savedClientsCount");
+    if (!panel) return;
+
+    var profiles = FamilyAdvisorEngine.listStoredProfiles ? FamilyAdvisorEngine.listStoredProfiles() : [];
+    if (countBadge) {
+      countBadge.textContent = profiles.length
+        ? profiles.length + " client" + (profiles.length === 1 ? "e" : "i") + " salvat" + (profiles.length === 1 ? "o" : "i")
+        : "Archivio vuoto";
+    }
+
+    if (!profiles.length) {
+      panel.innerHTML =
+        '<div class="saved-clients-empty">' +
+        '<strong>Nessun cliente salvato per ora</strong>' +
+        '<p>Appena compili o verifichi un profilo, lo ritrovi qui e puoi riaprirlo per continuare la consulenza.</p>' +
+        '<button class="proposal-btn primary" onclick="goTo(1)">Inizia un nuovo cliente</button>' +
+        "</div>";
+      return;
+    }
+
+    panel.innerHTML = profiles.map(function (profile) {
+      var meta = savedClientMeta(profile);
+      var financialLine = savedClientFinancialLine(profile);
+      var goals = (profile.goals || []).filter(function (goal) {
+        return goal && goal.id && goal.enabled !== false;
+      });
+      var goalMarkup = goals.length
+        ? goals.slice(0, 4).map(function (goal) {
+            return '<span class="saved-client-goal">' + esc(goalDisplayLabel(goal)) + "</span>";
+          }).join("")
+        : '<span class="saved-client-goal muted">Obiettivi da completare</span>';
+
+      return (
+        '<article class="saved-client-card">' +
+        '<div class="saved-client-top">' +
+        '<div><div class="saved-client-name">' + esc(profile.name || "Cliente senza nome") + '</div><div class="saved-client-meta">' + esc(meta || "Profilo salvato in locale e pronto da riprendere") + "</div></div>" +
+        '<div class="saved-client-date">' + esc(formatSavedAt(profile.savedAt) || "Ora") + "</div>" +
+        "</div>" +
+        '<div class="saved-client-copy">' + esc(financialLine || "Apri il profilo per verificare dati, obiettivi e coperture.") + "</div>" +
+        '<div class="saved-client-goals">' + goalMarkup + "</div>" +
+        '<div class="saved-client-actions">' +
+        '<span class="saved-client-inline">Ultimo salvataggio locale del consulente</span>' +
+        '<button class="proposal-btn primary" onclick="loadSavedClient(\'' + esc(profile.savedAt || "") + '\')">Apri e modifica</button>' +
+        "</div>" +
+        "</article>"
+      );
+    }).join("");
+  }
+
+  function renderProposalShelf() {
+    var shelf = byId("proposalShelf");
+    if (!shelf) return;
+    var proposals = FamilyAdvisorEngine.listStoredProposals ? FamilyAdvisorEngine.listStoredProposals() : [];
+
+    shelf.innerHTML =
+      '<div class="proposal-shelf-head">' +
+      '<div><div class="proposal-shelf-ey">Post vendita essenziale</div><div class="proposal-shelf-title">Salva e riprendi le proposte offline</div></div>' +
+      '<div class="proposal-shelf-actions">' +
+      '<button class="proposal-btn primary" onclick="saveCurrentProposal()">Salva proposta</button>' +
+      '<button class="proposal-btn" onclick="toggleProposalLibrary()">' + esc(S.proposalLibraryOpen ? "Chiudi archivio" : "Riprendi proposta") + "</button>" +
+      "</div></div>" +
+      '<div class="proposal-shelf-copy">Le proposte restano salvate in locale sul dispositivo del consulente e possono essere riaperte per una nuova trattativa.</div>' +
+      (
+        S.proposalLibraryOpen
+          ? (
+              proposals.length
+                ? '<div class="proposal-list">' + proposals.slice(0, 10).map(function (proposal) {
+                    var clientName = (proposal.profile && proposal.profile.name) || "Cliente";
+                    return (
+                      '<button class="proposal-card" onclick="loadProposal(\'' + esc(proposal.id) + '\')">' +
+                      '<div class="proposal-card-top"><div class="proposal-card-name">' + esc(clientName) + '</div><div class="proposal-card-date">' + esc(formatSavedAt(proposal.savedAt)) + "</div></div>" +
+                      '<div class="proposal-card-meta">' +
+                      '<span>' + esc((proposal.selectedGoalIds || []).length) + " obiettivi</span>" +
+                      '<span>' + esc((proposal.selectedCoverageIds || []).length) + " coperture</span>" +
+                      '<span>€ ' + esc(currency((proposal.snapshot && proposal.snapshot.totalPremium) || 0)) + '/mese</span>' +
+                      "</div>" +
+                      "</button>"
+                    );
+                  }).join("") + "</div>"
+                : '<div class="proposal-empty">Nessuna proposta salvata per ora.</div>'
+            )
+          : ""
+      );
+  }
+
+  function renderPersonaInsight() {
+    var panel = byId("personaInsight");
+    if (!panel) return;
+    if (!S.plan || !S.plan.persona) {
+      panel.innerHTML = "";
+      return;
+    }
+
+    var persona = S.plan.persona;
+    var distribution = (S.plan.personaDistribution || []).slice(0, 6);
+    panel.innerHTML =
+      '<div class="persona-shell">' +
+      '<div class="persona-main">' +
+      '<div class="persona-ey">Persona profilo tipo</div>' +
+      '<div class="persona-title">' + esc(persona.name) + '</div>' +
+      '<div class="persona-copy">' + esc(persona.headline || persona.description || "") + "</div>" +
+      '<div class="persona-stats">' +
+      '<div class="persona-stat"><div class="persona-k">Distribuzione Italia</div><div class="persona-v">' + esc(String(persona.sharePct || 0).replace(".", ",")) + '%</div></div>' +
+      '<div class="persona-stat"><div class="persona-k">Reddito tipo</div><div class="persona-v">€ ' + esc(currency((persona.typicalAnnualIncome || 0) / 12)) + '/mese</div></div>' +
+      '<div class="persona-stat"><div class="persona-k">Patrimonio tipo</div><div class="persona-v">€ ' + esc(currency(persona.typicalWealth || 0)) + "</div></div>" +
+      "</div>" +
+      '<div class="persona-note">Fatte 100 famiglie simili in Italia, circa <strong>' + esc(String(Math.round(persona.sharePct || 0))) + "</strong> hanno questa configurazione.</div>" +
+      "</div>" +
+      '<div class="persona-dist">' + distribution.map(function (entry) {
+        return '<span class="persona-chip' + (entry.id === persona.id ? " on" : "") + '">' + esc(entry.name) + " " + esc(String(entry.sharePct || 0).replace(".", ",")) + '%</span>';
+      }).join("") + "</div>" +
+      "</div>";
+  }
+
+  function toggleProposalLibrary() {
+    S.proposalLibraryOpen = !S.proposalLibraryOpen;
+    renderProposalShelf();
+  }
+
+  function saveCurrentProposal() {
+    var profile = readProfileFromForm();
+    var selectedGoalIds = readSelectedGoalIdsFromDom() || selectedGoalIdsFromPlan();
+    var selectedCoverageIds = S.plan ? S.plan.selectedCoverageIds.slice() : [];
+    applyPlan(profile, {
+      selectedGoalIds: selectedGoalIds,
+      selectedCoverageIds: selectedCoverageIds,
+      premiumOverrides: Object.assign({}, S.premiumOverrides),
+      offerSelections: currentOfferSelections(),
+      keepSliderValues: true
+    });
+    FamilyAdvisorEngine.saveProposal({
+      title: (S.plan.profile.name || "Cliente") + " · proposta",
+      profile: S.plan.profile,
+      selectedGoalIds: S.plan.selectedGoalIds,
+      selectedCoverageIds: S.plan.selectedCoverageIds,
+      premiumOverrides: S.plan.premiumOverrides || S.premiumOverrides,
+      offerSelections: cloneOfferSelections(S.plan.offerSelections),
+      snapshot: S.plan.snapshot,
+      persona: S.plan.persona
+    });
+    S.proposalLibraryOpen = true;
+    renderProposalShelf();
+  }
+
+  function loadProposal(proposalId) {
+    var proposals = FamilyAdvisorEngine.listStoredProposals ? FamilyAdvisorEngine.listStoredProposals() : [];
+    var proposal = proposals.find(function (entry) { return entry.id === proposalId; });
+    if (!proposal) return;
+    S.premiumOverrides = Object.assign({}, proposal.premiumOverrides || {});
+    S.proposalLibraryOpen = false;
+    S.draftProfile = proposal.profile || FamilyAdvisorEngine.createEmptyProfile();
+    applyPlan(proposal.profile || {}, {
+      selectedGoalIds: (proposal.selectedGoalIds || []).slice(),
+      selectedCoverageIds: (proposal.selectedCoverageIds || []).slice(),
+      premiumOverrides: Object.assign({}, S.premiumOverrides),
+      offerSelections: cloneOfferSelections(proposal.offerSelections),
+      keepSliderValues: true
+    });
+    goTo(2);
+    renderProposalShelf();
+  }
+
+  function loadSavedClient(savedAt) {
+    var profiles = FamilyAdvisorEngine.listStoredProfiles ? FamilyAdvisorEngine.listStoredProfiles() : [];
+    var profile = profiles.find(function (entry) { return entry.savedAt === savedAt; });
+    if (!profile) return;
+
+    var selectedGoalIds = (profile.goals || []).filter(function (goal) {
+      return goal && goal.id && goal.enabled !== false;
+    }).map(function (goal) {
+      return goal.id;
+    });
+    var planOptions = {
+      keepSliderValues: true
+    };
+
+    if (selectedGoalIds.length) planOptions.selectedGoalIds = selectedGoalIds;
+
+    S.premiumOverrides = {};
+    S.proposalLibraryOpen = false;
+    S.chatRagInsight = null;
+    S.ragInsight = null;
+    S.policyFocusByArea = {};
+    S.policyScopeMenuByArea = {};
+    S.draftProfile = profile;
+    applyPlan(profile, planOptions);
+    goTo(2);
+    renderSavedClientsLibrary();
+  }
+
   function scenarioCollectionForMode(analysis, mode) {
     if (!analysis) return {};
     return mode === "bundle" ? analysis.bundles || {} : analysis.scenarios || {};
@@ -809,18 +1418,223 @@
     }
   }
 
+  function chartLibraryAvailable() {
+    return typeof root.Chart === "function";
+  }
+
+  function resetCanvasSurface(canvas) {
+    if (!canvas || typeof canvas.getContext !== "function") return null;
+    var rect = canvas.getBoundingClientRect ? canvas.getBoundingClientRect() : null;
+    var width = Math.max(280, Math.round((rect && rect.width) || canvas.clientWidth || (canvas.parentNode && canvas.parentNode.clientWidth) || 320));
+    var height = Math.max(180, Math.round((rect && rect.height) || canvas.clientHeight || (canvas.parentNode && canvas.parentNode.clientHeight) || 240));
+    var dpr = root.devicePixelRatio || 1;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
+    var ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, width, height);
+    return {
+      ctx: ctx,
+      width: width,
+      height: height
+    };
+  }
+
+  function compactChartCurrency(value) {
+    if (!Number.isFinite(value)) return "€0";
+    if (Math.abs(value) >= 1000) return "€" + Math.round(value / 1000) + "k";
+    return "€" + Math.round(value);
+  }
+
+  function traceDatasetPath(ctx, points) {
+    points.forEach(function (point, index) {
+      if (index === 0) ctx.moveTo(point.x, point.y);
+      else ctx.lineTo(point.x, point.y);
+    });
+  }
+
+  function renderLineChartFallback(canvas, config) {
+    var surface = resetCanvasSurface(canvas);
+    if (!surface) {
+      return { destroy: function () {} };
+    }
+
+    var ctx = surface.ctx;
+    var width = surface.width;
+    var height = surface.height;
+    var chartArea = {
+      left: 44,
+      top: 18,
+      right: width - 16,
+      bottom: height - 28
+    };
+    var datasets = (config.datasets || []).filter(function (dataset) {
+      return dataset && dataset.data && dataset.data.length;
+    });
+    var values = datasets.reduce(function (all, dataset) {
+      return all.concat(dataset.data.filter(function (value) { return Number.isFinite(value); }));
+    }, []);
+
+    if (!values.length) {
+      ctx.save();
+      ctx.fillStyle = "#73859a";
+      ctx.font = "600 12px Outfit";
+      ctx.textAlign = "center";
+      ctx.fillText("Grafico non disponibile", width / 2, height / 2);
+      ctx.restore();
+      return {
+        destroy: function () {
+          ctx.clearRect(0, 0, width, height);
+        }
+      };
+    }
+
+    var minValue = config.beginAtZero ? 0 : Math.min.apply(null, values);
+    var maxValue = Math.max.apply(null, values.concat(config.beginAtZero ? [0] : []));
+    if (minValue === maxValue) {
+      var delta = Math.max(1, Math.abs(maxValue) * 0.12);
+      minValue -= delta;
+      maxValue += delta;
+    }
+    if (!config.beginAtZero) {
+      var span = maxValue - minValue;
+      minValue = Math.max(0, minValue - span * 0.08);
+      maxValue += span * 0.08;
+    }
+
+    var range = Math.max(1, maxValue - minValue);
+    var labelCount = Math.max(1, (config.labels || []).length);
+    var xStep = labelCount > 1 ? (chartArea.right - chartArea.left) / (labelCount - 1) : 0;
+
+    function xAt(index) {
+      return chartArea.left + xStep * index;
+    }
+
+    function yAt(value) {
+      return chartArea.bottom - ((value - minValue) / range) * (chartArea.bottom - chartArea.top);
+    }
+
+    if (typeof config.eventIndex === "number" && labelCount > 0) {
+      var eventX = xAt(clamp(config.eventIndex, 0, labelCount - 1));
+      ctx.save();
+      ctx.fillStyle = "rgba(255,90,112,.05)";
+      ctx.fillRect(eventX, chartArea.top, Math.max(0, chartArea.right - eventX), chartArea.bottom - chartArea.top);
+      ctx.setLineDash([6, 6]);
+      ctx.strokeStyle = "rgba(255,90,112,.65)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(eventX, chartArea.top);
+      ctx.lineTo(eventX, chartArea.bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      if (config.eventLabel) {
+        ctx.fillStyle = "#ff5a70";
+        ctx.font = "700 10px Outfit";
+        ctx.fillText(config.eventLabel, Math.min(eventX + 10, chartArea.right - 70), chartArea.top + 14);
+      }
+      ctx.restore();
+    }
+
+    var gridLines = 4;
+    ctx.save();
+    ctx.strokeStyle = "rgba(213,224,240,.7)";
+    ctx.lineWidth = 1;
+    ctx.fillStyle = "#7588a2";
+    ctx.font = "500 10px Outfit";
+    for (var row = 0; row <= gridLines; row += 1) {
+      var ratio = row / gridLines;
+      var y = chartArea.bottom - ratio * (chartArea.bottom - chartArea.top);
+      var tickValue = minValue + ratio * range;
+      ctx.beginPath();
+      ctx.moveTo(chartArea.left, y);
+      ctx.lineTo(chartArea.right, y);
+      ctx.stroke();
+      ctx.fillText(compactChartCurrency(tickValue), 4, y + 3);
+    }
+
+    var tickStep = Math.max(1, Math.ceil(labelCount / 6));
+    (config.labels || []).forEach(function (label, index) {
+      if (index % tickStep !== 0 && index !== labelCount - 1) return;
+      ctx.fillText(String(label), xAt(index) - 12, height - 8);
+    });
+    ctx.restore();
+
+    datasets.forEach(function (dataset) {
+      var points = dataset.data.map(function (value, index) {
+        return {
+          x: xAt(index),
+          y: yAt(value),
+          value: value
+        };
+      });
+      if (!points.length) return;
+
+      if (dataset.fill) {
+        ctx.save();
+        ctx.beginPath();
+        traceDatasetPath(ctx, points);
+        ctx.lineTo(points[points.length - 1].x, chartArea.bottom);
+        ctx.lineTo(points[0].x, chartArea.bottom);
+        ctx.closePath();
+        ctx.fillStyle = dataset.areaFill || "rgba(49,94,172,.12)";
+        ctx.fill();
+        ctx.restore();
+      }
+
+      ctx.save();
+      ctx.beginPath();
+      traceDatasetPath(ctx, points);
+      ctx.strokeStyle = dataset.borderColor || "#315eac";
+      ctx.lineWidth = dataset.borderWidth || 2;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.setLineDash(dataset.borderDash || []);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      if (typeof dataset.highlightIndex === "number" && points[dataset.highlightIndex]) {
+        var point = points[dataset.highlightIndex];
+        ctx.fillStyle = dataset.pointColor || dataset.borderColor || "#315eac";
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, dataset.pointRadius || 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    });
+
+    return {
+      destroy: function () {
+        var clear = canvas.getContext("2d");
+        if (clear) clear.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    };
+  }
+
   function goTo(pageNumber) {
     if (pageNumber === 3 && !S.plan) {
       pageNumber = S.draftProfile ? 2 : 1;
     }
-    for (var i = 1; i <= 3; i += 1) {
-      var page = byId("p" + i);
-      var navItem = byId("n" + i);
-      if (!page || !navItem) continue;
-      page.classList.toggle("on", i === pageNumber);
-      navItem.className = "ns" + (i === pageNumber ? " on" : i < pageNumber ? " dn" : "");
-      navItem.querySelector(".nn").textContent = i < pageNumber ? "✓" : i;
+    if (pageNumber === 3 && (S.plan || S.draftProfile) && !ensureQuestionnaireBaseReady()) {
+      pageNumber = 2;
     }
+    var stepPage = pageNumber === 4
+      ? ((S.page >= 1 && S.page <= 3) ? S.page : (S.plan || S.draftProfile ? 2 : 1))
+      : pageNumber;
+    for (var i = 1; i <= 4; i += 1) {
+      var page = byId("p" + i);
+      if (page) page.classList.toggle("on", i === pageNumber);
+      if (i > 3) continue;
+      var navItem = byId("n" + i);
+      if (!navItem) continue;
+      navItem.className = "ns" + (i === stepPage ? " on" : i < stepPage ? " dn" : "");
+      navItem.querySelector(".nn").textContent = i < stepPage ? "✓" : i;
+    }
+    var libraryButton = byId("clientsLibraryBtn");
+    if (libraryButton) libraryButton.classList.toggle("on", pageNumber === 4);
     S.page = pageNumber;
     if (root.document && root.document.body) {
       root.document.body.setAttribute("data-page", String(pageNumber));
@@ -830,6 +1644,7 @@
     }
     if (pageNumber === 2) renderPage2Mode();
     if (pageNumber === 3) refreshScenarioAnalysis();
+    if (pageNumber === 4) renderSavedClientsLibrary();
   }
 
   function autoH(element) {
@@ -874,13 +1689,20 @@
       "profileSummary",
       "advisorNarrative",
       "financeSnapshot",
+      "questionnaireProgressCard",
       "goalGrid",
+      "proposalShelf",
+      "savedClientsLibrary",
+      "personaInsight",
+      "scenarioModeTabs",
+      "bundleGrid",
+      "eventGrid",
+      "impactStage",
       "coverageTableBody",
       "goalFocusGrid",
       "goalGaugeGrid",
       "coverageSummaryBand",
-      "policySuggestedGrid",
-      "policyOptionalGrid",
+      "policyProductGrid",
       "scenarioSimpleIntro",
       "simplePathLabel",
       "simpleGapLabel",
@@ -895,8 +1717,8 @@
       "premS",
       "taxV",
       "liqV",
-      "policySuggestedBadge",
-      "policyOptionalBadge",
+      "policyConfigBadge",
+      "savedClientsCount",
       "p3ClientName",
       "p3GoalName"
     ].forEach(function (id) {
@@ -906,11 +1728,14 @@
 
     [
       ["fNome", ""],
+      ["fGender", ""],
       ["fDOB", ""],
       ["fEta", ""],
+      ["fCity", ""],
       ["fSt", "Single"],
       ["fSpouseName", ""],
       ["fSpouseAge", ""],
+      ["fPartnerIncome", ""],
       ["fFi", ""],
       ["fChildrenAges", ""],
       ["fProfession", ""],
@@ -922,11 +1747,20 @@
       ["fInv", ""],
       ["fAb", "Affittuario"],
       ["fHomeCost", ""],
-      ["fFixed", ""]
+      ["fFixed", ""],
+      ["fPet", ""],
+      ["fVehicle", ""],
+      ["fSportRisk", ""],
+      ["fTravel", ""]
     ].forEach(function (entry) {
       var node = byId(entry[0]);
-      if (node) node.value = entry[1];
+      if (node) {
+        node.value = entry[1];
+        if (entry[0] === "fGender") node.dataset.manual = "0";
+      }
     });
+
+    S.questionnaireGateMessage = "";
 
     Object.keys(S.ch).forEach(function (chartId) {
       destroyChart(chartId);
@@ -940,12 +1774,20 @@
     S.page2AnalysisVisible = false;
     S.activeGoalId = null;
     S.activeScenarioId = "rc";
-    S.activeScenarioMode = "bundle";
+    S.activeScenarioMode = "single";
     S.coverageTouched = false;
+    S.premiumOverrides = {};
+    S.proposalLibraryOpen = false;
     S.ragInsight = null;
     S.chatRagInsight = null;
+    S.policyFocusByArea = {};
+    S.policyScopeMenuByArea = {};
     resetRenderedState();
     renderPage2IntakeInsight();
+    renderProposalShelf();
+    renderSavedClientsLibrary();
+    renderPersonaInsight();
+    renderQuestionnaireProgressCard();
     if (!preserveChat) renderWelcomeChat();
   }
 
@@ -996,6 +1838,7 @@
     topCta.textContent = "Simula scenari →";
     bottomCta.textContent = "Simula scenari →";
     renderPage2IntakeInsight();
+    renderQuestionnaireProgressCard();
   }
 
   function showTyp() {
@@ -1160,6 +2003,15 @@
     var age = parseInt(byId("fEta").value, 10) || computeAgeFromDob(birthDate) || 0;
     var totalAssets = parseInt(byId("fPat").value, 10) || 0;
     var netMonthlyIncome = parseInt(byId("fRnet").value, 10) || 0;
+    var partnerNetMonthlyIncome = parseInt((byId("fPartnerIncome") && byId("fPartnerIncome").value) || "", 10) || 0;
+    var sportRiskLevel = (byId("fSportRisk") && byId("fSportRisk").value) || "";
+    var travelFrequency = (byId("fTravel") && byId("fTravel").value) || "";
+    var spouseName = byId("fSpouseName").value.trim();
+    var spouseAge = parseInt((byId("fSpouseAge") && byId("fSpouseAge").value) || "", 10) || 0;
+    var childrenAges = parseChildrenAgesInput(byId("fChildrenAges").value);
+    var maritalStatus = byId("fSt").value;
+    var hasPartner = maritalStatus === "Sposato" || maritalStatus === "Convivente" || !!spouseName || !!partnerNetMonthlyIncome || !!spouseAge;
+    var childrenCount = parseInt(byId("fFi").value, 10) || childrenAges.length || 0;
     var domGoals = readGoalsFromDom();
     var fallbackGoals =
       (S.plan && (S.plan.goalSuggestions || S.plan.goals)) ||
@@ -1170,11 +2022,12 @@
       name: byId("fNome").value.trim(),
       birthDate: birthDate,
       age: age,
-      maritalStatus: byId("fSt").value,
-      spouseName: byId("fSt").value === "Sposato" || byId("fSt").value === "Convivente" ? "Partner" : "",
-      spouseAge: 0,
-      childrenCount: parseInt(byId("fFi").value, 10) || 0,
-      childrenAges: [],
+      maritalStatus: maritalStatus,
+      spouseName: hasPartner ? (spouseName || "Partner") : "",
+      spouseAge: hasPartner ? spouseAge : 0,
+      partnerNetMonthlyIncome: hasPartner ? partnerNetMonthlyIncome : 0,
+      childrenCount: childrenCount,
+      childrenAges: childrenAges,
       profession: byId("fProfession").value.trim(),
       grossAnnualIncome: parseInt(byId("fR").value, 10) || 0,
       netMonthlyIncome: netMonthlyIncome,
@@ -1182,13 +2035,24 @@
       totalAssets: totalAssets,
       liquidAssets: parseInt(byId("fLiqu").value, 10) || 0,
       investedAssets: parseInt(byId("fInv").value, 10) || 0,
-      residenceCity: existingProfile.residenceCity || "",
+      residenceCity: byId("fCity").value.trim() || existingProfile.residenceCity || "",
       housingStatus: byId("fAb").value,
       housingCost: parseInt(byId("fHomeCost").value, 10) || 0,
       fixedExpenses: parseInt(byId("fFixed").value, 10) || 0,
+      petType: byId("fPet").value || "",
+      mobilityMode: byId("fVehicle").value || "",
+      sportRiskLevel: sportRiskLevel,
+      travelFrequency: travelFrequency,
       goals: domGoals.length ? domGoals : fallbackGoals,
       existingCoverageIds: S.plan ? S.plan.profile.existingCoverageIds : [],
-      notes: existingProfile.notes || "",
+      notes: mergeGeneratedFormNotes(existingProfile.notes || "", {
+        residenceCity: byId("fCity").value.trim() || existingProfile.residenceCity || "",
+        partnerNetMonthlyIncome: hasPartner ? partnerNetMonthlyIncome : 0,
+        petType: byId("fPet").value || "",
+        mobilityMode: byId("fVehicle").value || "",
+        sportRiskLevel: sportRiskLevel,
+        travelFrequency: travelFrequency
+      }),
       riskProfileId: existingProfile.riskProfileId || "bilanciato"
     }, { applyDefaults: false });
   }
@@ -1203,9 +2067,11 @@
     byId("fNome").value = profile.name || "";
     byId("fDOB").value = profile.birthDate || "";
     byId("fEta").value = fieldValue(profile.age);
+    byId("fCity").value = profile.residenceCity || "";
     byId("fSt").value = profile.maritalStatus || "";
     byId("fSpouseName").value = profile.spouseName || "";
     byId("fSpouseAge").value = fieldValue(profile.spouseAge);
+    byId("fPartnerIncome").value = fieldValue(profile.partnerNetMonthlyIncome);
     byId("fFi").value = fieldValue(profile.childrenCount);
     byId("fChildrenAges").value = (profile.childrenAges || []).join(", ");
     byId("fProfession").value = profile.profession || "";
@@ -1218,8 +2084,17 @@
     byId("fAb").value = profile.housingStatus || "";
     byId("fHomeCost").value = fieldValue(profile.housingCost);
     byId("fFixed").value = fieldValue(profile.fixedExpenses);
+    byId("fPet").value = profile.petType || "";
+    byId("fVehicle").value = profile.mobilityMode || "";
+    byId("fSportRisk").value = profile.sportRiskLevel || "";
+    byId("fTravel").value = profile.travelFrequency || "";
+    if (byId("fGender") && byId("fGender").dataset.manual !== "1") {
+      byId("fGender").value = "";
+      byId("fGender").dataset.manual = "0";
+    }
 
     S.isRendering = false;
+    renderQuestionnaireProgressCard();
   }
 
   function renderProfileSummary() {
@@ -1241,6 +2116,16 @@
     var familyLabel = profile.childrenCount
       ? profile.maritalStatus + " · " + profile.childrenCount + " figli"
       : profile.maritalStatus;
+    var summaryTags = [
+      profile.age ? profile.age + " anni" : "",
+      profile.profession || "",
+      familyLabel || "",
+      profile.housingStatus || "",
+      profile.residenceCity || "",
+      profile.petType && profile.petType !== "nessuno" ? "Pet: " + readablePetLabel(profile.petType) : "",
+      profile.mobilityMode ? "Mobilita: " + readableMobilityLabel(profile.mobilityMode) : "",
+      profile.sportRiskLevel && profile.sportRiskLevel !== "nessuno" ? "Sport: " + readableSportRiskLabel(profile.sportRiskLevel) : ""
+    ].filter(Boolean);
     var savingsRate = profile.netMonthlyIncome ? Math.round((profile.monthlySavings / profile.netMonthlyIncome) * 100) : 0;
     var coreBurn = householdCoreBurn(profile);
     var freeCash = Math.max(0, profile.netMonthlyIncome - coreBurn);
@@ -1267,10 +2152,7 @@
       '<div class="phero-title">' + esc(profile.name) + '</div>' +
       '<div class="phero-copy">' + esc(S.plan.segment.description) + ' La lettura e stata semplificata per una conversazione commerciale chiara, con pochi numeri e priorita immediate.</div>' +
       '<div class="phero-tags">' +
-      '<div class="phero-tag">' + esc(profile.age + " anni") + "</div>" +
-      '<div class="phero-tag">' + esc(profile.profession) + "</div>" +
-      '<div class="phero-tag">' + esc(familyLabel) + "</div>" +
-      '<div class="phero-tag">' + esc(profile.housingStatus) + "</div>" +
+      summaryTags.map(function (tag) { return '<div class="phero-tag">' + esc(tag) + "</div>"; }).join("") +
       '</div>' +
       '<div class="phero-metrics">' +
       '<div class="phero-metric"><div class="phero-k">Patrimonio oggi</div><div class="phero-v">€ ' + esc(currency(profile.totalAssets)) + '</div><div class="phero-s">Liquidita € ' + esc(currency(profile.liquidAssets)) + '</div></div>' +
@@ -1299,6 +2181,7 @@
       '<div class="fcard-title"><div class="fcard-icon" style="background:#fff7e6">💡</div>Cruscotto economico semplice</div>' +
       '<div class="finance-grid">' +
       '<div class="finance-tile"><div class="finance-k">Netto mensile</div><div class="finance-v">€ ' + esc(currency(profile.netMonthlyIncome)) + '</div><div class="finance-s">Reddito disponibile da cui parte il piano.</div></div>' +
+      (profile.partnerNetMonthlyIncome ? '<div class="finance-tile"><div class="finance-k">Reddito partner</div><div class="finance-v">€ ' + esc(currency(profile.partnerNetMonthlyIncome)) + '</div><div class="finance-s">Dato raccolto nel questionario per leggere meglio il nucleo.</div></div>' : "") +
       '<div class="finance-tile"><div class="finance-k">Impegni base</div><div class="finance-v">€ ' + esc(currency(coreBurn)) + '</div><div class="finance-s">Casa, uscite ricorrenti e struttura familiare.</div></div>' +
       '<div class="finance-tile"><div class="finance-k">Spazio di manovra</div><div class="finance-v">€ ' + esc(currency(freeCash)) + '</div><div class="finance-s">Margine stimato dopo i costi essenziali.</div></div>' +
       '<div class="finance-tile"><div class="finance-k">Tenuta di liquidita</div><div class="finance-v">' + esc(bufferMonths.toFixed(1).replace(".", ",")) + ' mesi</div><div class="finance-s">Quanti mesi regge la cassa senza toccare gli investimenti.</div></div>' +
@@ -1474,7 +2357,7 @@
 
     band.innerHTML =
       '<div class="coverage-band">' +
-      '<div><div class="coverage-band-ey">Set polizze attivo</div><div class="coverage-band-title">Con ' + esc(snapshot.selectedCount) + ' copertur' + (snapshot.selectedCount === 1 ? "a" : "e") + ' attiv' + (snapshot.selectedCount === 1 ? "a" : "e") + ' il cliente spende € ' + esc(currency(snapshot.totalPremium)) + '/mese</div><div class="coverage-band-copy">Confronto diretto tra premio e cuscinetto richiesto senza polizze.</div></div>' +
+      '<div><div class="coverage-band-ey">Configurazione attiva</div><div class="coverage-band-title">Con ' + esc(snapshot.selectedCount) + ' copertur' + (snapshot.selectedCount === 1 ? "a" : "e") + ' attiv' + (snapshot.selectedCount === 1 ? "a" : "e") + ' il cliente spende € ' + esc(currency(snapshot.totalPremium)) + '/mese</div><div class="coverage-band-copy">Confronto diretto tra costo della protezione e capitale che il cliente dovrebbe lasciare da solo a cuscinetto.</div></div>' +
       '<div class="coverage-band-grid">' +
       '<div class="coverage-band-metric premium"><div class="coverage-band-k">Costo totale set</div><div class="coverage-band-v">€ ' + esc(currency(snapshot.totalPremium)) + '/mese</div></div>' +
       '<div class="coverage-band-metric reserve"><div class="coverage-band-k">Senza polizze</div><div class="coverage-band-v">€ ' + esc(currency(snapshot.selfFundMonthly)) + '/mese</div></div>' +
@@ -1482,67 +2365,329 @@
       "</div></div>";
   }
 
+  function currentAreaFocus(areaId) {
+    return (S.policyFocusByArea && S.policyFocusByArea[areaId]) || "";
+  }
+
+  function isPolicyScopeMenuOpen(areaId) {
+    return !!(S.policyScopeMenuByArea && S.policyScopeMenuByArea[areaId]);
+  }
+
+  function setPolicyScopeMenuOpen(areaId, open) {
+    if (!areaId) return;
+    if (!S.policyScopeMenuByArea) S.policyScopeMenuByArea = {};
+    S.policyScopeMenuByArea[areaId] = !!open;
+  }
+
+  function setPolicyAreaFocus(areaId, itemId) {
+    if (!areaId || !itemId) return;
+    if (!S.policyFocusByArea) S.policyFocusByArea = {};
+    S.policyFocusByArea[areaId] = itemId;
+    var activeScenario = currentScenarioCollection()[S.activeScenarioId];
+    if (activeScenario) renderPolicyBoard(activeScenario);
+  }
+
+  function offerProductLinkedRecommendations(product) {
+    if (!S.plan) return [];
+    return S.plan.recommendations.filter(function (recommendation) {
+      return (product.linkedProductIds || []).indexOf(recommendation.id) >= 0;
+    });
+  }
+
+  function offerAreaById(areaId) {
+    return !S.plan ? null : (S.plan.offerAreas || []).find(function (entry) { return entry.id === areaId; }) || null;
+  }
+
+  function offerProductById(areaId, productId) {
+    var area = offerAreaById(areaId);
+    return area ? (area.products || []).find(function (entry) { return entry.id === productId; }) || null : null;
+  }
+
+  function applyOfferSelections(nextOfferSelections) {
+    applyPlan(readProfileFromForm(), {
+      selectedGoalIds: selectedGoalIdsFromPlan(),
+      offerSelections: nextOfferSelections,
+      premiumOverrides: {},
+      keepSliderValues: true
+    });
+  }
+
+  function ensureOfferSelectionNode(nextOfferSelections, areaId, productId) {
+    if (!nextOfferSelections[areaId]) nextOfferSelections[areaId] = { products: {} };
+    if (!nextOfferSelections[areaId].products) nextOfferSelections[areaId].products = {};
+    if (!nextOfferSelections[areaId].products[productId]) {
+      nextOfferSelections[areaId].products[productId] = { selected: false, solutionId: "", coverages: {} };
+    }
+    if (!nextOfferSelections[areaId].products[productId].coverages) {
+      nextOfferSelections[areaId].products[productId].coverages = {};
+    }
+    return nextOfferSelections[areaId].products[productId];
+  }
+
+  function toggleOfferCoverageSelection(areaId, productId, coverageId) {
+    if (!S.plan) return;
+    var product = offerProductById(areaId, productId);
+    if (!product) return;
+    var coverage = (product.coverages || []).find(function (entry) { return entry.id === coverageId; });
+    if (!coverage) return;
+
+    var nextOfferSelections = currentOfferSelections() || {};
+    var productNode = ensureOfferSelectionNode(nextOfferSelections, areaId, productId);
+    var currentNode = productNode.coverages[coverageId] || {};
+    productNode.coverages[coverageId] = {
+      selected: !coverage.selected,
+      solutionId: currentNode.solutionId || coverage.selectedSolutionId || coverage.suggestedSolutionId
+    };
+    if (!S.policyFocusByArea) S.policyFocusByArea = {};
+    S.policyFocusByArea[areaId] = coverageId;
+    applyOfferSelections(nextOfferSelections);
+  }
+
+  function selectOfferCoverageSolution(areaId, productId, coverageId, solutionId) {
+    if (!S.plan) return;
+    var product = offerProductById(areaId, productId);
+    if (!product) return;
+    var coverage = (product.coverages || []).find(function (entry) { return entry.id === coverageId; });
+    if (!coverage) return;
+    var targetSolution = (coverage.solutions || []).find(function (solution) {
+      return solution.id === solutionId && solution.available !== false;
+    });
+    if (!targetSolution) return;
+
+    var nextOfferSelections = currentOfferSelections() || {};
+    var productNode = ensureOfferSelectionNode(nextOfferSelections, areaId, productId);
+    productNode.coverages[coverageId] = {
+      selected: true,
+      solutionId: solutionId
+    };
+    if (!S.policyFocusByArea) S.policyFocusByArea = {};
+    S.policyFocusByArea[areaId] = coverageId;
+    applyOfferSelections(nextOfferSelections);
+  }
+
+  function toggleOfferProduct(areaId, productId) {
+    if (!S.plan) return;
+    var product = offerProductById(areaId, productId);
+    if (!product) return;
+
+    var nextOfferSelections = currentOfferSelections() || {};
+    var productNode = ensureOfferSelectionNode(nextOfferSelections, areaId, productId);
+    if ((product.coverages || []).length) {
+      var nextSelected = !product.selected;
+      (product.coverages || []).forEach(function (coverage) {
+        var currentNode = productNode.coverages[coverage.id] || {};
+        productNode.coverages[coverage.id] = {
+          selected: nextSelected,
+          solutionId: currentNode.solutionId || productNode.solutionId || coverage.selectedSolutionId || coverage.suggestedSolutionId
+        };
+      });
+    }
+    productNode.selected = !product.selected;
+    productNode.solutionId = productNode.solutionId || product.selectedSolutionId || product.suggestedSolutionId;
+    applyOfferSelections(nextOfferSelections);
+  }
+
+  function selectOfferProductSolution(areaId, productId, solutionId) {
+    if (!S.plan) return;
+    var product = offerProductById(areaId, productId);
+    if (!product) return;
+    var targetSolution = (product.solutions || []).find(function (solution) {
+      return solution.id === solutionId && solution.available !== false;
+    });
+    if (!targetSolution) return;
+
+    var nextOfferSelections = currentOfferSelections() || {};
+    var productNode = ensureOfferSelectionNode(nextOfferSelections, areaId, productId);
+    productNode.solutionId = solutionId;
+    if ((product.coverages || []).length) {
+      (product.coverages || []).forEach(function (coverage) {
+        var currentNode = productNode.coverages[coverage.id] || {};
+        productNode.coverages[coverage.id] = {
+          selected: product.coverages.length === 1 ? true : (Object.prototype.hasOwnProperty.call(currentNode, "selected") ? currentNode.selected : coverage.selected),
+          solutionId: solutionId
+        };
+      });
+      productNode.selected = product.coverages.length === 1 ? true : product.selected;
+    } else {
+      productNode.selected = true;
+    }
+    applyOfferSelections(nextOfferSelections);
+  }
+
   function renderPolicyBoard(activeScenario) {
     if (!S.plan) return;
-    var suggestedGrid = byId("policySuggestedGrid");
-    var optionalGrid = byId("policyOptionalGrid");
-    var suggestedBadge = byId("policySuggestedBadge");
-    var optionalBadge = byId("policyOptionalBadge");
-    if (!suggestedGrid || !optionalGrid) return;
+    var productGrid = byId("policyProductGrid");
+    var configBadge = byId("policyConfigBadge");
+    if (!productGrid) return;
 
-    var recommendations = S.plan.recommendations.slice().sort(function (left, right) {
-      var leftSelected = isSelectedProduct(left.id) ? 1 : 0;
-      var rightSelected = isSelectedProduct(right.id) ? 1 : 0;
-      if (rightSelected !== leftSelected) return rightSelected - leftSelected;
-      return right.score - left.score;
-    });
-    var suggested = recommendations.filter(function (product, index) {
-      return product.score >= 52 || isSelectedProduct(product.id) || index < 2;
-    });
-    var optional = recommendations.filter(function (product) {
-      return suggested.indexOf(product) < 0;
+    var areas = (S.plan.offerAreas || []).slice().sort(function (left, right) {
+      return right.fitScore - left.fitScore;
     });
 
-    suggestedBadge.textContent = suggested.length + " suggerite";
-    optionalBadge.textContent = optional.length ? optional.length + " opzionali" : "Nessuna opzionale";
+    if (configBadge) {
+      configBadge.textContent = areas.length + " aree lette dal motore";
+    }
 
-    function cardMarkup(product, bucket) {
-      var priority = priorityMeta(product.score);
-      var selected = isSelectedProduct(product.id);
-      var matchesCurrentScenario = activeScenario ? productMatchesScenario(product, activeScenario) : false;
-      var isSuggested = bucket === "suggested";
+    function buildSelectOptions(solutions, selectedId) {
+      return (solutions || []).map(function (solution) {
+        return '<option value="' + esc(solution.id) + '"' + (solution.id === selectedId ? " selected" : "") + (solution.available === false ? " disabled" : "") + ">" +
+          esc(solution.name + (solution.limitLabel ? " · " + solution.limitLabel : "")) +
+          "</option>";
+      }).join("");
+    }
+
+    function selectedCoverageNames(product) {
+      return (product.coverages || [])
+        .filter(function (coverage) { return coverage.selected; })
+        .map(function (coverage) { return coverage.name; });
+    }
+
+    function focusCoverageMarkup(area, product) {
+      var availableCoverages = product.coverages || [];
+      if (!availableCoverages.length) return "";
+      var focusId = currentAreaFocus(area.id);
+      if (!focusId || !availableCoverages.some(function (coverage) { return coverage.id === focusId; })) {
+        var preselected = availableCoverages.find(function (coverage) { return coverage.selected; });
+        focusId = preselected ? preselected.id : availableCoverages[0].id;
+      }
+      var coverage = availableCoverages.find(function (entry) { return entry.id === focusId; }) || availableCoverages[0];
+      var priority = priorityMeta(product.fitScore);
+      var productSolutionId = product.selectedSolutionId || product.suggestedSolutionId || "";
+      var activeProductSolution = (product.solutions || []).find(function (solution) {
+        return solution.id === productSolutionId;
+      }) || null;
+      var focusSolutionId = coverage.selectedSolutionId || coverage.suggestedSolutionId || productSolutionId;
+      var focusSolution = (coverage.solutions || []).find(function (solution) {
+        return solution.id === focusSolutionId;
+      }) || null;
+      var monthlyPremium = product.selectedMonthlyPremium || 0;
+      var selectedNames = selectedCoverageNames(product);
+      var selectedCount = selectedNames.length;
+      var selectedSummary = selectedNames.length
+        ? joinReadableList(selectedNames.slice(0, 2)) + (selectedNames.length > 2 ? " +" + (selectedNames.length - 2) : "")
+        : "Apri la tendina e attiva gli ambiti utili.";
+      var protectionPct = activeScenario ? activeScenario.withCoverage.protection : 0;
+      var achievementPct = activeScenario ? activeScenario.withCoverage.achievement : 0;
+      var protectionLift = activeScenario ? Math.max(0, activeScenario.withCoverage.protection - activeScenario.noCoverage.protection) : 0;
+      var achievementLift = activeScenario ? Math.max(0, activeScenario.withCoverage.achievement - activeScenario.noCoverage.achievement) : 0;
+      var focusLine = focusSolution
+        ? (focusSolution.id === productSolutionId
+            ? focusSolution.name + (focusSolution.limitLabel ? " · " + focusSolution.limitLabel : "")
+            : focusSolution.name + " su questo ambito" + (focusSolution.limitLabel ? " · " + focusSolution.limitLabel : ""))
+        : "Livello da definire";
       return (
-        '<div class="policy-card' + (isSuggested ? " suggested" : "") + (selected ? " on" : "") + '">' +
-        '<div class="policy-card-shell">' +
-        '<div class="policy-card-main">' +
-        '<div class="policy-card-flag' + (isSuggested ? "" : " optional") + '">' + esc(isSuggested ? "Suggerita" : "Opzionale") + "</div>" +
-        '<div class="policy-card-top">' +
-        '<div class="policy-card-icon" style="background:' + esc(product.tint) + '">' + esc(product.icon) + "</div>" +
-        '<div style="flex:1;min-width:0"><div class="policy-card-name">' + esc(product.name) + '</div><div class="policy-card-copy">' + esc(scenarioCoverageReason(product, activeScenario)) + "</div></div>" +
+        '<div class="policy-coverage-focus">' +
+        '<div class="policy-focus-top">' +
+        '<div><div class="policy-focus-title">' + esc(product.name || area.productGroupName || area.name) + ' <span class="policy-priority ' + esc(priority.key) + '">' + esc(priority.label) + '</span></div><div class="policy-focus-note">Scegli prima il livello del prodotto, poi attiva sotto solo gli ambiti che vuoi mettere in trattativa.</div></div>' +
+        '<div class="policy-focus-price-stack"><div class="policy-focus-price">€ ' + esc(currency(monthlyPremium)) + '/mese</div><div class="policy-focus-state' + (selectedCount ? " on" : " off") + '">' + esc(selectedCount ? selectedCount + " ambiti attivi" : "Nessun ambito attivo") + "</div></div>" +
         "</div>" +
-        '<div class="policy-tags">' +
-        '<span class="policy-tag ' + esc(priority.key) + '">' + esc(priority.label) + "</span>" +
-        '<span class="policy-tag">' + esc(matchesCurrentScenario ? "Scenario" : "Profilo") + "</span>" +
+        '<div class="policy-focus-controls stack">' +
+        '<label class="policy-focus-field"><span>Soluzione prodotto</span><select class="policy-focus-select" onchange="selectOfferProductSolution(\'' + esc(area.id) + '\', \'' + esc(product.id) + '\', this.value)">' +
+        buildSelectOptions(product.solutions, productSolutionId) +
+        "</select></label>" +
+        '<div class="policy-focus-inline">Ambito in focus <strong>' + esc(coverage.name) + "</strong> · " + esc(focusLine) + "</div>" +
         "</div>" +
+        '<div class="policy-focus-foot"><div class="policy-focus-meta">Livello attivo: <strong>' + esc(activeProductSolution ? activeProductSolution.name : "Da scegliere") + "</strong></div><div class=\"policy-focus-meta\">" + esc(selectedCount ? selectedCount + " ambiti selezionati" : "Nessun ambito selezionato") + "</div></div>" +
+        '<div class="policy-focus-kpis">' +
+        '<div class="policy-focus-kpi"><span>Copertura scenario</span><strong>' + esc(protectionPct) + '%</strong><small>' + esc(protectionLift ? "+" + protectionLift + " pt" : "nessun recupero") + "</small></div>" +
+        '<div class="policy-focus-kpi"><span>Raggiungimento obiettivo</span><strong>' + esc(achievementPct) + '%</strong><small>' + esc(achievementLift ? "+" + achievementLift + " pt" : "nessun salto") + "</small></div>" +
         "</div>" +
-        '<div class="policy-card-stats">' +
-        '<div class="policy-card-metrics">' +
-        '<div class="policy-mini premium"><div class="policy-mini-k">Premio</div><div class="policy-mini-v">' + esc(premiumRangeLabel(product)) + '</div><div class="policy-mini-s">' + esc(compactDeductibleLabel(product)) + "</div></div>" +
-        '<div class="policy-mini reserve"><div class="policy-mini-k">Cuscinetto</div><div class="policy-mini-v">€ ' + esc(currency(product.selfFundMonthlyEquivalent)) + '/mese</div><div class="policy-mini-s">Senza polizza</div></div>' +
+        '<div class="policy-scope-section">' +
+        '<div class="policy-scope-head"><strong>Ambiti da selezionare</strong><span>Apri la tendina e attivane più di uno sullo stesso prodotto.</span></div>' +
+        '<details class="policy-scope-picker"' + (isPolicyScopeMenuOpen(area.id) ? " open" : "") + ' ontoggle="setPolicyScopeMenuOpen(\'' + esc(area.id) + '\', this.open)">' +
+        '<summary class="policy-scope-summary"><div><div class="policy-scope-summary-k">Selezione multipla</div><div class="policy-scope-summary-v">' + esc(selectedNames.length ? selectedNames.length + " ambiti attivi" : "Nessun ambito attivo") + '</div></div><div class="policy-scope-summary-meta">' + esc(selectedSummary) + "</div></summary>" +
+        '<div class="policy-scope-menu">' +
+        availableCoverages.map(function (entry) {
+          var entryPriority = priorityMeta(entry.fitScore);
+          var entrySolutionId = entry.selectedSolutionId || entry.suggestedSolutionId || "";
+          var entrySolution = (entry.solutions || []).find(function (solution) {
+            return solution.id === entrySolutionId;
+          }) || null;
+          var entryPremium = entry.selected
+            ? entry.selectedMonthlyPremium
+            : entrySolution
+            ? entrySolution.monthlyPremium
+            : 0;
+          var entryStateLabel = entry.selected ? "Selezionato" : "Da aggiungere";
+          return (
+            '<div class="policy-scope-option' + (entry.selected ? " on" : "") + (entry.id === coverage.id ? " focus" : "") + '">' +
+            '<button type="button" class="policy-scope-option-main" onclick="setPolicyAreaFocus(\'' + esc(area.id) + '\', \'' + esc(entry.id) + '\')">' +
+            '<div class="policy-scope-main-top"><div class="policy-scope-name">' + esc(entry.name) + '</div><span class="policy-priority ' + esc(entryPriority.key) + '">' + esc(entryPriority.label) + "</span></div>" +
+            '<div class="policy-scope-copy">' + esc(entry.id === coverage.id ? "Ambito in modifica" : (entrySolution ? "Con " + entrySolution.name + (entrySolution.limitLabel ? " · " + entrySolution.limitLabel : "") : "Apri per vedere il livello applicato")) + "</div>" +
+            '<div class="policy-scope-bottom"><div class="policy-scope-price">€ ' + esc(currency(entryPremium)) + '/mese</div><span class="policy-scope-state' + (entry.selected ? " on" : " off") + '">' + esc(entryStateLabel) + "</span></div>" +
+            "</button>" +
+            '<button type="button" class="policy-scope-check' + (entry.selected ? " on" : "") + '" onclick="toggleOfferCoverageSelection(\'' + esc(area.id) + '\', \'' + esc(product.id) + '\', \'' + esc(entry.id) + '\')">' + esc(entry.selected ? "Selezionato" : "Aggiungi") + "</button>" +
+            "</div>"
+          );
+        }).join("") +
         "</div>" +
-        "</div>" +
-        '<div class="policy-card-side">' +
-        '<div class="policy-side-score"><div class="policy-side-k">Fit</div><div class="policy-side-v">' + esc(product.score) + '<small>/100</small></div></div>' +
-        '<div class="policy-side-hint">' + esc(compactProductMetric(product)) + "</div>" +
-        '<div class="policy-card-foot"><button class="policy-toggle' + (selected ? " on" : "") + '" onclick="toggleCoverage(\'' + esc(product.id) + '\')">' + esc(selected ? "Disattiva" : "Attiva") + "</button></div>" +
-        "</div>" +
+        "</details>" +
         "</div>" +
         "</div>"
       );
     }
 
-    suggestedGrid.innerHTML = suggested.length ? suggested.map(function (product) { return cardMarkup(product, "suggested"); }).join("") : '<div class="policy-empty">Nessuna copertura prioritaria individuata per questo profilo.</div>';
-    optionalGrid.innerHTML = optional.length ? optional.map(function (product) { return cardMarkup(product, "optional"); }).join("") : '<div class="policy-empty">Per questo profilo il motore non vede altre coperture opzionali davvero rilevanti.</div>';
+    function compactProductMarkup(area, product) {
+      var priority = priorityMeta(product.fitScore);
+      var selectedSolutionId = product.selectedSolutionId || product.suggestedSolutionId || "";
+      var activeSolution = (product.solutions || []).find(function (solution) {
+        return solution.id === selectedSolutionId;
+      }) || null;
+      var linked = offerProductLinkedRecommendations(product);
+      var premium = product.selected
+        ? product.selectedMonthlyPremium
+        : activeSolution
+        ? activeSolution.monthlyPremium
+        : 0;
+      return (
+        '<div class="policy-compact-product">' +
+        '<div class="policy-compact-top">' +
+        '<div><div class="policy-compact-title">' + esc(product.name) + ' <span class="policy-priority ' + esc(priority.key) + '">' + esc(priority.label) + '</span></div><div class="policy-compact-copy">' + esc(linked.length ? joinReadableList(linked.map(function (recommendation) { return shortProductLabel(recommendation); })) : area.reason) + "</div></div>" +
+        '<div class="policy-focus-price">€ ' + esc(currency(premium)) + '/mese</div>' +
+        "</div>" +
+        '<div class="policy-compact-controls">' +
+        '<label class="policy-focus-field"><span>Soluzione</span><select class="policy-focus-select" onchange="selectOfferProductSolution(\'' + esc(area.id) + '\', \'' + esc(product.id) + '\', this.value)">' +
+        buildSelectOptions(product.solutions, selectedSolutionId) +
+        "</select></label>" +
+        '<button class="policy-focus-toggle' + (product.selected ? "" : " off") + '" onclick="toggleOfferProduct(\'' + esc(area.id) + '\', \'' + esc(product.id) + '\')">' + esc(product.selected ? "Attiva" : "Aggiungi") + "</button>" +
+        "</div>" +
+        "</div>"
+      );
+    }
+
+    function areaMarkup(area) {
+      var isSuggested = area.fitScore >= 56 || area.selectedCoverageCount > 0;
+      var firstMatrixProduct = (area.products || []).find(function (product) {
+        return product.presentation === "coverage-matrix";
+      }) || null;
+      var selectedCount = sumValues((area.products || []).map(function (product) {
+        return (product.coverages || []).filter(function (coverage) { return coverage.selected; }).length;
+      }));
+      var productContent = firstMatrixProduct
+        ? focusCoverageMarkup(area, firstMatrixProduct)
+        : '<div class="policy-compact-product-list">' + (area.products || []).map(function (product) {
+            return compactProductMarkup(area, product);
+          }).join("") + "</div>";
+      return (
+        '<div class="policy-product-card" style="--policy-accent:' + esc(area.accent || "#315eac") + '">' +
+        '<div class="policy-product-top">' +
+        '<div><div class="policy-product-ey">' + esc(area.name) + '</div><div class="policy-product-title">' + esc(firstMatrixProduct ? (area.productGroupName || area.summary || area.mainVisual) : area.mainVisual) + '</div><div class="policy-product-copy">' + esc(area.reason) + "</div></div>" +
+        '<div class="policy-product-side"><div class="policy-fit">' + esc(area.fitScore) + '/100</div><div class="policy-state ' + (isSuggested ? "suggested" : "secondary") + '">' + esc(isSuggested ? "Suggerita" : "Da valutare") + "</div></div>" +
+        "</div>" +
+        '<div class="policy-product-summary"><strong>' + esc(firstMatrixProduct ? "Ambiti del prodotto" : "Prodotti protection") + '</strong><span>' + esc(selectedCount ? selectedCount + " selezioni attive" : area.coverageCount + " opzioni configurabili") + "</span></div>" +
+        productContent +
+        '<div class="policy-coverage-pills">' + (area.products || []).map(function (product) {
+          if (product.presentation === "coverage-matrix") {
+            return '<span class="policy-coverage-pill on">' + esc((product.coverages || []).length + " ambiti") + "</span>";
+          }
+          return '<span class="policy-coverage-pill' + (product.selected ? " on" : "") + '">' + esc(product.name) + "</span>";
+        }).join("") + "</div>" +
+        "</div>" +
+        "</div>"
+      );
+    }
+
+    productGrid.innerHTML = areas.length ? areas.map(function (area) { return areaMarkup(area); }).join("") : '<div class="policy-empty">Nessun prodotto configurabile disponibile su questo profilo.</div>';
   }
 
   function yearlyLabelsFromPath(path) {
@@ -1559,6 +2704,60 @@
     });
   }
 
+  function scenarioEventMonth(activeScenario) {
+    var basePath = activeScenario && activeScenario.base && activeScenario.base.path ? activeScenario.base.path : [];
+    var maxIndex = Math.max(0, basePath.length - 1);
+    return clamp(Math.max(0, activeScenario && activeScenario.eventMonth ? activeScenario.eventMonth : 0), 0, maxIndex);
+  }
+
+  function mergePathUntilEvent(basePath, branchPath, eventMonth) {
+    return (basePath || []).map(function (value, index) {
+      if (index < eventMonth) return value;
+      return branchPath && typeof branchPath[index] !== "undefined" ? branchPath[index] : value;
+    });
+  }
+
+  function sampledEventIndex(eventMonth) {
+    return Math.max(0, Math.round(eventMonth / 12));
+  }
+
+  function chartGradient(chart, topColor, bottomColor) {
+    var area = chart && chart.chartArea;
+    if (!area) return topColor;
+    var gradient = chart.ctx.createLinearGradient(0, area.top, 0, area.bottom);
+    gradient.addColorStop(0, topColor);
+    gradient.addColorStop(1, bottomColor);
+    return gradient;
+  }
+
+  function scenarioMarkerPlugin(eventIndex, label) {
+    return {
+      id: "scenarioMarker",
+      beforeDatasetsDraw: function (chart) {
+        var xScale = chart.scales.x;
+        var yScale = chart.scales.y;
+        if (!xScale || !yScale || typeof eventIndex !== "number") return;
+        var x = xScale.getPixelForValue(eventIndex);
+        var ctx = chart.ctx;
+        ctx.save();
+        ctx.fillStyle = "rgba(255,90,112,.05)";
+        ctx.fillRect(x, yScale.top, chart.chartArea.right - x, yScale.bottom - yScale.top);
+        ctx.setLineDash([6, 6]);
+        ctx.strokeStyle = "rgba(255,90,112,.65)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x, yScale.top);
+        ctx.lineTo(x, yScale.bottom);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#ff5a70";
+        ctx.font = "700 10px Outfit";
+        ctx.fillText(label, Math.min(x + 10, chart.chartArea.right - 74), yScale.top + 14);
+        ctx.restore();
+      }
+    };
+  }
+
   function lastValue(list) {
     if (!list || !list.length) return 0;
     return Number(list[list.length - 1] || 0);
@@ -1568,48 +2767,104 @@
     var canvas = byId("pathC");
     if (!canvas) return;
     destroyChart("path");
-    var labels = yearlyLabelsFromPath(activeScenario.withCoverage.path);
-    var noData = yearlyValues(activeScenario.noCoverage.path);
-    var yesData = yearlyValues(activeScenario.withCoverage.path);
-    var targetData = yearlyValues(activeScenario.targetPath);
+    var basePath = activeScenario.base && activeScenario.base.path ? activeScenario.base.path : activeScenario.withCoverage.path;
+    var eventMonth = scenarioEventMonth(activeScenario);
+    var displayNoPath = mergePathUntilEvent(basePath, activeScenario.noCoverage.path, eventMonth);
+    var displayYesPath = mergePathUntilEvent(basePath, activeScenario.withCoverage.path, eventMonth);
+    var labels = yearlyLabelsFromPath(basePath);
+    var baseData = yearlyValues(basePath);
+    var noData = yearlyValues(displayNoPath);
+    var yesData = yearlyValues(displayYesPath);
+    var eventIndex = sampledEventIndex(eventMonth);
+
+    if (!chartLibraryAvailable()) {
+      S.ch.path = renderLineChartFallback(canvas, {
+        labels: labels,
+        eventIndex: eventIndex,
+        eventLabel: "Sinistro",
+        datasets: [
+          {
+            data: baseData,
+            borderColor: "#6f7bf7",
+            borderWidth: 3,
+            borderDash: [10, 7]
+          },
+          {
+            data: noData,
+            borderColor: "#ff5a70",
+            borderWidth: 3.2,
+            fill: true,
+            areaFill: "rgba(255,90,112,.16)",
+            highlightIndex: eventIndex,
+            pointColor: "#ff5a70",
+            pointRadius: 4.5
+          },
+          {
+            data: yesData,
+            borderColor: "#1fb7a6",
+            borderWidth: 3.2,
+            fill: true,
+            areaFill: "rgba(31,183,166,.14)",
+            highlightIndex: eventIndex,
+            pointColor: "#1fb7a6",
+            pointRadius: 4.5
+          }
+        ]
+      });
+      return;
+    }
+
     var ctx = canvas.getContext("2d");
 
     S.ch.path = new Chart(ctx, {
       type: "line",
+      plugins: [scenarioMarkerPlugin(eventIndex, "Sinistro")],
       data: {
         labels: labels,
         datasets: [
           {
-            label: "Senza copertura",
-            data: noData,
-            borderColor: "#e57373",
-            backgroundColor: "rgba(229,115,115,.08)",
-            fill: true,
-            tension: 0.35,
-            borderWidth: 2.5,
-            pointRadius: 2.5,
-            pointBackgroundColor: "#e57373"
-          },
-          {
-            label: "Con copertura",
-            data: yesData,
-            borderColor: "#00857c",
-            backgroundColor: "rgba(0,133,124,.08)",
-            fill: true,
-            tension: 0.35,
-            borderWidth: 2.5,
-            pointRadius: 2.5,
-            pointBackgroundColor: "#00857c"
-          },
-          {
-            label: "Target",
-            data: targetData,
-            borderColor: "#e8a000",
-            borderDash: [6, 4],
+            label: "Piano base",
+            data: baseData,
+            borderColor: "#6f7bf7",
+            backgroundColor: "rgba(111,123,247,.08)",
             fill: false,
-            tension: 0,
-            borderWidth: 2,
-            pointRadius: 0
+            tension: 0.38,
+            borderWidth: 3,
+            borderDash: [10, 7],
+            pointRadius: 0,
+            pointHoverRadius: 4
+          },
+          {
+            label: "Sinistro scoperto",
+            data: noData,
+            borderColor: "#ff5a70",
+            backgroundColor: function (context) {
+              return chartGradient(context.chart, "rgba(255,90,112,.28)", "rgba(255,90,112,0)");
+            },
+            fill: true,
+            tension: 0.38,
+            borderWidth: 3.2,
+            pointRadius: function (context) {
+              return context.dataIndex === eventIndex ? 4.5 : 0;
+            },
+            pointHoverRadius: 4.5,
+            pointBackgroundColor: "#ff5a70"
+          },
+          {
+            label: "Sinistro coperto",
+            data: yesData,
+            borderColor: "#1fb7a6",
+            backgroundColor: function (context) {
+              return chartGradient(context.chart, "rgba(31,183,166,.24)", "rgba(31,183,166,0)");
+            },
+            fill: true,
+            tension: 0.38,
+            borderWidth: 3.2,
+            pointRadius: function (context) {
+              return context.dataIndex === eventIndex ? 4.5 : 0;
+            },
+            pointHoverRadius: 4.5,
+            pointBackgroundColor: "#1fb7a6"
           }
         ]
       },
@@ -1622,14 +2877,24 @@
           tooltip: {
             callbacks: {
               label: function (context) {
-                return "€ " + context.parsed.y.toLocaleString("it-IT");
+                return context.dataset.label + ": € " + context.parsed.y.toLocaleString("it-IT");
               }
             }
           }
         },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8", maxTicksLimit: 8 } },
-          y: { grid: { color: "rgba(212,227,245,.5)" }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8", callback: function (value) { return "€" + Math.round(value / 1000) + "k"; } } }
+          x: {
+            grid: { display: false },
+            ticks: { font: { family: "Outfit", size: 10 }, color: "#7588a2", maxTicksLimit: 8 }
+          },
+          y: {
+            grid: { color: "rgba(213,224,240,.55)" },
+            ticks: {
+              font: { family: "Outfit", size: 10 },
+              color: "#7588a2",
+              callback: function (value) { return "€" + Math.round(value / 1000) + "k"; }
+            }
+          }
         },
         animation: { duration: 650, easing: "easeInOutQuart" }
       }
@@ -1640,22 +2905,79 @@
     var canvas = byId("gapC");
     if (!canvas) return;
     destroyChart("gap");
-    var noCapital = lastValue(activeScenario.noCoverage.path);
-    var yesCapital = lastValue(activeScenario.withCoverage.path);
-    var target = lastValue(activeScenario.targetPath);
+    var basePath = activeScenario.base && activeScenario.base.path ? activeScenario.base.path : activeScenario.withCoverage.path;
+    var eventMonth = scenarioEventMonth(activeScenario);
+    var displayNoPath = mergePathUntilEvent(basePath, activeScenario.noCoverage.path, eventMonth);
+    var displayYesPath = mergePathUntilEvent(basePath, activeScenario.withCoverage.path, eventMonth);
+    var labels = yearlyLabelsFromPath(basePath);
+    var baseData = yearlyValues(basePath);
+    var noGap = yearlyValues(displayNoPath).map(function (value, index) {
+      return Math.max(0, baseData[index] - value);
+    });
+    var yesGap = yearlyValues(displayYesPath).map(function (value, index) {
+      return Math.max(0, baseData[index] - value);
+    });
+    var eventIndex = sampledEventIndex(eventMonth);
+
+    if (!chartLibraryAvailable()) {
+      S.ch.gap = renderLineChartFallback(canvas, {
+        labels: labels,
+        eventIndex: eventIndex,
+        eventLabel: "Shock",
+        beginAtZero: true,
+        datasets: [
+          {
+            data: noGap,
+            borderColor: "#ff5a70",
+            borderWidth: 3,
+            fill: true,
+            areaFill: "rgba(255,90,112,.16)"
+          },
+          {
+            data: yesGap,
+            borderColor: "#1fb7a6",
+            borderWidth: 3,
+            fill: true,
+            areaFill: "rgba(31,183,166,.14)"
+          }
+        ]
+      });
+      return;
+    }
+
     var ctx = canvas.getContext("2d");
 
     S.ch.gap = new Chart(ctx, {
-      type: "bar",
+      type: "line",
+      plugins: [scenarioMarkerPlugin(eventIndex, "Shock")],
       data: {
-        labels: ["Target", "Senza copertura", "Con copertura"],
+        labels: labels,
         datasets: [
           {
-            label: "Valore finale",
-            data: [target, noCapital, yesCapital],
-            backgroundColor: ["#e8a000", "#e57373", "#00857c"],
-            borderRadius: 12,
-            maxBarThickness: 58
+            label: "Erosione senza coperture",
+            data: noGap,
+            borderColor: "#ff5a70",
+            backgroundColor: function (context) {
+              return chartGradient(context.chart, "rgba(255,90,112,.26)", "rgba(255,90,112,0)");
+            },
+            fill: true,
+            tension: 0.35,
+            borderWidth: 3,
+            pointRadius: 0,
+            pointHoverRadius: 4
+          },
+          {
+            label: "Erosione con coperture",
+            data: yesGap,
+            borderColor: "#1fb7a6",
+            backgroundColor: function (context) {
+              return chartGradient(context.chart, "rgba(31,183,166,.24)", "rgba(31,183,166,0)");
+            },
+            fill: true,
+            tension: 0.35,
+            borderWidth: 3,
+            pointRadius: 0,
+            pointHoverRadius: 4
           }
         ]
       },
@@ -1668,20 +2990,25 @@
           tooltip: {
             callbacks: {
               label: function (context) {
-                return "€ " + context.parsed.y.toLocaleString("it-IT");
-              },
-              afterBody: function (items) {
-                var label = items && items[0] ? items[0].label : "";
-                if (label === "Senza copertura") return ["Gap residuo: € " + Math.max(0, target - noCapital).toLocaleString("it-IT")];
-                if (label === "Con copertura") return ["Gap residuo: € " + Math.max(0, target - yesCapital).toLocaleString("it-IT")];
-                return [];
+                return context.dataset.label + ": € " + context.parsed.y.toLocaleString("it-IT");
               }
             }
           }
         },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8" } },
-          y: { grid: { color: "rgba(212,227,245,.5)" }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8", callback: function (value) { return "€" + Math.round(value / 1000) + "k"; } } }
+          x: {
+            grid: { display: false },
+            ticks: { font: { family: "Outfit", size: 10 }, color: "#7588a2", maxTicksLimit: 8 }
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: "rgba(213,224,240,.55)" },
+            ticks: {
+              font: { family: "Outfit", size: 10 },
+              color: "#7588a2",
+              callback: function (value) { return "€" + Math.round(value / 1000) + "k"; }
+            }
+          }
         },
         animation: { duration: 650, easing: "easeInOutQuart" }
       }
@@ -1692,17 +3019,26 @@
     var intro = byId("scenarioSimpleIntro");
     var pathLabel = byId("simplePathLabel");
     var gapLabel = byId("simpleGapLabel");
-    var finalTarget = lastValue(activeScenario.targetPath);
+    var basePath = activeScenario.base && activeScenario.base.path ? activeScenario.base.path : [];
+    var finalBaseCapital = lastValue(basePath);
     var finalNoCapital = lastValue(activeScenario.noCoverage.path);
     var finalYesCapital = lastValue(activeScenario.withCoverage.path);
+    var eventYear = activeScenario.eventYear || Math.max(1, Math.round(scenarioEventMonth(activeScenario) / 12));
+    var uncoveredDrop = Math.max(0, finalBaseCapital - finalNoCapital);
+    var coveredDrop = Math.max(0, finalBaseCapital - finalYesCapital);
+    var impactSummary = activeScenario.impactSummary || activeScenario.loss || {};
+    var supportSummary = activeScenario.supportSummary || {};
+    var eventLabel = activeScenario.eventLabels && activeScenario.eventLabels.length
+      ? activeScenario.eventLabels.join(" + ")
+      : activeScenario.label;
     if (intro) {
-      intro.textContent = 'Scenario "' + activeScenario.label + '" letto sull\'obiettivo "' + S.analysis.focusGoal.name + '". Prima vedi la traiettoria negli anni, poi dove atterra davvero il piano alla scadenza.';
+      intro.textContent = 'Scenario simulato: ' + eventLabel + '. Nell\'anno ' + eventYear + ' lo shock vale ' + impactSummaryLine(impactSummary) + '. Con le coperture attive il piano recupera ' + supportSummaryLine(supportSummary) + '.';
     }
     if (pathLabel) {
-      pathLabel.textContent = "Rosso e verde mostrano il capitale disponibile anno per anno. La linea oro e il target da raggiungere.";
+      pathLabel.textContent = "Prima del sinistro il percorso e lo stesso. Poi si vede il colpo iniziale e l'eventuale perdita di reddito nel tempo: il verde tiene solo sulla parte davvero coperta dai prodotti attivi.";
     }
     if (gapLabel) {
-      gapLabel.textContent = "A scadenza il target e € " + currency(finalTarget) + ": senza copertura il cliente arriva a € " + currency(finalNoCapital) + ", con copertura a € " + currency(finalYesCapital) + ".";
+      gapLabel.textContent = "Alla data obiettivo il piano scoperto perde circa € " + currency(uncoveredDrop) + " rispetto al base; con coperture restano esposti circa € " + currency(coveredDrop) + ". Se il verde resta basso, significa che una parte dello shock non e ancora trasferita.";
     }
     drawScenarioPathChart(activeScenario);
     drawScenarioGapChart(activeScenario);
@@ -1719,6 +3055,15 @@
     var suggestedLabels = economics.suggestedPool.map(shortProductLabel);
     var packageValue = economics.activePremium || economics.suggestedPremium;
     var packageLabel = economics.activePremium ? "Premio attivo" : "Premio suggerito";
+    var impactSummary = activeScenario.impactSummary || activeScenario.loss || {};
+    var supportSummary = activeScenario.supportSummary || {};
+    var residualImpact = activeScenario.netImpact || {};
+    var impactRows = (activeScenario.impactBreakdown || []).map(function (entry) {
+      return '<div class="impact-stage-row"><strong>' + esc(entry.label) + '</strong><span>' + esc(impactSummaryLine(entry)) + "</span></div>";
+    }).join("");
+    var supportRows = groupedSupportEntries(activeScenario).map(function (entry) {
+      return '<div class="impact-stage-row"><strong>' + esc(entry.productName) + '</strong><span>' + esc(supportSummaryLine(entry) + (entry.scenarioLabels.length ? " · su " + entry.scenarioLabels.join(", ") : "")) + "</span></div>";
+    }).join("");
     var packageNarrative = economics.activePremium
       ? "Con € " + currency(economics.activePremium) + "/mese il cliente evita di dover lasciare esposto circa € " + currency(economics.activeSelfFund) + "/mese di auto-protezione."
       : "Su questo scenario non c'e ancora una copertura attiva: il motore propone un pacchetto da circa € " + currency(economics.suggestedPremium) + "/mese per alleggerire il rischio sul piano.";
@@ -1731,7 +3076,7 @@
       '<div class="impact-stage-top">' +
       '<div>' +
       '<div class="impact-stage-title">' + esc(activeScenario.label) + "</div>" +
-      '<div class="impact-stage-copy">Scenario letto su <strong>' + esc(focusGoal.name) + '</strong>: qui sotto l\'assicuratore vede in pochi secondi cosa succede se il cliente resta scoperto e cosa cambia se attiva una o piu coperture.</div>' +
+      '<div class="impact-stage-copy">Scenario letto su <strong>' + esc(focusGoal.name) + '</strong>. Qui vedi che tipo di sinistro stiamo simulando, da quali importi parte il danno e quali prodotti stanno davvero recuperando lo shock.</div>' +
       '<div class="impact-stage-tags">' +
       '<div class="impact-stage-tag">' + esc(focusGoal.displayYears) + "</div>" +
       '<div class="impact-stage-tag">' + esc(activeScenario.severityLabel) + "</div>" +
@@ -1741,13 +3086,17 @@
       '<div class="impact-stage-side">' +
       '<div class="impact-stage-side-k">' + esc(packageLabel) + "</div>" +
       '<div class="impact-stage-side-v">€ ' + esc(currency(packageValue)) + '/mese</div>' +
-      '<div class="impact-stage-side-s">' + esc(packageNarrative + " " + packageSupport) + "</div>" +
+      '<div class="impact-stage-side-s">' + esc(packageNarrative + " " + packageSupport + " Shock totale: " + impactSummaryLine(impactSummary) + ". Recupero attivo: " + supportSummaryLine(supportSummary) + ".") + "</div>" +
       "</div>" +
       "</div>" +
       '<div class="impact-stage-grid">' +
-      '<div class="impact-stage-metric"><div class="impact-stage-k">Gap recuperato</div><div class="impact-stage-v">€ ' + esc(currency(recoveredGap)) + '</div><div class="impact-stage-s">Capitale riportato verso il target.</div></div>' +
-      '<div class="impact-stage-metric"><div class="impact-stage-k">Probabilita obiettivo</div><div class="impact-stage-v">' + esc(activeScenario.noCoverage.achievement) + '% → ' + esc(activeScenario.withCoverage.achievement) + '%</div><div class="impact-stage-s">Salto di ' + esc(probabilityLift) + " punti sul traguardo.</div></div>" +
-      '<div class="impact-stage-metric"><div class="impact-stage-k">Liquidita liberata</div><div class="impact-stage-v">€ ' + esc(currency(economics.activePremium ? economics.activeFreed : economics.suggestedFreed)) + '</div><div class="impact-stage-s">Margine mensile non piu bloccato in auto-accantonamento.</div></div>' +
+      '<div class="impact-stage-metric"><div class="impact-stage-k">Shock iniziale + reddito</div><div class="impact-stage-v">' + esc(impactSummary.monthlyLoss ? "€ " + currency(impactSummary.monthlyLoss) + "/m" : "€ " + currency(impactSummary.upfrontLoss || 0)) + '</div><div class="impact-stage-s">' + esc(impactSummaryLine(impactSummary)) + "</div></div>" +
+      '<div class="impact-stage-metric"><div class="impact-stage-k">Recupero da coperture</div><div class="impact-stage-v">' + esc(supportSummary.monthly ? "€ " + currency(supportSummary.monthly) + "/m" : "€ " + currency(supportSummary.upfront || 0)) + '</div><div class="impact-stage-s">' + esc(supportSummaryLine(supportSummary)) + "</div></div>" +
+      '<div class="impact-stage-metric"><div class="impact-stage-k">Residuo scoperto</div><div class="impact-stage-v">' + esc(residualImpact.monthlyLoss ? "€ " + currency(residualImpact.monthlyLoss) + "/m" : "€ " + currency(residualImpact.upfrontLoss || 0)) + '</div><div class="impact-stage-s">' + esc(impactSummaryLine(residualImpact)) + "</div></div>" +
+      "</div>" +
+      '<div class="impact-stage-breakdown">' +
+      '<div class="impact-stage-panel"><div class="impact-stage-panel-title">Che sinistro sto vedendo</div>' + (impactRows || '<div class="impact-stage-row empty"><strong>Nessun evento</strong><span>Non ci sono impatti stimati.</span></div>') + "</div>" +
+      '<div class="impact-stage-panel"><div class="impact-stage-panel-title">Quali prodotti stanno recuperando il danno</div>' + (supportRows || '<div class="impact-stage-row empty"><strong>Nessuna copertura attiva</strong><span>Per ora il verde non recupera il danno: stai leggendo quasi tutto il rosso.</span></div>') + "</div>" +
       "</div>";
   }
 
@@ -2243,7 +3592,8 @@
     var overrides = currentOverrides();
 
     S.analysis = FamilyAdvisorEngine.analyzeScenarios(S.plan, overrides);
-    S.activeScenarioMode = (S.analysis.bundleOrder || []).length ? "bundle" : "single";
+    var hasBundles = !!((S.analysis.bundleOrder || []).length);
+    S.activeScenarioMode = hasBundles && S.activeScenarioMode === "bundle" ? "bundle" : "single";
     ensureScenarioSelection(previousGoalId !== S.analysis.focusGoal.id);
     renderScenario(S.activeScenarioId);
   }
@@ -2254,6 +3604,10 @@
     if (!collection[scenarioId]) return;
     S.activeScenarioId = scenarioId;
     var activeScenario = collection[scenarioId];
+    renderScenarioModeTabs();
+    renderBundleCards();
+    renderEventButtons();
+    renderImpactStage(activeScenario);
     renderGoalFocusGrid();
     renderGoalGaugeGrid();
     renderCoverageSummaryBand();
@@ -2267,6 +3621,7 @@
     var selectedGoalIds = readSelectedGoalIdsFromDom();
     var options = {
       selectedCoverageIds: S.plan ? S.plan.selectedCoverageIds.slice() : [],
+      offerSelections: currentOfferSelections(),
       keepSliderValues: true
     };
     if (selectedGoalIds && selectedGoalIds.length) options.selectedGoalIds = selectedGoalIds;
@@ -2285,6 +3640,7 @@
     applyPlan(readProfileFromForm(), {
       selectedGoalIds: selectedGoalIdsFromPlan(),
       selectedCoverageIds: selectedIds,
+      offerSelections: null,
       keepSliderValues: true
     });
   }
@@ -2366,15 +3722,22 @@
   }
 
   function handlePage2PrimaryAction() {
+    if (!ensureQuestionnaireBaseReady()) return;
     var profile = readProfileFromForm();
     var selectedGoalIds = readSelectedGoalIdsFromDom();
     var options = {
       selectedCoverageIds: S.coverageTouched && S.plan ? S.plan.selectedCoverageIds.slice() : [],
+      offerSelections: S.coverageTouched ? null : currentOfferSelections(),
       keepSliderValues: false
     };
     if (selectedGoalIds && selectedGoalIds.length) options.selectedGoalIds = selectedGoalIds;
     applyPlan(profile, options);
     goTo(3);
+  }
+
+  function handleQuestionnaireFieldInteraction() {
+    S.questionnaireGateMessage = "";
+    renderQuestionnaireProgressCard();
   }
 
   function newClient() {
@@ -2388,6 +3751,16 @@
     options = options || {};
     var questionnaireProfile = profile;
     var planOptions = {};
+    if (Object.prototype.hasOwnProperty.call(options, "premiumOverrides")) {
+      S.premiumOverrides = Object.assign({}, options.premiumOverrides || {});
+    } else if (
+      !Object.keys(S.premiumOverrides || {}).length &&
+      S.plan &&
+      S.plan.premiumOverrides &&
+      !(S.plan.offerSelections && Object.keys(S.plan.offerSelections).length)
+    ) {
+      S.premiumOverrides = Object.assign({}, S.plan.premiumOverrides);
+    }
     if (Object.prototype.hasOwnProperty.call(options, "selectedCoverageIds")) {
       planOptions.selectedCoverageIds = options.selectedCoverageIds;
     } else if (S.plan) {
@@ -2398,12 +3771,21 @@
     } else if (S.plan && S.plan.selectedGoalIds) {
       planOptions.selectedGoalIds = S.plan.selectedGoalIds.slice();
     }
+    if (Object.prototype.hasOwnProperty.call(options, "offerSelections")) {
+      planOptions.offerSelections = cloneOfferSelections(options.offerSelections);
+    } else if (S.plan && S.plan.offerSelections) {
+      planOptions.offerSelections = cloneOfferSelections(S.plan.offerSelections);
+    }
+    planOptions.premiumOverrides = Object.assign({}, S.premiumOverrides || {});
 
     S.plan = FamilyAdvisorEngine.buildPlan(profile, planOptions);
     S.draftProfile = S.plan.profile;
     FamilyAdvisorEngine.saveProfile(S.plan.profile);
 
     fillFormFromProfile(questionnaireProfile || S.plan.profile);
+    renderProposalShelf();
+    renderSavedClientsLibrary();
+    renderPersonaInsight();
     renderProfileSummary();
     renderGoals();
     renderCoverageTable();
@@ -2418,6 +3800,34 @@
       var node = byId(id);
       if (node) node.addEventListener("input", refreshScenarioAnalysis);
     });
+    [
+      "fNome",
+      "fDOB",
+      "fEta",
+      "fCity",
+      "fSt",
+      "fSpouseName",
+      "fSpouseAge",
+      "fPartnerIncome",
+      "fFi",
+      "fChildrenAges",
+      "fProfession",
+      "fAb",
+      "fRnet",
+      "fRi",
+      "fPat",
+      "fHomeCost",
+      "fFixed",
+      "fPet",
+      "fVehicle",
+      "fSportRisk",
+      "fTravel"
+    ].forEach(function (id) {
+      var node = byId(id);
+      if (!node) return;
+      node.addEventListener("input", handleQuestionnaireFieldInteraction);
+      node.addEventListener("change", handleQuestionnaireFieldInteraction);
+    });
     root.addEventListener("afterprint", function () {
       document.body.classList.remove("print-mode");
     });
@@ -2426,6 +3836,8 @@
   function boot() {
     bindEvents();
     resetClientWorkspace(false);
+    renderProposalShelf();
+    renderSavedClientsLibrary();
   }
 
   root.goTo = goTo;
@@ -2445,6 +3857,17 @@
   root.handlePage2PrimaryAction = handlePage2PrimaryAction;
   root.newClient = newClient;
   root.toggleGoalSelection = toggleGoalSelection;
+  root.toggleProposalLibrary = toggleProposalLibrary;
+  root.saveCurrentProposal = saveCurrentProposal;
+  root.loadProposal = loadProposal;
+  root.loadSavedClient = loadSavedClient;
+  root.toggleOfferProduct = toggleOfferProduct;
+  root.toggleOfferCoverageSelection = toggleOfferCoverageSelection;
+  root.selectOfferCoverageSolution = selectOfferCoverageSolution;
+  root.selectOfferProductSolution = selectOfferProductSolution;
+  root.setPolicyAreaFocus = setPolicyAreaFocus;
+  root.setPolicyScopeMenuOpen = setPolicyScopeMenuOpen;
+  root.setVisualGender = setVisualGender;
 
   document.addEventListener("DOMContentLoaded", boot);
 })(window);

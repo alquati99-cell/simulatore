@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Motore punteggio obiettivi - versione dirigenziale</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      color: #132238;
+      line-height: 1.55;
+      margin: 44px;
+      max-width: 900px;
+    }
+    h1, h2 {
+      color: #0f3f86;
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 28px;
+      margin-top: 0;
+    }
+    h2 {
+      font-size: 18px;
+      margin-top: 26px;
+    }
+    p {
+      margin: 10px 0;
+    }
+    ul {
+      margin: 8px 0 12px 20px;
+    }
+    li {
+      margin: 6px 0;
+    }
+    .box {
+      margin: 14px 0;
+      padding: 14px 16px;
+      background: #f4f8fd;
+      border: 1px solid #d8e4f2;
+      border-radius: 10px;
+    }
+    .highlight {
+      margin: 16px 0;
+      padding: 14px 16px;
+      background: #fff8e7;
+      border: 1px solid #f1dd98;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Motore di punteggio obiettivi - versione dirigenziale</h1>
+
+  <p>
+    Il simulatore assegna a ogni obiettivo del cliente un punteggio da 0 a 100,
+    sia <strong>senza coperture</strong> sia <strong>con coperture</strong>.
+    Il punteggio serve a rendere immediata una lettura consulenziale:
+    quanto l'obiettivo e oggi sostenibile, quanto e fragile sotto shock, e
+    quanto migliora se il rischio viene trasferito con una polizza.
+  </p>
+
+  <h2>1. Cosa misura il punteggio</h2>
+  <p>Il punteggio obiettivo riassume due dimensioni:</p>
+  <ul>
+    <li><strong>solidita di partenza</strong>: patrimonio, liquidita e capacita di risparmio gia presenti</li>
+    <li><strong>tenuta del piano</strong>: cosa succede quando il cliente subisce un evento avverso rilevante</li>
+  </ul>
+
+  <div class="box">
+    In sintesi, il punteggio non misura solo se il cliente ha soldi oggi, ma
+    se il suo progetto di vita regge anche quando succede qualcosa di serio.
+  </div>
+
+  <h2>2. Come ragiona il motore</h2>
+  <p>Per ciascun obiettivo il motore esegue quattro passaggi:</p>
+  <ul>
+    <li>legge il profilo economico del cliente</li>
+    <li>identifica lo scenario di rischio piu rilevante per quell'obiettivo</li>
+    <li>simula il piano senza copertura</li>
+    <li>simula lo stesso piano con le coperture selezionate</li>
+  </ul>
+
+  <p>
+    Questo significa che il cliente non vede una raccomandazione astratta, ma
+    un confronto concreto tra due traiettorie:
+    <strong>restare scoperto</strong> oppure <strong>proteggere il piano</strong>.
+  </p>
+
+  <h2>3. Perche il punteggio senza polizza non va a zero</h2>
+  <p>
+    Anche senza polizza il cliente puo avere una base patrimoniale, una certa
+    capacita di risparmio e una buona liquidita. Per questo il motore non porta
+    mai in automatico il punteggio a zero.
+  </p>
+
+  <p>
+    Il ramo senza polizza parte sempre da quello che il cliente ha gia costruito,
+    poi misura quanto questa base resiste all'imprevisto.
+  </p>
+
+  <h2>4. Cosa cambia con la polizza</h2>
+  <p>
+    La polizza non aggiunge punti in modo arbitrario. Migliora il punteggio
+    solo se riduce davvero il danno economico simulato.
+  </p>
+
+  <ul>
+    <li>riduce la perdita immediata di capitale</li>
+    <li>riduce la perdita mensile di reddito o di cassa</li>
+    <li>riduce il gap rispetto al target</li>
+    <li>riduce il ritardo necessario per recuperare l'obiettivo</li>
+    <li>aumenta la probabilita di raggiungimento</li>
+  </ul>
+
+  <div class="box">
+    Il delta punti che il cliente vede in pagina non e un bonus commerciale:
+    e l'effetto economico della copertura sulla simulazione del piano.
+  </div>
+
+  <h2>5. Perche e credibile in ottica commerciale</h2>
+  <p>Il modello e credibile per tre motivi:</p>
+  <ul>
+    <li>usa dati reali del cliente, non profili standardizzati</li>
+    <li>sceglie scenari coerenti con famiglia, casa, reddito, professione e obiettivi</li>
+    <li>collega la polizza a un beneficio economico misurabile sul singolo obiettivo</li>
+  </ul>
+
+  <p>
+    In pratica il consulente puo spiegare la protezione non come costo, ma come
+    leva di stabilizzazione del piano.
+  </p>
+
+  <h2>6. Come leggerlo in appuntamento</h2>
+  <p>Il punteggio puo essere raccontato in modo molto semplice:</p>
+  <ul>
+    <li><strong>partenza oggi</strong>: quanto l'obiettivo e solido con la situazione attuale</li>
+    <li><strong>senza copertura</strong>: quanto l'obiettivo si deteriora se arriva l'imprevisto</li>
+    <li><strong>con copertura</strong>: quanto il piano recupera stabilita</li>
+  </ul>
+
+  <div class="highlight">
+    Messaggio chiave per la direzione: il simulatore non propone polizze in modo
+    generico, ma trasforma la protezione in una metrica leggibile di
+    raggiungimento obiettivi, coerente con il profilo e con gli eventi di rischio
+    piu rilevanti per il cliente.
+  </div>
+</body>
+</html>

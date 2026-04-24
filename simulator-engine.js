@@ -20,6 +20,12 @@
     return values.length ? sum(values) / values.length : 0;
   }
 
+  function uniqueValues(values) {
+    return (values || []).filter(function (value, index, list) {
+      return list.indexOf(value) === index;
+    });
+  }
+
   function normalizeText(value) {
     return String(value || "")
       .normalize("NFD")
@@ -383,6 +389,107 @@
     var homeKey = householdHomeKey(profile);
     if (homeKey === "family_2" || homeKey === "family_3_plus") return "family_2_plus";
     return homeKey;
+  }
+
+  function nationalHouseholdRows() {
+    var catalog = householdExpenseCatalog();
+    if (!catalog) return [];
+    return (catalog.rows || []).filter(function (entry) {
+      return entry.macro_area === "Italia";
+    });
+  }
+
+  function nationalIncomeRows() {
+    var catalog = incomeWealthCatalog();
+    if (!catalog) return [];
+    return (catalog.rows || []).filter(function (entry) {
+      return entry.macro_area === "Italia" && entry.age_band === "all_ages";
+    });
+  }
+
+  function aggregateSampleSize(rows) {
+    return Math.round(sum((rows || []).map(function (entry) {
+      return safeNumber(entry.sample_size, 0);
+    })));
+  }
+
+  function weightedAverage(rows, field) {
+    var totalWeight = aggregateSampleSize(rows);
+    if (!totalWeight) return 0;
+    return rows.reduce(function (acc, entry) {
+      return acc + safeNumber(entry[field], 0) * safeNumber(entry.sample_size, 0);
+    }, 0) / totalWeight;
+  }
+
+  function personaRowsById() {
+    var rows = nationalHouseholdRows();
+    return {
+      single_no_children: rows.filter(function (entry) { return entry.household_type === "single" && entry.children_band === "0"; }),
+      single_with_children: rows.filter(function (entry) { return entry.household_type === "single" && entry.children_band !== "0"; }),
+      couple_no_children: rows.filter(function (entry) { return entry.household_type === "couple" && entry.children_band === "0"; }),
+      family_one_child: rows.filter(function (entry) { return entry.household_type === "family_1"; }),
+      family_two_plus: rows.filter(function (entry) { return entry.household_type === "family_2_plus"; }),
+      extended_household: rows.filter(function (entry) { return entry.household_type === "extended"; })
+    };
+  }
+
+  function incomeBenchmarkForHouseholdType(householdType) {
+    return nationalIncomeRows().find(function (entry) {
+      return entry.household_type === householdType;
+    }) || null;
+  }
+
+  function personaBenchmarks() {
+    var rowMap = personaRowsById();
+    var catalog = DB.personaCatalog || [];
+    var totalSample = aggregateSampleSize([].concat.apply([], Object.keys(rowMap).map(function (key) { return rowMap[key]; }))) || 1;
+
+    return catalog.map(function (persona) {
+      var rows = rowMap[persona.id] || [];
+      var sampleSize = aggregateSampleSize(rows);
+      var expenseMedian = weightedAverage(rows, "monthly_consumption_median_eur");
+      var savingMedian = weightedAverage(rows, "monthly_saving_median_eur");
+      var incomeRow = incomeBenchmarkForHouseholdType(persona.householdType);
+      var annualIncome = incomeRow ? safeNumber(incomeRow.income_median_eur, 0) : roundStep((expenseMedian + savingMedian) * 12, 500);
+      var wealthMedian = incomeRow ? safeNumber(incomeRow.wealth_median_eur, 0) : roundStep(expenseMedian * 48, 1000);
+      var financialAssetsMedian = incomeRow ? safeNumber(incomeRow.financial_assets_median_eur, 0) : roundStep(Math.max(savingMedian * 10, 2000), 500);
+      var share = sampleSize / totalSample;
+
+      if (persona.id === "single_with_children") {
+        annualIncome = roundStep(Math.max(annualIncome, (expenseMedian + savingMedian) * 12), 500);
+      }
+
+      return Object.assign({}, persona, {
+        sampleSize: sampleSize,
+        share: share,
+        sharePct: Math.round(share * 1000) / 10,
+        typicalAnnualIncome: roundStep(annualIncome, 500),
+        typicalWealth: roundStep(wealthMedian, 1000),
+        typicalFinancialAssets: roundStep(financialAssetsMedian, 500),
+        typicalMonthlyConsumption: roundStep(expenseMedian, 10),
+        typicalMonthlySaving: roundStep(savingMedian, 10)
+      });
+    }).sort(function (left, right) {
+      return right.share - left.share;
+    });
+  }
+
+  function detectPersona(profile) {
+    var catalog = personaBenchmarks();
+    var hasPartner = !!(profile.spouseName || profile.maritalStatus === "Sposato" || profile.maritalStatus === "Convivente");
+    var personaId = "single_no_children";
+
+    if (!hasPartner && profile.childrenCount > 0) personaId = "single_with_children";
+    else if (profile.childrenCount >= 2) personaId = "family_two_plus";
+    else if (profile.childrenCount === 1 && hasPartner) personaId = "family_one_child";
+    else if (profile.age >= 58 && (hasPartner || profile.totalAssets >= 180000 || profile.housingStatus !== "Affittuario")) personaId = "extended_household";
+    else if (hasPartner) personaId = "couple_no_children";
+
+    var current = catalog.find(function (persona) { return persona.id === personaId; }) || catalog[0] || null;
+    return {
+      current: current,
+      distribution: catalog
+    };
   }
 
   function incomeAgeBand(age) {
@@ -844,6 +951,7 @@
       maritalStatus: "",
       spouseName: "",
       spouseAge: 0,
+      partnerNetMonthlyIncome: 0,
       childrenCount: 0,
       childrenAges: [],
       profession: "",
@@ -859,6 +967,10 @@
       housingStatus: "",
       housingCost: 0,
       fixedExpenses: 0,
+      petType: "",
+      mobilityMode: "",
+      sportRiskLevel: "",
+      travelFrequency: "",
       goals: [],
       existingCoverageIds: [],
       notes: "",
@@ -1228,7 +1340,7 @@
     return 0;
   }
 
-  function buildRecommendation(productMeta, profile, needs, score) {
+  function buildRecommendation(productMeta, profile, needs, score, premiumOverride) {
     var amount = 0;
     var premium = 0;
     var detail = "";
@@ -1271,9 +1383,13 @@
       secondaryDetail = "Utile per proteggere la continuita del mutuo";
     }
 
+    var suggestedPremium = premium;
+    if (safeNumber(premiumOverride, 0) > 0) premium = roundStep(premiumOverride, 1);
+
     return {
       id: productMeta.id,
       name: productMeta.name,
+      areaId: productMeta.areaId || "protection",
       icon: productMeta.icon,
       tint: productMeta.tint,
       shortDescription: productMeta.shortDescription,
@@ -1282,6 +1398,7 @@
       scenarioIds: productMeta.scenarioIds,
       score: score,
       coverAmount: amount,
+      suggestedMonthlyPremium: suggestedPremium,
       monthlyPremium: premium,
       deductibleMonthly: premium,
       annualTaxSaving: Math.round(premium * 12 * productMeta.deductibleRate),
@@ -1326,6 +1443,10 @@
   function scenarioShortLabel(scenarioId) {
     var meta = scenarioMetaById(scenarioId);
     return meta ? meta.shortLabel.toLowerCase() : scenarioId;
+  }
+
+  function pushUnique(list, value) {
+    if (list.indexOf(value) < 0) list.push(value);
   }
 
   function computeDefaultSelectionMap(profile, goals, recommendations) {
@@ -1409,21 +1530,67 @@
     return selectionMap;
   }
 
-  function recommendProducts(profile, goals, needs, segment) {
+  function forcedOfferProductIds(offerSelections) {
+    var forcedIds = [];
+
+    (DB.offerAreaCatalog || []).forEach(function (areaMeta) {
+      var areaSelection = offerSelections && offerSelections[areaMeta.id];
+      if (!areaSelection || !areaSelection.products) return;
+
+      function collectCoverageIds(coverageMetas, coverageSelections) {
+        (coverageMetas || []).forEach(function (coverageMeta) {
+          var coverageSelection = coverageSelections && coverageSelections[coverageMeta.id];
+          if (!coverageSelection || coverageSelection.selected === false) return;
+          (coverageMeta.linkedProductIds || []).forEach(function (productId) {
+            pushUnique(forcedIds, productId);
+          });
+        });
+      }
+
+      if (areaMeta.products && areaMeta.products.length) {
+        areaMeta.products.forEach(function (productMeta) {
+          var productSelection = areaSelection.products[productMeta.id];
+          if (!productSelection) return;
+          if (productSelection.selected !== false && Object.prototype.hasOwnProperty.call(productSelection, "selected")) {
+            (productMeta.linkedProductIds || []).forEach(function (productId) {
+              pushUnique(forcedIds, productId);
+            });
+          }
+          collectCoverageIds(productMeta.coverages || [], productSelection.coverages || {});
+        });
+        return;
+      }
+
+      collectCoverageIds(areaMeta.coverages || [], (areaSelection.products[areaMeta.id + "_core"] || {}).coverages || {});
+    });
+
+    return forcedIds;
+  }
+
+  function recommendProducts(profile, goals, needs, segment, premiumOverrides, forcedProductIds) {
+    forcedProductIds = forcedProductIds || [];
     var recommendations = DB.productCatalog
       .map(function (productMeta) {
         var score = productScore(productMeta.id, profile, goals, needs, segment);
         if (!score) return null;
-        return buildRecommendation(productMeta, profile, needs, score);
+        return buildRecommendation(productMeta, profile, needs, score, premiumOverrides && premiumOverrides[productMeta.id]);
       })
       .filter(Boolean)
       .filter(function (recommendation) {
-        return recommendation.score >= 32;
+        return recommendation.score >= 32 || forcedProductIds.indexOf(recommendation.id) >= 0;
       })
       .sort(function (left, right) {
         return right.score - left.score;
       });
-    recommendations = recommendations.slice(0, 6);
+    if (recommendations.length > 6) {
+      var forcedRecommendations = recommendations.filter(function (recommendation) {
+        return forcedProductIds.indexOf(recommendation.id) >= 0;
+      });
+      var regularRecommendations = recommendations.filter(function (recommendation) {
+        return forcedProductIds.indexOf(recommendation.id) < 0;
+      });
+      recommendations = forcedRecommendations.concat(regularRecommendations).slice(0, Math.max(6, forcedRecommendations.length));
+    }
 
     var selectionMap = computeDefaultSelectionMap(profile, goals, recommendations);
     recommendations = recommendations.map(function (recommendation) {
@@ -1434,6 +1601,548 @@
     });
 
     return recommendations;
+  }
+
+  function solutionTierForScore(score, profile) {
+    if (score >= 74 || (profile.netMonthlyIncome >= 4200 && score >= 60)) return "top";
+    if (score >= 60) return "premium";
+    if (score >= 42) return "plus";
+    return "essential";
+  }
+
+  function solutionTierById(tierId) {
+    return (DB.solutionTierCatalog || []).find(function (tier) {
+      return tier.id === tierId;
+    }) || null;
+  }
+
+  function buildSolutionSet(baseMonthly, score, profile) {
+    return (DB.solutionTierCatalog || []).map(function (tier) {
+      return {
+        id: tier.id,
+        name: tier.name,
+        accent: tier.accent,
+        available: true,
+        shortLabel: tier.name,
+        limitLabel: "",
+        description: "",
+        monthlyPremium: roundStep(Math.max(0, baseMonthly) * safeNumber(tier.multiplier, 1), 1),
+        suggested: tier.id === solutionTierForScore(score, profile)
+      };
+    });
+  }
+
+  function linkedRecommendations(recommendations, linkedProductIds) {
+    return recommendations.filter(function (recommendation) {
+      return (linkedProductIds || []).indexOf(recommendation.id) >= 0;
+    });
+  }
+
+  function textContainsAny(text, keywords) {
+    var normalized = normalizeText(text);
+    return keywords.some(function (keyword) {
+      return normalized.indexOf(normalizeText(keyword)) >= 0;
+    });
+  }
+
+  function notesMentionPet(text) {
+    var normalized = normalizeText(text);
+    if (!normalized) return false;
+    if (/(nessun|nessuna|senza|no)\s+(animale|animali|cane|cani|gatto|gatti|pet)/.test(normalized)) return false;
+    return /(animale|animali|cane|cani|gatto|gatti|pet)/.test(normalized);
+  }
+
+  function coveragePriorityScore(coverageId, profile, goals) {
+    var hasHomeGoal = goals.some(function (goal) { return goal.id === "home"; });
+    var hasDependants = !!(profile.childrenCount || profile.spouseName);
+    var ownsHome = profile.housingStatus !== "Affittuario";
+    var hasMortgage = profile.housingStatus === "Con mutuo";
+    var petFlag = !!(profile.petType && profile.petType !== "nessuno") || notesMentionPet(profile.notes || "");
+    var incomeBand = profile.netMonthlyIncome >= 3500 ? 12 : profile.netMonthlyIncome >= 2200 ? 8 : 3;
+    var wealthBand = profile.totalAssets >= 100000 ? 12 : profile.totalAssets >= 50000 ? 8 : profile.totalAssets >= 20000 ? 4 : 0;
+    var ageBand = profile.age >= 55 ? 16 : profile.age >= 45 ? 12 : profile.age >= 35 ? 8 : 4;
+    var expenseBand = profile.housingCost + profile.fixedExpenses >= 2400 ? 12 : profile.housingCost + profile.fixedExpenses >= 1600 ? 8 : 4;
+    var mobilityRisk = profile.mobilityMode === "moto" ? 16 : profile.mobilityMode === "monopattino" ? 12 : profile.mobilityMode === "misto" ? 10 : profile.mobilityMode === "bici" ? 8 : 0;
+    var sportRisk = profile.sportRiskLevel === "intenso" ? 16 : profile.sportRiskLevel === "regolare" ? 10 : profile.sportRiskLevel === "occasionale" ? 4 : 0;
+    var travelRisk = profile.travelFrequency === "settimanale" ? 8 : profile.travelFrequency === "mensile" ? 4 : 0;
+
+    if (coverageId === "home_building") {
+      return clamp(22 + (ownsHome ? 26 : 0) + (hasHomeGoal ? 14 : 0) + (hasMortgage ? 10 : 0) + wealthBand, 18, 94);
+    }
+    if (coverageId === "home_contents") {
+      return clamp(18 + (ownsHome ? 18 : 4) + wealthBand + (hasDependants ? 8 : 2), 18, 92);
+    }
+    if (coverageId === "home_theft") {
+      return clamp(16 + (ownsHome ? 14 : 2) + (profile.liquidAssets >= 30000 ? 10 : 4) + (hasDependants ? 6 : 0), 18, 90);
+    }
+    if (coverageId === "home_catastrophe") {
+      return clamp(14 + (ownsHome ? 18 : 0) + (hasHomeGoal ? 12 : 0) + (hasMortgage ? 14 : 0) + wealthBand, 18, 90);
+    }
+    if (coverageId === "home_rc_house") {
+      return clamp(12 + (ownsHome ? 30 : 0) + (hasMortgage ? 8 : 0), 18, 92);
+    }
+    if (coverageId === "home_rc_family") {
+      return clamp(20 + (hasDependants ? 18 : 8) + (ownsHome ? 8 : 0) + incomeBand + Math.round(mobilityRisk * 0.45), 20, 94);
+    }
+    if (coverageId === "home_legal") {
+      return clamp(18 + (ownsHome ? 12 : 4) + (hasDependants ? 6 : 0) + wealthBand, 18, 90);
+    }
+    if (coverageId === "home_pets") {
+      return clamp((petFlag ? 58 : 10) + (hasDependants ? 6 : 0), 10, 88);
+    }
+    if (coverageId === "home_mortgage_guard") {
+      return clamp(18 + (hasMortgage ? 32 : 0) + (hasHomeGoal ? 12 : 0) + (hasDependants ? 10 : 4) + incomeBand + wealthBand * 0.4, 18, 96);
+    }
+    if (coverageId === "health_severe_events") {
+      return clamp(18 + ageBand + incomeBand + wealthBand + (hasDependants ? 6 : 0), 18, 94);
+    }
+    if (coverageId === "health_medical") {
+      return clamp(26 + ageBand + (profile.occupationRisk === "alto" ? 10 : profile.occupationRisk === "medio" ? 6 : 2) + (hasDependants ? 6 : 0) + travelRisk, 22, 94);
+    }
+    if (coverageId === "health_daily_allowance") {
+      return clamp(18 + expenseBand + (profile.occupationRisk === "alto" ? 10 : profile.occupationRisk === "medio" ? 6 : 2) + Math.round(sportRisk * 0.5) + Math.round(travelRisk * 0.5), 18, 92);
+    }
+    if (coverageId === "health_disability_accident") {
+      return clamp(20 + (profile.occupationRisk === "alto" ? 24 : profile.occupationRisk === "medio" ? 14 : 6) + incomeBand + ageBand * 0.5 + mobilityRisk + sportRisk, 20, 96);
+    }
+    if (coverageId === "health_disability_illness") {
+      return clamp(18 + ageBand + incomeBand + (hasDependants ? 8 : 2) + (profile.profession ? 4 : 0), 18, 94);
+    }
+
+    return 0;
+  }
+
+  function offerCoverageScore(coverageMeta, recommendations, goals, profile) {
+    if ((coverageMeta.linkedGoalIds || []).length) {
+      var matchedGoals = goals.filter(function (goal) { return coverageMeta.linkedGoalIds.indexOf(goal.id) >= 0; });
+      var savingsStrength = profile.monthlySavings >= 500 ? 18 : profile.monthlySavings >= 250 ? 10 : 4;
+      return clamp((matchedGoals.length ? 46 + matchedGoals.length * 14 : 28) + savingsStrength, 24, 92);
+    }
+
+    var specificScore = coveragePriorityScore(coverageMeta.id, profile, goals);
+    if (specificScore) return specificScore;
+
+    var linked = linkedRecommendations(recommendations, coverageMeta.linkedProductIds || []);
+    if (!linked.length) return 26;
+    return clamp(Math.round(average(linked.map(function (recommendation) { return recommendation.score; }))), 24, 96);
+  }
+
+  function offerCoverageBaseMonthly(coverageMeta, recommendations) {
+    if (safeNumber(coverageMeta.defaultMonthly, 0) > 0) {
+      return roundStep(Math.max(0, coverageMeta.defaultMonthly), 1);
+    }
+    var linked = linkedRecommendations(recommendations, coverageMeta.linkedProductIds || []);
+    if (linked.length) {
+      return roundStep(Math.max(0, average(linked.map(function (recommendation) { return recommendation.monthlyPremium; }))), 1);
+    }
+    return 0;
+  }
+
+  function availableSolutionId(solutions, preferredId) {
+    var available = (solutions || []).filter(function (solution) { return solution.available !== false; });
+    if (!available.length) return "";
+    var direct = available.find(function (solution) { return solution.id === preferredId; });
+    if (direct) return direct.id;
+
+    var orderedIds = (DB.solutionTierCatalog || []).map(function (tier) { return tier.id; });
+    var preferredIndex = orderedIds.indexOf(preferredId);
+    if (preferredIndex < 0) return available[0].id;
+
+    for (var up = preferredIndex + 1; up < orderedIds.length; up += 1) {
+      direct = available.find(function (solution) { return solution.id === orderedIds[up]; });
+      if (direct) return direct.id;
+    }
+    for (var down = preferredIndex - 1; down >= 0; down -= 1) {
+      direct = available.find(function (solution) { return solution.id === orderedIds[down]; });
+      if (direct) return direct.id;
+    }
+    return available[0].id;
+  }
+
+  function buildCoverageSolutions(coverageMeta, baseMonthly, score, profile) {
+    var preferredId = solutionTierForScore(score, profile);
+    var rawSolutions = (coverageMeta.solutions || []).length
+      ? coverageMeta.solutions.map(function (solutionMeta) {
+          var tierMeta = solutionTierById(solutionMeta.id) || {};
+          return {
+            id: solutionMeta.id,
+            name: solutionMeta.name || tierMeta.name || titleCase(solutionMeta.id),
+            accent: tierMeta.accent || "core",
+            available: solutionMeta.available !== false,
+            shortLabel: solutionMeta.shortLabel || solutionMeta.limitLabel || tierMeta.name || "",
+            limitLabel: solutionMeta.limitLabel || "",
+            description: solutionMeta.description || "",
+            monthlyPremium: roundStep(Math.max(0, safeNumber(solutionMeta.monthlyPremium, baseMonthly * safeNumber(solutionMeta.multiplier, tierMeta.multiplier || 1))), 1),
+            suggested: false
+          };
+        })
+      : buildSolutionSet(baseMonthly, score, profile);
+    var suggestedId = availableSolutionId(rawSolutions, preferredId);
+    return rawSolutions.map(function (solution) {
+      return Object.assign({}, solution, {
+        suggested: solution.id === suggestedId
+      });
+    });
+  }
+
+  function coverageSelectionFallback(coverageMeta, score, selectedCoverageIds, profile) {
+    var linkedSelected = (coverageMeta.linkedProductIds || []).some(function (productId) {
+      return selectedCoverageIds.indexOf(productId) >= 0;
+    });
+    var threshold = linkedSelected ? 50 : 60;
+    if (coverageMeta.id === "home_pets" && !(profile.petType && profile.petType !== "nessuno") && !notesMentionPet(profile.notes || "")) {
+      return false;
+    }
+    if (coverageMeta.id === "home_mortgage_guard" && profile.housingStatus !== "Con mutuo") {
+      return false;
+    }
+    if (coverageMeta.id === "home_rc_house" && profile.housingStatus === "Affittuario") {
+      return false;
+    }
+    if (coverageMeta.id === "health_severe_events" && profile.age < 35 && profile.netMonthlyIncome < 2200 && profile.totalAssets < 30000) {
+      return false;
+    }
+    if (coverageMeta.id === "health_medical") threshold = linkedSelected ? 44 : 50;
+    if (coverageMeta.id === "health_disability_accident") threshold = profile.occupationRisk === "alto" ? (linkedSelected ? 44 : 50) : (linkedSelected ? 48 : 56);
+    if (coverageMeta.id === "health_disability_illness") threshold = profile.age >= 45 ? (linkedSelected ? 46 : 54) : (linkedSelected ? 50 : 60);
+    if (coverageMeta.id === "home_rc_family" && profile.childrenCount > 0) threshold = linkedSelected ? 48 : 56;
+    if (coverageMeta.id === "home_mortgage_guard") threshold = profile.housingStatus === "Con mutuo" ? (linkedSelected ? 42 : 50) : 72;
+    return score >= threshold;
+  }
+
+  function legacyCoverageBridgePriority(coverageId, legacyProductId) {
+    var map = {
+      rc_family: {
+        home_rc_family: 100,
+        home_rc_house: 90,
+        home_building: 72,
+        home_contents: 66,
+        home_legal: 58,
+        home_catastrophe: 52,
+        home_theft: 46,
+        home_pets: 28
+      },
+      mortgage: {
+        home_mortgage_guard: 100
+      },
+      health: {
+        health_medical: 100,
+        health_severe_events: 76,
+        health_daily_allowance: 54
+      },
+      accident: {
+        health_disability_accident: 100
+      },
+      income_protection: {
+        health_disability_illness: 100
+      },
+      tcm: {
+        protection_tcm: 100
+      },
+      ltc: {
+        protection_ltc: 100
+      }
+    };
+    return map[legacyProductId] && map[legacyProductId][coverageId] ? map[legacyProductId][coverageId] : 0;
+  }
+
+  function preferredCoverageForLegacyProduct(coverages, legacyProductId) {
+    var candidates = (coverages || []).filter(function (coverage) {
+      return (coverage.linkedProductIds || []).indexOf(legacyProductId) >= 0;
+    });
+    if (!candidates.length) return null;
+    return candidates.slice().sort(function (left, right) {
+      var rightPriority = legacyCoverageBridgePriority(right.id, legacyProductId);
+      var leftPriority = legacyCoverageBridgePriority(left.id, legacyProductId);
+      if (rightPriority !== leftPriority) return rightPriority - leftPriority;
+      return right.fitScore - left.fitScore;
+    })[0] || null;
+  }
+
+  function buildOfferCoverage(coverageMeta, profile, goals, recommendations, selectedCoverageIds, rawSelection) {
+    var score = offerCoverageScore(coverageMeta, recommendations, goals, profile);
+    var linked = linkedRecommendations(recommendations, coverageMeta.linkedProductIds || []);
+    var baseMonthly = offerCoverageBaseMonthly(coverageMeta, recommendations);
+    var matchedGoals = goals.filter(function (goal) { return (coverageMeta.linkedGoalIds || []).indexOf(goal.id) >= 0; });
+    var solutions = buildCoverageSolutions(coverageMeta, baseMonthly, score, profile);
+    var suggestedSolutionId = availableSolutionId(solutions, solutionTierForScore(score, profile));
+    var hasExplicitSelection = !!(rawSelection && Object.prototype.hasOwnProperty.call(rawSelection, "selected"));
+    var selected = hasExplicitSelection
+      ? rawSelection.selected !== false
+      : coverageSelectionFallback(coverageMeta, score, selectedCoverageIds, profile);
+    var selectedSolutionId = availableSolutionId(
+      solutions,
+      rawSelection && rawSelection.solutionId ? rawSelection.solutionId : suggestedSolutionId
+    );
+    var selectedSolution = solutions.find(function (solution) { return solution.id === selectedSolutionId; }) || null;
+
+    if (!selectedSolution) selected = false;
+
+    return {
+      id: coverageMeta.id,
+      name: coverageMeta.name,
+      description: coverageMeta.description || "",
+      linkedProductIds: coverageMeta.linkedProductIds || [],
+      linkedGoalIds: coverageMeta.linkedGoalIds || [],
+      linkedRecommendationIds: linked.map(function (entry) { return entry.id; }),
+      linkedGoalLabels: matchedGoals.map(function (goal) { return goal.name; }),
+      fitScore: score,
+      selected: selected,
+      baseMonthlyPremium: baseMonthly,
+      selectedMonthlyPremium: selected && selectedSolution ? selectedSolution.monthlyPremium : 0,
+      selectedSolutionId: selectedSolutionId,
+      selectedSolutionLabel: selectedSolution ? selectedSolution.limitLabel : "",
+      solutions: solutions,
+      suggestedSolutionId: suggestedSolutionId
+    };
+  }
+
+  function buildOfferProduct(productMeta, profile, goals, recommendations, selectedCoverageIds, rawProductSelection) {
+    var hasCoverageMap = !!(rawProductSelection && rawProductSelection.coverages && Object.keys(rawProductSelection.coverages).length);
+    var coverages = (productMeta.coverages || []).map(function (coverageMeta) {
+      var rawCoverageSelection = rawProductSelection && rawProductSelection.coverages
+        ? rawProductSelection.coverages[coverageMeta.id]
+        : null;
+      return buildOfferCoverage(
+        coverageMeta,
+        profile,
+        goals,
+        recommendations,
+        selectedCoverageIds,
+        rawCoverageSelection || rawProductSelection || null
+      );
+    });
+    var linked = linkedRecommendations(recommendations, productMeta.linkedProductIds || []);
+    var fitScore = clamp(Math.round(Math.max(
+      linked.length ? average(linked.map(function (recommendation) { return recommendation.score; })) : 0,
+      coverages.length ? average(coverages.map(function (coverage) { return coverage.fitScore; })) : 0
+    )), 24, 96);
+
+    if (coverages.length && !hasCoverageMap) {
+      selectedCoverageIds
+        .filter(function (legacyProductId) {
+          return coverages.some(function (coverage) {
+            return (coverage.linkedProductIds || []).indexOf(legacyProductId) >= 0;
+          });
+        })
+        .forEach(function (legacyProductId) {
+          if (coverages.some(function (coverage) {
+            return coverage.selected && (coverage.linkedProductIds || []).indexOf(legacyProductId) >= 0;
+          })) return;
+
+          var preferredCoverage = preferredCoverageForLegacyProduct(coverages, legacyProductId);
+          if (!preferredCoverage || !preferredCoverage.selectedSolutionId) return;
+
+          coverages = coverages.map(function (coverage) {
+            if (coverage.id !== preferredCoverage.id) return coverage;
+            return Object.assign({}, coverage, {
+              selected: true,
+              selectedMonthlyPremium: (coverage.solutions.find(function (solution) {
+                return solution.id === coverage.selectedSolutionId;
+              }) || {}).monthlyPremium || 0
+            });
+          });
+        });
+    }
+
+    if (coverages.length && !hasCoverageMap && !coverages.some(function (coverage) { return coverage.selected; }) && fitScore >= 58) {
+      var fallbackCoverage = coverages.slice().sort(function (left, right) {
+        return right.fitScore - left.fitScore;
+      })[0];
+      if (fallbackCoverage && fallbackCoverage.selectedSolutionId) {
+        coverages = coverages.map(function (coverage) {
+          if (coverage.id !== fallbackCoverage.id) return coverage;
+          return Object.assign({}, coverage, {
+            selected: true,
+            selectedMonthlyPremium: (coverage.solutions.find(function (solution) {
+              return solution.id === coverage.selectedSolutionId;
+            }) || {}).monthlyPremium || 0
+          });
+        });
+      }
+    }
+
+    var baseMonthly = roundStep(sum(coverages.map(function (coverage) { return coverage.baseMonthlyPremium; })), 1);
+    var productSolutions = buildSolutionSet(Math.max(baseMonthly, safeNumber(productMeta.defaultMonthly, 0)), fitScore, profile);
+    var suggestedSolutionId = availableSolutionId(productSolutions, solutionTierForScore(fitScore, profile));
+    var selectedSolutionId = availableSolutionId(
+      productSolutions,
+      rawProductSelection && rawProductSelection.solutionId ? rawProductSelection.solutionId : suggestedSolutionId
+    );
+    var selectedSolution = productSolutions.find(function (solution) { return solution.id === selectedSolutionId; }) || null;
+    var selected = coverages.length
+      ? coverages.some(function (coverage) { return coverage.selected; })
+      : linked.some(function (recommendation) { return selectedCoverageIds.indexOf(recommendation.id) >= 0; });
+
+    return {
+      id: productMeta.id,
+      name: productMeta.name,
+      linkedProductIds: productMeta.linkedProductIds || [],
+      fitScore: fitScore,
+      baseMonthlyPremium: baseMonthly,
+      selectedMonthlyPremium: coverages.length
+        ? roundStep(sum(coverages.map(function (coverage) { return coverage.selectedMonthlyPremium || 0; })), 1)
+        : selected && selectedSolution
+        ? selectedSolution.monthlyPremium
+        : 0,
+      selected: selected,
+      coverages: coverages,
+      suggestedSolutionId: suggestedSolutionId,
+      selectedSolutionId: selectedSolutionId,
+      selectedSolutionLabel: selectedSolution ? selectedSolution.limitLabel : "",
+      solutions: productSolutions,
+      presentation: coverages.length > 1 ? "coverage-matrix" : "single-product"
+    };
+  }
+
+  function offerAreaMatchScore(areaMeta, profile, goals, recommendations) {
+    if (areaMeta.id === "home") {
+      return clamp(
+        (profile.housingStatus !== "Affittuario" ? 26 : 10) +
+        (goals.some(function (goal) { return goal.id === "home"; }) ? 26 : 0) +
+        (recommendationById(recommendations, "rc_family") ? recommendationById(recommendations, "rc_family").score * 0.45 : 0),
+        18, 96
+      );
+    }
+    if (areaMeta.id === "health") {
+      return clamp(
+        18 +
+        (profile.age >= 45 ? 16 : 8) +
+        (profile.occupationRisk === "alto" ? 18 : profile.occupationRisk === "medio" ? 10 : 4) +
+        (recommendationById(recommendations, "health") ? recommendationById(recommendations, "health").score * 0.28 : 0) +
+        (recommendationById(recommendations, "income_protection") ? recommendationById(recommendations, "income_protection").score * 0.25 : 0),
+        20, 96
+      );
+    }
+    if (areaMeta.id === "protection") {
+      return clamp(
+        16 +
+        (profile.childrenCount > 0 ? 18 : 0) +
+        (profile.spouseName ? 12 : 0) +
+        (profile.age >= 50 ? 10 : 0) +
+        (recommendationById(recommendations, "tcm") ? recommendationById(recommendations, "tcm").score * 0.28 : 0) +
+        (recommendationById(recommendations, "ltc") ? recommendationById(recommendations, "ltc").score * 0.28 : 0),
+        18, 96
+      );
+    }
+    return clamp(
+      18 +
+      goals.length * 12 +
+      (profile.monthlySavings >= 500 ? 14 : profile.monthlySavings >= 250 ? 8 : 4) +
+      (profile.totalAssets >= 50000 ? 12 : 6),
+      18, 94
+    );
+  }
+
+  function areaReason(areaId, profile, goals, persona) {
+    if (areaId === "home") {
+      if (profile.housingStatus === "Con mutuo") return "Casa e mutuo sono gia centrali sul profilo.";
+      if (goals.some(function (goal) { return goal.id === "home"; })) return "C'e un obiettivo casa da proteggere e finanziare bene.";
+      return "Serve proteggere patrimonio, vita privata e spese domestiche.";
+    }
+    if (areaId === "health") {
+      if (profile.occupationRisk === "alto") return "Il lavoro rende sensibile il rischio infortunio e stop operativo.";
+      return "Salute, ricoveri e stop lavoro possono erodere il piano piu del previsto.";
+    }
+    if (areaId === "protection") {
+      if (profile.childrenCount || profile.spouseName) return "Qui si difende il nucleo familiare e la continuita del piano.";
+      return "Qui si trasferiscono i rischi vita e non autosufficienza.";
+    }
+    return "Area da configurare in funzione del caso cliente.";
+  }
+
+  function buildOfferAreas(profile, goals, recommendations, selectedCoverageIds, persona, rawOfferSelections) {
+    return (DB.offerAreaCatalog || []).map(function (areaMeta) {
+      var products = areaMeta.products && areaMeta.products.length
+        ? areaMeta.products.map(function (productMeta) {
+            var productSelection = rawOfferSelections && rawOfferSelections[areaMeta.id] && rawOfferSelections[areaMeta.id].products
+              ? rawOfferSelections[areaMeta.id].products[productMeta.id]
+              : null;
+            return buildOfferProduct(productMeta, profile, goals, recommendations, selectedCoverageIds, productSelection);
+          })
+        : [
+            buildOfferProduct({
+              id: areaMeta.id + "_core",
+              name: areaMeta.productGroupName || areaMeta.name,
+              linkedProductIds: areaMeta.linkedProductIds || [],
+              coverages: areaMeta.coverages || []
+            }, profile, goals, recommendations, selectedCoverageIds,
+            rawOfferSelections && rawOfferSelections[areaMeta.id] && rawOfferSelections[areaMeta.id].products
+              ? rawOfferSelections[areaMeta.id].products[areaMeta.id + "_core"]
+              : null)
+          ];
+
+      var fitScore = roundStep(Math.max(
+        offerAreaMatchScore(areaMeta, profile, goals, recommendations),
+        average(products.map(function (product) { return product.fitScore; }))
+      ), 1);
+      var coverageCount = sum(products.map(function (product) { return product.coverages.length; }));
+      var selectedCount = sum(products.map(function (product) {
+        return product.coverages.filter(function (coverage) { return coverage.selected; }).length;
+      }));
+
+      return {
+        id: areaMeta.id,
+        name: areaMeta.name,
+        accent: areaMeta.accent,
+        accentSoft: areaMeta.accentSoft,
+        visualLabel: areaMeta.visualLabel,
+        mainVisual: areaMeta.mainVisual,
+        productGroupName: areaMeta.productGroupName || "",
+        summary: areaMeta.summary,
+        fitScore: clamp(Math.round(fitScore), 18, 96),
+        status: fitScore >= 58 ? "Suggerita" : "Da valutare",
+        reason: areaReason(areaMeta.id, profile, goals, persona),
+        productCount: products.length,
+        coverageCount: coverageCount,
+        selectedCoverageCount: selectedCount,
+        products: products
+      };
+    });
+  }
+
+  function serializeOfferSelections(offerAreas) {
+    var payload = {};
+    (offerAreas || []).forEach(function (area) {
+      payload[area.id] = { products: {} };
+      (area.products || []).forEach(function (product) {
+        payload[area.id].products[product.id] = {
+          selected: !!product.selected,
+          solutionId: product.selectedSolutionId || product.suggestedSolutionId,
+          coverages: {}
+        };
+        (product.coverages || []).forEach(function (coverage) {
+          payload[area.id].products[product.id].coverages[coverage.id] = {
+            selected: !!coverage.selected,
+            solutionId: coverage.selectedSolutionId || coverage.suggestedSolutionId
+          };
+        });
+      });
+    });
+    return payload;
+  }
+
+  function deriveOfferSelectionInputs(offerAreas, recommendations) {
+    var nextSelectedIds = [];
+    var nextPremiumOverrides = {};
+
+    (offerAreas || []).forEach(function (area) {
+      (area.products || []).forEach(function (product) {
+        (product.coverages || []).forEach(function (coverage) {
+          if (!coverage.selected) return;
+          (coverage.linkedProductIds || []).forEach(function (productId) {
+            if (!recommendations.some(function (recommendation) { return recommendation.id === productId; })) return;
+            if (nextSelectedIds.indexOf(productId) < 0) nextSelectedIds.push(productId);
+            nextPremiumOverrides[productId] = roundStep((nextPremiumOverrides[productId] || 0) + safeNumber(coverage.selectedMonthlyPremium, 0), 1);
+          });
+        });
+      });
+    });
+
+    return {
+      selectedCoverageIds: nextSelectedIds,
+      premiumOverrides: nextPremiumOverrides
+    };
   }
 
   function buildSnapshot(profile, recommendations, selectedCoverageIds) {
@@ -1534,6 +2243,320 @@
       return { upfront: roundStep(needs.mortgageBalance * 0.8, 10000), monthly: 0, durationMonths: 0 };
     }
     return { upfront: 0, monthly: 0, durationMonths: 0 };
+  }
+
+  function solutionMultiplier(solutionId) {
+    var tier = solutionTierById(solutionId);
+    return tier ? safeNumber(tier.multiplier, 1) : 1;
+  }
+
+  function solutionLimitValue(solution) {
+    var matches = extractMonetaryMatches(solution && (solution.limitLabel || solution.shortLabel || ""));
+    return matches.length ? Math.max.apply(null, matches) : 0;
+  }
+
+  function collectSelectedSupportEntries(offerAreas, recommendations, selectedCoverageIds) {
+    var entries = [];
+
+    (offerAreas || []).forEach(function (area) {
+      (area.products || []).forEach(function (product) {
+        var productSolutionId = product.selectedSolutionId || product.suggestedSolutionId || "";
+        var productSolution = (product.solutions || []).find(function (solution) {
+          return solution.id === productSolutionId;
+        }) || null;
+
+        if ((product.coverages || []).length) {
+          (product.coverages || []).forEach(function (coverage) {
+            if (!coverage.selected) return;
+            var coverageSolutionId = coverage.selectedSolutionId || productSolutionId || coverage.suggestedSolutionId || "";
+            var coverageSolution = (coverage.solutions || []).find(function (solution) {
+              return solution.id === coverageSolutionId;
+            }) || productSolution;
+            var linkedProductIds = (coverage.linkedProductIds || []).length
+              ? coverage.linkedProductIds
+              : (product.linkedProductIds || []);
+
+            linkedProductIds.forEach(function (linkedProductId) {
+              var recommendation = recommendationById(recommendations, linkedProductId);
+              if (!recommendation) return;
+              entries.push({
+                sourceId: coverage.id,
+                sourceName: coverage.name || recommendation.name,
+                productId: recommendation.id,
+                productName: recommendation.name,
+                displayName: coverage.name || recommendation.name,
+                solutionId: coverageSolutionId,
+                solutionName: coverageSolution ? coverageSolution.name : "",
+                solutionMultiplier: solutionMultiplier(coverageSolutionId),
+                limitValue: solutionLimitValue(coverageSolution),
+                scenarioIds: recommendation.scenarioIds || [],
+                monthlyPremium: safeNumber(coverage.selectedMonthlyPremium, recommendation.monthlyPremium)
+              });
+            });
+          });
+          return;
+        }
+
+        if (!product.selected) return;
+        (product.linkedProductIds || []).forEach(function (linkedProductId) {
+          var recommendation = recommendationById(recommendations, linkedProductId);
+          if (!recommendation) return;
+          entries.push({
+            sourceId: product.id,
+            sourceName: product.name || recommendation.name,
+            productId: recommendation.id,
+            productName: recommendation.name,
+            displayName: product.name || recommendation.name,
+            solutionId: productSolutionId,
+            solutionName: productSolution ? productSolution.name : "",
+            solutionMultiplier: solutionMultiplier(productSolutionId),
+            limitValue: solutionLimitValue(productSolution),
+            scenarioIds: recommendation.scenarioIds || [],
+            monthlyPremium: safeNumber(product.selectedMonthlyPremium, recommendation.monthlyPremium)
+          });
+        });
+      });
+    });
+
+    if (entries.length) return entries;
+
+    return (recommendations || [])
+      .filter(function (recommendation) {
+        return (selectedCoverageIds || []).indexOf(recommendation.id) >= 0;
+      })
+      .map(function (recommendation) {
+        return {
+          sourceId: recommendation.id,
+          sourceName: recommendation.name,
+          productId: recommendation.id,
+          productName: recommendation.name,
+          displayName: recommendation.name,
+          solutionId: "",
+          solutionName: "",
+          solutionMultiplier: 1,
+          limitValue: 0,
+          scenarioIds: recommendation.scenarioIds || [],
+          monthlyPremium: recommendation.monthlyPremium
+        };
+      });
+  }
+
+  function scaleLegacySupport(productId, scenarioId, needs, factor, limitValue) {
+    var base = productSupport(productId, scenarioId, needs);
+    var scaledUpfront = base.upfront * factor;
+    if (limitValue > 0 && scaledUpfront > 0) scaledUpfront = Math.min(scaledUpfront, limitValue);
+    return {
+      upfront: scaledUpfront,
+      monthly: base.monthly * factor,
+      durationMonths: base.durationMonths
+    };
+  }
+
+  function supportFromCoverageEntry(entry, scenarioId, profile, needs) {
+    var factor = safeNumber(entry && entry.solutionMultiplier, 1);
+    var limitValue = safeNumber(entry && entry.limitValue, 0);
+    var dailyAllowance = limitValue > 0 ? limitValue * 20 : 0;
+
+    function cappedUpfront(amount) {
+      if (!(amount > 0)) return 0;
+      return limitValue > 0 ? Math.min(amount, limitValue) : amount;
+    }
+
+    if (!entry) return { upfront: 0, monthly: 0, durationMonths: 0 };
+
+    if (entry.sourceId === "protection_tcm" && scenarioId === "morte") {
+      return {
+        upfront: Math.min(needs.deathCapital, roundStep(needs.deathCapital * factor, 5000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "protection_ltc" && scenarioId === "ltc") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.ltcCapital * 0.12 * factor, 5000)),
+        monthly: Math.min(needs.ltcMonthly, roundStep(needs.ltcMonthly * factor, 50)),
+        durationMonths: 60
+      };
+    }
+    if (entry.sourceId === "health_disability_illness" && scenarioId === "ip") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.invalidityCapital * 0.18 * factor, 5000)),
+        monthly: Math.min(roundStep(profile.netMonthlyIncome * 0.55, 50), roundStep(needs.incomeProtectionMonthly * factor, 50)),
+        durationMonths: 120
+      };
+    }
+    if (entry.sourceId === "health_disability_accident" && scenarioId === "ip") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.invalidityCapital * 0.22 * factor, 5000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "health_medical" && scenarioId === "ip") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.healthCapital * 0.22 * factor, 1000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "health_medical" && scenarioId === "ltc") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.healthCapital * 0.2 * factor, 1000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "health_severe_events" && (scenarioId === "ip" || scenarioId === "ltc")) {
+      return {
+        upfront: cappedUpfront(roundStep(needs.healthCapital * (scenarioId === "ip" ? 0.35 : 0.45) * factor, 1000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "health_daily_allowance" && scenarioId === "ip") {
+      return {
+        upfront: 0,
+        monthly: Math.min(roundStep(needs.incomeProtectionMonthly * 0.35 * factor, 50), dailyAllowance || roundStep(needs.incomeProtectionMonthly * 0.35 * factor, 50)),
+        durationMonths: 12
+      };
+    }
+    if (entry.sourceId === "health_daily_allowance" && scenarioId === "ltc") {
+      return {
+        upfront: 0,
+        monthly: Math.min(roundStep(needs.ltcMonthly * 0.4 * factor, 50), dailyAllowance || roundStep(needs.ltcMonthly * 0.4 * factor, 50)),
+        durationMonths: 24
+      };
+    }
+    if (entry.sourceId === "home_mortgage_guard" && (scenarioId === "morte" || scenarioId === "ip")) {
+      return {
+        upfront: cappedUpfront(roundStep(needs.mortgageBalance * 0.8 * factor, 5000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "home_rc_family" && scenarioId === "rc") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.rcClaimLoss * factor, 1000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "home_rc_house" && scenarioId === "rc") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.rcClaimLoss * 0.22 * factor, 1000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "home_legal" && scenarioId === "rc") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.rcClaimLoss * 0.08 * factor, 1000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "home_pets" && scenarioId === "rc") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.rcClaimLoss * 0.06 * factor, 1000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "home_building" && scenarioId === "casa") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.homeDamageLoss * 0.48 * factor, 1000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "home_contents" && scenarioId === "casa") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.homeDamageLoss * 0.2 * factor, 1000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "home_theft" && scenarioId === "casa") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.homeDamageLoss * 0.12 * factor, 1000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "home_catastrophe" && scenarioId === "casa") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.homeDamageLoss * 0.18 * factor, 1000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "home_rc_house" && scenarioId === "casa") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.homeDamageLoss * 0.08 * factor, 1000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+    if (entry.sourceId === "home_legal" && scenarioId === "casa") {
+      return {
+        upfront: cappedUpfront(roundStep(needs.homeDamageLoss * 0.05 * factor, 1000)),
+        monthly: 0,
+        durationMonths: 0
+      };
+    }
+
+    if (entry.sourceId && entry.sourceId !== entry.productId) {
+      return { upfront: 0, monthly: 0, durationMonths: 0 };
+    }
+
+    return scaleLegacySupport(entry.productId, scenarioId, needs, factor, limitValue);
+  }
+
+  function supportEntriesForScenario(selectedSupportEntries, scenarioId, profile, needs) {
+    var impact = scenarioImpact(scenarioId, profile, needs);
+    var rawEntries = (selectedSupportEntries || [])
+      .filter(function (entry) {
+        return (entry.scenarioIds || []).indexOf(scenarioId) >= 0;
+      })
+      .map(function (entry) {
+        var support = supportFromCoverageEntry(entry, scenarioId, profile, needs);
+        return {
+          sourceId: entry.sourceId,
+          productId: entry.productId,
+          productName: entry.displayName || entry.sourceName || entry.productName,
+          baseProductName: entry.productName,
+          solutionId: entry.solutionId,
+          solutionName: entry.solutionName,
+          scenarioId: scenarioId,
+          upfront: support.upfront,
+          monthly: support.monthly,
+          durationMonths: support.durationMonths || impact.durationMonths || 0
+        };
+      })
+      .filter(function (entry) {
+        return entry.upfront > 0 || entry.monthly > 0;
+      });
+
+    if (!rawEntries.length) return [];
+
+    var upfrontTotal = sum(rawEntries.map(function (entry) { return entry.upfront; }));
+    var monthlyTotal = sum(rawEntries.map(function (entry) { return entry.monthly; }));
+    var upfrontRatio = upfrontTotal > 0 ? Math.min(1, safeNumber(impact.upfrontLoss, 0) / upfrontTotal) : 1;
+    var monthlyRatio = monthlyTotal > 0 ? Math.min(1, safeNumber(impact.monthlyLoss, 0) / monthlyTotal) : 1;
+
+    return rawEntries
+      .map(function (entry) {
+        var upfront = entry.upfront * upfrontRatio;
+        var monthly = entry.monthly * monthlyRatio;
+        return Object.assign({}, entry, {
+          upfront: upfront,
+          monthly: monthly,
+          totalSupportValue: upfront + monthly * (entry.durationMonths || 0)
+        });
+      })
+      .filter(function (entry) {
+        return entry.upfront > 0 || entry.monthly > 0;
+      });
   }
 
   function scenarioLikelihoodFactor(scenarioId, profile, goalId) {
@@ -1712,14 +2735,55 @@
     };
   }
 
-  function aggregateSupport(selectedProducts, scenarioId, needs) {
-    return selectedProducts.reduce(function (accumulator, product) {
-      var support = productSupport(product.id, scenarioId, needs);
-      accumulator.upfront += support.upfront;
-      accumulator.monthly += support.monthly;
-      accumulator.durationMonths = Math.max(accumulator.durationMonths, support.durationMonths);
+  function aggregateSupport(selectedSupportEntries, scenarioId, profile, needs) {
+    return supportEntriesForScenario(selectedSupportEntries, scenarioId, profile, needs).reduce(function (accumulator, entry) {
+      accumulator.upfront += entry.upfront;
+      accumulator.monthly += entry.monthly;
+      accumulator.durationMonths = Math.max(accumulator.durationMonths, entry.durationMonths);
       return accumulator;
     }, { upfront: 0, monthly: 0, durationMonths: 0 });
+  }
+
+  function scenarioImpactBreakdown(scenarioIds, profile, needs) {
+    return (scenarioIds || []).map(function (scenarioId) {
+      var meta = scenarioMetaById(scenarioId);
+      var impact = scenarioImpact(scenarioId, profile, needs);
+      return {
+        id: scenarioId,
+        label: meta ? meta.name : scenarioId,
+        shortLabel: meta ? meta.shortLabel : scenarioId,
+        upfrontLoss: impact.upfrontLoss,
+        monthlyLoss: impact.monthlyLoss,
+        durationMonths: impact.durationMonths,
+        totalLossValue: impact.upfrontLoss + impact.monthlyLoss * impact.durationMonths
+      };
+    });
+  }
+
+  function supportBreakdownForScenarioIds(selectedSupportEntries, scenarioIds, profile, needs) {
+    var entries = [];
+
+    (scenarioIds || []).forEach(function (scenarioId) {
+      var meta = scenarioMetaById(scenarioId);
+      supportEntriesForScenario(selectedSupportEntries, scenarioId, profile, needs).forEach(function (entry) {
+        entries.push({
+          sourceId: entry.sourceId,
+          productId: entry.productId,
+          productName: entry.productName,
+          baseProductName: entry.baseProductName,
+          solutionId: entry.solutionId,
+          solutionName: entry.solutionName,
+          scenarioId: scenarioId,
+          scenarioLabel: meta ? meta.name : scenarioId,
+          upfront: entry.upfront,
+          monthly: entry.monthly,
+          durationMonths: entry.durationMonths,
+          totalSupportValue: entry.totalSupportValue
+        });
+      });
+    });
+
+    return entries;
   }
 
   function scenarioMetaById(scenarioId) {
@@ -1740,9 +2804,9 @@
     }, { upfrontLoss: 0, monthlyLoss: 0, durationMonths: 0 });
   }
 
-  function aggregateSupportForScenarioIds(selectedProducts, scenarioIds, needs) {
+  function aggregateSupportForScenarioIds(selectedSupportEntries, scenarioIds, profile, needs) {
     return scenarioIds.reduce(function (accumulator, scenarioId) {
-      var support = aggregateSupport(selectedProducts, scenarioId, needs);
+      var support = aggregateSupport(selectedSupportEntries, scenarioId, profile, needs);
       accumulator.upfront += support.upfront;
       accumulator.monthly += support.monthly;
       accumulator.durationMonths = Math.max(accumulator.durationMonths, support.durationMonths);
@@ -1917,10 +2981,12 @@
     var needs = context.needs;
     var focusGoal = context.focusGoal;
     var horizonYears = context.horizonYears;
-    var selectedProducts = context.selectedProducts;
+    var selectedSupportEntries = context.selectedSupportEntries;
     var premiumDrag = context.premiumDrag;
     var rawImpact = combineScenarioImpact(scenarioIds, profile, needs);
-    var withSupport = aggregateSupportForScenarioIds(selectedProducts, scenarioIds, needs);
+    var withSupport = aggregateSupportForScenarioIds(selectedSupportEntries, scenarioIds, profile, needs);
+    var impactBreakdown = scenarioImpactBreakdown(scenarioIds, profile, needs);
+    var supportBreakdown = supportBreakdownForScenarioIds(selectedSupportEntries, scenarioIds, profile, needs);
     var noCoverageImpact = {
       upfrontLoss: rawImpact.upfrontLoss,
       monthlyLoss: rawImpact.monthlyLoss,
@@ -1932,6 +2998,23 @@
       durationMonths: rawImpact.durationMonths
     };
     var eventYear = scenarioYearForIds(scenarioIds);
+    var baseProjection = runProjection({
+      profile: profile,
+      goals: [focusGoal],
+      scenarioId: scenarioIds[0],
+      eventYear: eventYear,
+      horizonYears: horizonYears,
+      initialCapital: profile.totalAssets,
+      monthlySavings: profile.monthlySavings,
+      premiumDrag: 0,
+      netImpact: {
+        upfrontLoss: 0,
+        monthlyLoss: 0,
+        durationMonths: 0
+      },
+      seedLabel: "base|" + focusGoal.id + "|" + meta.id,
+      consumeCapitalOnGoal: false
+    });
     var noProjection = runProjection({
       profile: profile,
       goals: [focusGoal],
@@ -1967,6 +3050,13 @@
     var yesRetention = profile.totalAssets ? Math.round((Math.max(0, profile.totalAssets - withCoverageImpact.upfrontLoss) / profile.totalAssets) * 100) : 0;
     var noAchievement = Math.round(noProjection.weightedAchievement * 100);
     var yesAchievement = Math.round(yesProjection.weightedAchievement * 100);
+    var baseAchievement = Math.round(baseProjection.weightedAchievement * 100);
+    var baseGoalImpact = buildGoalImpact(
+      focusGoal,
+      baseProjection,
+      Math.max(0, profile.monthlySavings),
+      horizonYears
+    );
     var noGoalImpact = buildGoalImpact(
       focusGoal,
       noProjection,
@@ -2005,11 +3095,33 @@
       description: meta.description || "",
       scenarioIds: scenarioIds.slice(),
       eventLabels: eventLabels,
+      eventYear: eventYear,
+      eventMonth: eventYear * 12,
       amountLabel: noGoalImpact.goalGap
         ? "Gap target: € " + formatCurrency(noGoalImpact.goalGap)
         : achievementDelta
         ? "+" + achievementDelta + " pt obiettivo"
         : "Target protetto",
+      impactSummary: {
+        upfrontLoss: rawImpact.upfrontLoss,
+        monthlyLoss: rawImpact.monthlyLoss,
+        durationMonths: rawImpact.durationMonths,
+        totalLossValue: totalLossValue || rawImpact.upfrontLoss
+      },
+      supportSummary: {
+        upfront: withSupport.upfront,
+        monthly: withSupport.monthly,
+        durationMonths: withSupport.durationMonths,
+        totalSupportValue: withSupport.upfront + withSupport.monthly * withSupport.durationMonths
+      },
+      netImpact: {
+        upfrontLoss: withCoverageImpact.upfrontLoss,
+        monthlyLoss: withCoverageImpact.monthlyLoss,
+        durationMonths: withCoverageImpact.durationMonths,
+        totalLossValue: withCoverageImpact.upfrontLoss + withCoverageImpact.monthlyLoss * withCoverageImpact.durationMonths
+      },
+      impactBreakdown: impactBreakdown,
+      supportBreakdown: supportBreakdown,
       alertTitle: narrative.title,
       alertBody: narrative.body,
       noCoverage: {
@@ -2021,6 +3133,13 @@
         sustainability: noSustainability,
         protection: noCoverageProtected,
         path: noProjection.averagePath
+      },
+      base: {
+        goalAvailableCapital: baseGoalImpact.availableCapital,
+        goalGap: baseGoalImpact.goalGap,
+        delayYears: baseGoalImpact.delayYears,
+        achievement: baseAchievement,
+        path: baseProjection.averagePath
       },
       withCoverage: {
         postEventCapital: Math.max(0, profile.totalAssets - withCoverageImpact.upfrontLoss),
@@ -2050,6 +3169,7 @@
     var selectedProducts = plan.recommendations.filter(function (recommendation) {
       return plan.selectedCoverageIds.indexOf(recommendation.id) >= 0;
     });
+    var selectedSupportEntries = collectSelectedSupportEntries(plan.offerAreas, plan.recommendations, plan.selectedCoverageIds);
     var premiumDrag = sum(selectedProducts.map(function (product) { return product.monthlyPremium; }));
     var scenarioSummaries = {};
     var bundleSummaries = {};
@@ -2065,6 +3185,7 @@
       focusGoal: focusGoal,
       horizonYears: horizonYears,
       selectedProducts: selectedProducts,
+      selectedSupportEntries: selectedSupportEntries,
       premiumDrag: premiumDrag
     };
 
@@ -2102,6 +3223,9 @@
 
   function buildPlan(profileInput, options) {
     var profile = finalizeProfile(profileInput);
+    var manualPremiumOverrides = Object.assign({}, options && options.premiumOverrides ? options.premiumOverrides : {});
+    var explicitSelectedCoverageIds = options && options.selectedCoverageIds ? options.selectedCoverageIds.slice() : [];
+    var forcedProductIds = uniqueValues(forcedOfferProductIds(options && options.offerSelections ? options.offerSelections : null).concat(explicitSelectedCoverageIds));
     var goalSuggestions = buildGoals(profile);
     var profileGoalSelection = dedupeGoals(profile.goals || [])
       .filter(function (goal) { return goal.enabled !== false; })
@@ -2122,12 +3246,35 @@
     });
     var segment = detectSegment(profile, goals);
     var needs = computeNeeds(profile, goals);
-    var recommendations = recommendProducts(profile, goals, needs, segment);
-    var defaultSelectedCoverageIds = recommendations
+    var persona = detectPersona(profile);
+    var seedRecommendations = recommendProducts(profile, goals, needs, segment, manualPremiumOverrides, forcedProductIds);
+    var defaultSelectedCoverageIds = seedRecommendations
       .filter(function (recommendation) { return recommendation.selectedByDefault; })
       .map(function (recommendation) { return recommendation.id; });
     var hasExplicitSelection = !!(options && Object.prototype.hasOwnProperty.call(options, "selectedCoverageIds"));
-    var selectedCoverageIds = (hasExplicitSelection ? options.selectedCoverageIds : defaultSelectedCoverageIds).filter(function (id) {
+    var seedSelectedCoverageIds = (hasExplicitSelection ? options.selectedCoverageIds : defaultSelectedCoverageIds).filter(function (id) {
+      return seedRecommendations.some(function (recommendation) { return recommendation.id === id; });
+    });
+    var previewOfferAreas = buildOfferAreas(
+      profile,
+      goals,
+      seedRecommendations,
+      seedSelectedCoverageIds,
+      persona.current,
+      options && options.offerSelections ? options.offerSelections : null
+    );
+    var offerSelections = serializeOfferSelections(previewOfferAreas);
+    var derivedSelectionInputs = deriveOfferSelectionInputs(previewOfferAreas, seedRecommendations);
+    var premiumOverrides = Object.assign({}, manualPremiumOverrides, derivedSelectionInputs.premiumOverrides);
+    var recommendations = recommendProducts(
+      profile,
+      goals,
+      needs,
+      segment,
+      premiumOverrides,
+      forcedProductIds.concat(derivedSelectionInputs.selectedCoverageIds)
+    );
+    var selectedCoverageIds = uniqueValues((hasExplicitSelection ? seedSelectedCoverageIds : []).concat(derivedSelectionInputs.selectedCoverageIds)).filter(function (id) {
       return recommendations.some(function (recommendation) { return recommendation.id === id; });
     });
 
@@ -2135,6 +3282,13 @@
       selectedCoverageIds = [recommendations[0].id];
     }
 
+    var offerAreas = buildOfferAreas(profile, goals, recommendations, selectedCoverageIds, persona.current, offerSelections);
+    offerSelections = serializeOfferSelections(offerAreas);
+    derivedSelectionInputs = deriveOfferSelectionInputs(offerAreas, recommendations);
+    selectedCoverageIds = uniqueValues((hasExplicitSelection ? seedSelectedCoverageIds : []).concat(derivedSelectionInputs.selectedCoverageIds)).filter(function (id) {
+      return recommendations.some(function (recommendation) { return recommendation.id === id; });
+    });
+    premiumOverrides = Object.assign({}, manualPremiumOverrides, derivedSelectionInputs.premiumOverrides);
     var snapshot = buildSnapshot(profile, recommendations, selectedCoverageIds);
 
     return {
@@ -2143,10 +3297,15 @@
       goalSuggestions: goalSuggestions,
       selectedGoalIds: selectedGoalIds,
       segment: segment,
+      persona: persona.current,
+      personaDistribution: persona.distribution,
       needs: needs,
       recommendations: recommendations,
       selectedCoverageIds: selectedCoverageIds,
-      snapshot: snapshot
+      premiumOverrides: premiumOverrides,
+      offerSelections: offerSelections,
+      snapshot: snapshot,
+      offerAreas: offerAreas
     };
   }
 
@@ -2212,10 +3371,44 @@
     }
   }
 
+  function saveProposal(proposal) {
+    try {
+      if (typeof localStorage === "undefined") return null;
+      var storeKey = DB.meta.proposalStoreKey;
+      var current = JSON.parse(localStorage.getItem(storeKey) || "[]");
+      var payload = {
+        id: "proposal_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 7),
+        savedAt: new Date().toISOString(),
+        profile: finalizeProfile((proposal && proposal.profile) || {}, { applyDefaults: false }),
+        selectedGoalIds: ((proposal && proposal.selectedGoalIds) || []).slice(0, 8),
+        selectedCoverageIds: ((proposal && proposal.selectedCoverageIds) || []).slice(0, 12),
+        premiumOverrides: Object.assign({}, (proposal && proposal.premiumOverrides) || {}),
+        offerSelections: Object.assign({}, (proposal && proposal.offerSelections) || {}),
+        snapshot: Object.assign({}, (proposal && proposal.snapshot) || {}),
+        personaId: proposal && proposal.persona ? proposal.persona.id : "",
+        title: proposal && proposal.title ? proposal.title : ""
+      };
+      current.unshift(payload);
+      localStorage.setItem(storeKey, JSON.stringify(current.slice(0, 25)));
+      return payload;
+    } catch (error) {
+      return null;
+    }
+  }
+
   function listStoredProfiles() {
     try {
       if (typeof localStorage === "undefined") return [];
       return JSON.parse(localStorage.getItem(DB.meta.storeKey) || "[]");
+    } catch (error) {
+      return [];
+    }
+  }
+
+  function listStoredProposals() {
+    try {
+      if (typeof localStorage === "undefined") return [];
+      return JSON.parse(localStorage.getItem(DB.meta.proposalStoreKey) || "[]");
     } catch (error) {
       return [];
     }
@@ -2230,6 +3423,8 @@
     buildAdvisorReply: buildAdvisorReply,
     saveProfile: saveProfile,
     listStoredProfiles: listStoredProfiles,
+    saveProposal: saveProposal,
+    listStoredProposals: listStoredProposals,
     formatCurrency: formatCurrency
   };
 })(typeof window !== "undefined" ? window : globalThis);

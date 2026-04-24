@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Allianz · Campagne Commerciali 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue:     #003781;
+  --blue-mid: #0057b8;
+  --orange:   #f5821f;
+  --yellow:   #ffd100;
+  --bg:       #0d1117;
+  --surface:  #13191f;
+  --white:    #ffffff;
+  --text:     #e8edf5;
+  --muted:    #5a6a82;
+  --border:   rgba(255,255,255,0.07);
+
+  /* neon LOB colours */
+  --neon-motor:    #38beff;
+  --neon-salute:   #00f5a0;
+  --neon-casa:     #ff7c3a;
+  --neon-impresa:  #b57aff;
+  --neon-vita:     #ff5baa;
+  --neon-clienti:  #00e5ff;
+
+  /* card gradients */
+  --g-motor:   linear-gradient(160deg, #071b40 0%, #0d3a8a 50%, #1255cc 100%);
+  --g-salute:  linear-gradient(160deg, #041f14 0%, #065c38 50%, #089e5e 100%);
+  --g-casa:    linear-gradient(160deg, #2a0d02 0%, #7a2a06 50%, #d44a0a 100%);
+  --g-impresa: linear-gradient(160deg, #100630 0%, #3b1480 50%, #7130ee 100%);
+  --g-vita:    linear-gradient(160deg, #25031a 0%, #7a0d50 50%, #cc1580 100%);
+  --g-clienti: linear-gradient(160deg, #021e28 0%, #065a72 50%, #0898b8 100%);
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+.header {
+  background: rgba(0,30,70,0.95);
+  backdrop-filter: blur(12px);
+  height: 54px;
+  display: flex;
+  align-items: center;
+  padding: 0 24px;
+  gap: 14px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.header-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: .1em;
+}
+.header-div {
+  width: 1px; height: 16px;
+  background: rgba(255,255,255,.18);
+}
+.header-meta {
+  font-size: 11px;
+  color: rgba(255,255,255,.4);
+  letter-spacing: .03em;
+}
+.header-badge {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600;
+  color: rgba(255,255,255,.6);
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.1);
+  padding: 4px 12px;
+  border-radius: 100px;
+}
+.live-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+  animation: blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.25} }
+
+/* ── TABS ── */
+.tabs-wrap {
+  background: rgba(13,17,23,0.98);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  position: sticky;
+  top: 54px;
+  z-index: 90;
+}
+.tabs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  flex-shrink: 0;
+  padding: 15px 18px 13px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all .2s;
+  white-space: nowrap;
+  letter-spacing: .01em;
+}
+.tab:hover { color: rgba(255,255,255,.7); }
+
+.tab.active-motor   { color: var(--neon-motor);   border-bottom-color: var(--neon-motor); }
+.tab.active-salute  { color: var(--neon-salute);  border-bottom-color: var(--neon-salute); }
+.tab.active-casa    { color: var(--neon-casa);    border-bottom-color: var(--neon-casa); }
+.tab.active-impresa { color: var(--neon-impresa); border-bottom-color: var(--neon-impresa); }
+.tab.active-vita    { color: var(--neon-vita);    border-bottom-color: var(--neon-vita); }
+.tab.active-clienti { color: var(--neon-clienti); border-bottom-color: var(--neon-clienti); }
+
+.tab-count {
+  display: inline-block;
+  font-size: 9px; font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 100px;
+  margin-left: 5px;
+  background: rgba(255,255,255,.08);
+  color: rgba(255,255,255,.4);
+  transition: all .2s;
+}
+.tab[class*="active"] .tab-count {
+  background: rgba(255,255,255,.15);
+  color: rgba(255,255,255,.8);
+}
+
+/* ── MAIN ── */
+.main {
+  padding: 28px 20px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.panel { display: none; width: 100%; max-width: 560px; }
+.panel.active { display: block; }
+
+/* ── BIG CARD ── */
+.lob-card {
+  border-radius: 24px;
+  padding: 28px 26px 26px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.09);
+  animation: cardIn .45s cubic-bezier(.22,.68,0,1.15) both;
+}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(18px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}
+
+.panel-motor   .lob-card { background: var(--g-motor);   }
+.panel-salute  .lob-card { background: var(--g-salute);  }
+.panel-casa    .lob-card { background: var(--g-casa);    }
+.panel-impresa .lob-card { background: var(--g-impresa); }
+.panel-vita    .lob-card { background: var(--g-vita);    }
+.panel-clienti .lob-card { background: var(--g-clienti); }
+
+/* ambient glow behind card */
+.panel-motor   .lob-card::before { background: radial-gradient(ellipse 70% 50% at 80% 20%, rgba(56,190,255,.18) 0%, transparent 70%); }
+.panel-salute  .lob-card::before { background: radial-gradient(ellipse 70% 50% at 80% 20%, rgba(0,245,160,.15) 0%, transparent 70%); }
+.panel-casa    .lob-card::before { background: radial-gradient(ellipse 70% 50% at 80% 20%, rgba(255,124,58,.18) 0%, transparent 70%); }
+.panel-impresa .lob-card::before { background: radial-gradient(ellipse 70% 50% at 80% 20%, rgba(181,122,255,.18) 0%, transparent 70%); }
+.panel-vita    .lob-card::before { background: radial-gradient(ellipse 70% 50% at 80% 20%, rgba(255,91,170,.18) 0%, transparent 70%); }
+.panel-clienti .lob-card::before { background: radial-gradient(ellipse 70% 50% at 80% 20%, rgba(0,229,255,.15) 0%, transparent 70%); }
+
+.lob-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* big ghost LOB name */
+.card-ghost {
+  position: absolute;
+  bottom: -30px;
+  right: -10px;
+  font-size: 160px;
+  font-weight: 800;
+  line-height: 1;
+  color: rgba(255,255,255,.06);
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: -.04em;
+}
+
+/* card top */
+.card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 22px;
+  position: relative;
+  z-index: 1;
+}
+
+.card-title-block {}
+
+.card-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.4);
+  margin-bottom: 5px;
+}
+
+.card-lob-title {
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -.01em;
+}
+
+/* neon glow on title */
+.panel-motor   .card-lob-title { color: var(--neon-motor);   text-shadow: 0 0 20px rgba(56,190,255,.7),  0 0 50px rgba(56,190,255,.3); }
+.panel-salute  .card-lob-title { color: var(--neon-salute);  text-shadow: 0 0 20px rgba(0,245,160,.7),   0 0 50px rgba(0,245,160,.3); }
+.panel-casa    .card-lob-title { color: var(--neon-casa);    text-shadow: 0 0 20px rgba(255,124,58,.7),  0 0 50px rgba(255,124,58,.3); }
+.panel-impresa .card-lob-title { color: var(--neon-impresa); text-shadow: 0 0 20px rgba(181,122,255,.7), 0 0 50px rgba(181,122,255,.3); }
+.panel-vita    .card-lob-title { color: var(--neon-vita);    text-shadow: 0 0 20px rgba(255,91,170,.7),  0 0 50px rgba(255,91,170,.3); }
+.panel-clienti .card-lob-title { color: var(--neon-clienti); text-shadow: 0 0 20px rgba(0,229,255,.7),   0 0 50px rgba(0,229,255,.3); }
+
+.btn-dl {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.15);
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  background: rgba(255,255,255,.1);
+  color: #fff;
+  backdrop-filter: blur(8px);
+  transition: background .2s, transform .15s;
+  white-space: nowrap;
+}
+.btn-dl:hover { background: rgba(255,255,255,.18); transform: translateY(-1px); }
+.btn-dl:active { transform: translateY(0); }
+
+/* divider */
+.card-divider {
+  height: 1px;
+  background: rgba(255,255,255,.1);
+  margin-bottom: 18px;
+  position: relative;
+  z-index: 1;
+}
+
+/* initiative count badge */
+.card-count-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  margin-bottom: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+/* items list */
+.items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  transition: background .2s, transform .2s;
+  animation: itemIn .4s cubic-bezier(.22,.68,0,1.15) both;
+}
+
+.item:hover {
+  background: rgba(255,255,255,.1);
+  transform: translateX(3px);
+}
+
+/* staggered entry */
+.item:nth-child(1)  { animation-delay: .05s; }
+.item:nth-child(2)  { animation-delay: .10s; }
+.item:nth-child(3)  { animation-delay: .15s; }
+.item:nth-child(4)  { animation-delay: .20s; }
+.item:nth-child(5)  { animation-delay: .25s; }
+.item:nth-child(6)  { animation-delay: .30s; }
+.item:nth-child(7)  { animation-delay: .35s; }
+
+@keyframes itemIn {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.item-num {
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+  color: rgba(255,255,255,.25);
+}
+
+.item-text {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255,255,255,.88);
+  line-height: 1.35;
+}
+
+/* decorative SVG shape per card */
+.card-deco {
+  position: absolute;
+  pointer-events: none;
+  z-index: 0;
+}
+.panel-motor   .card-deco { top: -30px; right: -30px; opacity: .07; }
+.panel-salute  .card-deco { top: -20px; right: -20px; opacity: .07; }
+.panel-casa    .card-deco { top: -30px; right: -30px; opacity: .07; }
+.panel-impresa .card-deco { top: -20px; right: -20px; opacity: .07; }
+.panel-vita    .card-deco { top: -30px; right: -30px; opacity: .07; }
+.panel-clienti .card-deco { top: -20px; right: -20px; opacity: .07; }
+
+/* ── DOWNLOAD OVERLAY ── */
+.dl-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.75);
+  backdrop-filter: blur(10px);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.dl-overlay.open { display: flex; }
+
+.dl-box {
+  background: #1a2233;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 22px;
+  padding: 34px 28px 26px;
+  max-width: 320px; width: 90%;
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0,0,0,.5);
+  animation: popIn .3s cubic-bezier(.22,.68,0,1.2);
+}
+@keyframes popIn {
+  from { transform: scale(.85); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+.dl-emoji { font-size: 34px; margin-bottom: 12px; }
+.dl-box h3 { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 7px; }
+.dl-box p  { font-size: 12px; color: rgba(255,255,255,.45); margin-bottom: 20px; line-height: 1.55; }
+.dl-btns   { display: flex; flex-direction: column; gap: 9px; }
+.dl-btn {
+  padding: 13px;
+  border-radius: 11px;
+  border: none; cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 13px; font-weight: 700;
+  transition: opacity .2s, transform .15s;
+}
+.dl-btn:hover { opacity: .88; transform: translateY(-1px); }
+.dl-btn.primary   { background: var(--blue-mid); color: #fff; }
+.dl-btn.secondary { background: rgba(255,255,255,.08); color: rgba(255,255,255,.8); }
+.dl-close {
+  display: block; margin-top: 14px;
+  font-size: 12px; color: rgba(255,255,255,.3);
+  cursor: pointer; background: none; border: none;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: color .2s;
+}
+.dl-close:hover { color: rgba(255,255,255,.6); }
+.progress-wrap {
+  display: none; margin-top: 14px;
+  background: rgba(255,255,255,.08);
+  border-radius: 100px; height: 4px; overflow: hidden;
+}
+.progress-wrap.show { display: block; }
+.progress-bar {
+  height: 100%; width: 0%;
+  border-radius: 100px;
+  transition: width .3s;
+  background: var(--blue-mid);
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <span class="header-name">ALLIANZ</span>
+  <div class="header-div"></div>
+  <span class="header-meta">Growth Triathlon · Campagne Commerciali</span>
+  <div class="header-badge">
+    <span class="live-dot"></span>
+    1° Semestre 2026
+  </div>
+</header>
+
+<!-- TABS -->
+<div class="tabs-wrap">
+  <div class="tabs">
+    <button class="tab active-motor" id="tab-motor" onclick="switchTab('motor',this)">Motor <span class="tab-count">6</span></button>
+    <button class="tab" id="tab-salute" onclick="switchTab('salute',this)">Salute <span class="tab-count">7</span></button>
+    <button class="tab" id="tab-casa" onclick="switchTab('casa',this)">Casa <span class="tab-count">5</span></button>
+    <button class="tab" id="tab-impresa" onclick="switchTab('impresa',this)">Impresa <span class="tab-count">5</span></button>
+    <button class="tab" id="tab-vita" onclick="switchTab('vita',this)">Vita <span class="tab-count">5</span></button>
+    <button class="tab" id="tab-clienti" onclick="switchTab('clienti',this)">Clienti & Com. <span class="tab-count">3</span></button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ── MOTOR ── -->
+  <div class="panel panel-motor active" id="panel-motor">
+    <div class="lob-card">
+      <div class="card-ghost">M</div>
+      <!-- deco: concentric arcs top-right -->
+      <svg class="card-deco" width="220" height="220" viewBox="0 0 220 220" fill="none">
+        <circle cx="200" cy="20" r="80" stroke="white" stroke-width="1.5" fill="none"/>
+        <circle cx="200" cy="20" r="120" stroke="white" stroke-width="1" fill="none"/>
+        <circle cx="200" cy="20" r="160" stroke="white" stroke-width=".6" fill="none"/>
+      </svg>
+      <div class="card-top">
+        <div class="card-title-block">
+          <div class="card-eyebrow">Line of Business</div>
+          <div class="card-lob-title">Motor</div>
+        </div>
+        <button class="btn-dl" onclick="openDl('motor')">⬇ Scarica</button>
+      </div>
+      <div class="card-divider"></div>
+      <div class="card-count-badge">● 6 iniziative attive</div>
+      <div class="items-list">
+        <div class="item"><span class="item-num">01</span><span class="item-text">Cross selling Motor – Lithium GEN-APR 2026</span></div>
+        <div class="item"><span class="item-num">02</span><span class="item-text">Infortuni da circolazione Rami Vari –30% MAR-APR 2025</span></div>
+        <div class="item"><span class="item-num">03</span><span class="item-text">Proponi ARD – Clienti con sola RCA APRILE 2026</span></div>
+        <div class="item"><span class="item-num">04</span><span class="item-text">Proponi ARD – Imprevisti e Tutela APRILE 2026</span></div>
+        <div class="item"><span class="item-num">05</span><span class="item-text">Proponi ARD – Clienti con sola RCA MAGGIO 2026</span></div>
+        <div class="item"><span class="item-num">06</span><span class="item-text">Proponi ARD – Imprevisti e Tutela MAGGIO 2026</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SALUTE ── -->
+  <div class="panel panel-salute" id="panel-salute">
+    <div class="lob-card">
+      <div class="card-ghost">S</div>
+      <!-- deco: cross/plus grid top-right -->
+      <svg class="card-deco" width="200" height="200" viewBox="0 0 200 200" fill="none">
+        <line x1="40" y1="0" x2="40" y2="200" stroke="white" stroke-width="1"/>
+        <line x1="80" y1="0" x2="80" y2="200" stroke="white" stroke-width="1"/>
+        <line x1="120" y1="0" x2="120" y2="200" stroke="white" stroke-width="1"/>
+        <line x1="160" y1="0" x2="160" y2="200" stroke="white" stroke-width="1"/>
+        <line x1="200" y1="0" x2="200" y2="200" stroke="white" stroke-width="1"/>
+        <line x1="0" y1="40" x2="200" y2="40" stroke="white" stroke-width="1"/>
+        <line x1="0" y1="80" x2="200" y2="80" stroke="white" stroke-width="1"/>
+        <line x1="0" y1="120" x2="200" y2="120" stroke="white" stroke-width="1"/>
+        <line x1="0" y1="160" x2="200" y2="160" stroke="white" stroke-width="1"/>
+      </svg>
+      <div class="card-top">
+        <div class="card-title-block">
+          <div class="card-eyebrow">Line of Business</div>
+          <div class="card-lob-title">Salute</div>
+        </div>
+        <button class="btn-dl" onclick="openDl('salute')">⬇ Scarica</button>
+      </div>
+      <div class="card-divider"></div>
+      <div class="card-count-badge">● 7 iniziative attive</div>
+      <div class="items-list">
+        <div class="item"><span class="item-num">01</span><span class="item-text">Clienti Vita – Proposta Salute 1 SEM 2026</span></div>
+        <div class="item"><span class="item-num">02</span><span class="item-text">Cross-Sell Infortuni 1 SEM 2026</span></div>
+        <div class="item"><span class="item-num">03</span><span class="item-text">Cross-Sell Malattia 1 SEM 2026</span></div>
+        <div class="item"><span class="item-num">04</span><span class="item-text">Promo AZUltra Salute FEB-MAR 2026</span></div>
+        <div class="item"><span class="item-num">05</span><span class="item-text">Promo Salute 1</span></div>
+        <div class="item"><span class="item-num">06</span><span class="item-text">Promo Salute 2</span></div>
+        <div class="item"><span class="item-num">07</span><span class="item-text">Evoluzione di Portafoglio Infortuni</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CASA ── -->
+  <div class="panel panel-casa" id="panel-casa">
+    <div class="lob-card">
+      <div class="card-ghost">C</div>
+      <!-- deco: overlapping diamonds top-right -->
+      <svg class="card-deco" width="200" height="200" viewBox="0 0 200 200" fill="none">
+        <rect x="80" y="-30" width="110" height="110" rx="16" stroke="white" stroke-width="1.5" transform="rotate(45 135 25)"/>
+        <rect x="110" y="0" width="80" height="80" rx="12" stroke="white" stroke-width="1" transform="rotate(45 150 40)"/>
+        <rect x="130" y="20" width="55" height="55" rx="8" stroke="white" stroke-width=".7" transform="rotate(45 157 47)"/>
+      </svg>
+      <div class="card-top">
+        <div class="card-title-block">
+          <div class="card-eyebrow">Line of Business</div>
+          <div class="card-lob-title">Casa</div>
+        </div>
+        <button class="btn-dl" onclick="openDl('casa')">⬇ Scarica</button>
+      </div>
+      <div class="card-divider"></div>
+      <div class="card-count-badge">● 5 iniziative attive</div>
+      <div class="items-list">
+        <div class="item"><span class="item-num">01</span><span class="item-text">Allianz Ultra Casa e Patrimonio 1 SEM 2026</span></div>
+        <div class="item"><span class="item-num">02</span><span class="item-text">Allianz Ultra Salute 1 SEM 2026</span></div>
+        <div class="item"><span class="item-num">03</span><span class="item-text">Clienti Vita – Proposta Casa 1 SEM 2026</span></div>
+        <div class="item"><span class="item-num">04</span><span class="item-text">Evoluzione di Portafoglio Casa</span></div>
+        <div class="item"><span class="item-num">05</span><span class="item-text">Evoluzione di Portafoglio Abitazione</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── IMPRESA ── -->
+  <div class="panel panel-impresa" id="panel-impresa">
+    <div class="lob-card">
+      <div class="card-ghost">I</div>
+      <!-- deco: stepped angular lines top-right -->
+      <svg class="card-deco" width="200" height="180" viewBox="0 0 200 180" fill="none">
+        <polyline points="200,0 120,0 120,60 60,60 60,120 0,120" stroke="white" stroke-width="1.5" fill="none"/>
+        <polyline points="200,30 150,30 150,90 90,90 90,150 30,150" stroke="white" stroke-width="1" fill="none"/>
+        <polyline points="200,60 180,60 180,120 120,120 120,180" stroke="white" stroke-width=".6" fill="none"/>
+      </svg>
+      <div class="card-top">
+        <div class="card-title-block">
+          <div class="card-eyebrow">Line of Business</div>
+          <div class="card-lob-title">Impresa</div>
+        </div>
+        <button class="btn-dl" onclick="openDl('impresa')">⬇ Scarica</button>
+      </div>
+      <div class="card-divider"></div>
+      <div class="card-count-badge">● 5 iniziative attive</div>
+      <div class="items-list">
+        <div class="item"><span class="item-num">01</span><span class="item-text">Allianz Ultra Impresa 1 SEM 2026</span></div>
+        <div class="item"><span class="item-num">02</span><span class="item-text">CAT NAT Impresa 2026 – Clienti CON copertura</span></div>
+        <div class="item"><span class="item-num">03</span><span class="item-text">CAT NAT Impresa 2026 – Clienti SENZA copertura</span></div>
+        <div class="item"><span class="item-num">04</span><span class="item-text">Mondo Impresa Clienti+</span></div>
+        <div class="item"><span class="item-num">05</span><span class="item-text">Evoluzione di Portafoglio PMI</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VITA ── -->
+  <div class="panel panel-vita" id="panel-vita">
+    <div class="lob-card">
+      <div class="card-ghost">V</div>
+      <!-- deco: flowing arcs top-right -->
+      <svg class="card-deco" width="220" height="180" viewBox="0 0 220 180" fill="none">
+        <path d="M220 0 Q160 60 220 120" stroke="white" stroke-width="1.5" fill="none"/>
+        <path d="M220 0 Q140 80 180 180" stroke="white" stroke-width="1" fill="none"/>
+        <path d="M180 0 Q120 70 160 180" stroke="white" stroke-width=".7" fill="none"/>
+        <path d="M140 0 Q100 60 130 180" stroke="white" stroke-width=".5" fill="none"/>
+      </svg>
+      <div class="card-top">
+        <div class="card-title-block">
+          <div class="card-eyebrow">Line of Business</div>
+          <div class="card-lob-title">Vita</div>
+        </div>
+        <button class="btn-dl" onclick="openDl('vita')">⬇ Scarica</button>
+      </div>
+      <div class="card-divider"></div>
+      <div class="card-count-badge">● 5 iniziative attive</div>
+      <div class="items-list">
+        <div class="item"><span class="item-num">01</span><span class="item-text">Adegua TCM 1 SEM 2026</span></div>
+        <div class="item"><span class="item-num">02</span><span class="item-text">Cross-Sell LOVIA 1 SEM 2026</span></div>
+        <div class="item"><span class="item-num">03</span><span class="item-text">Proponi AZ Longevity Care 1 Wave 2025</span></div>
+        <div class="item"><span class="item-num">04</span><span class="item-text">100% Vitariv ed. 1 SEM 2026 – Clienti Unit</span></div>
+        <div class="item"><span class="item-num">05</span><span class="item-text">100% Vitariv 1 SEM 2026 – Clienti Vitariv</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CLIENTI ── -->
+  <div class="panel panel-clienti" id="panel-clienti">
+    <div class="lob-card">
+      <div class="card-ghost">C+</div>
+      <!-- deco: dot matrix top-right -->
+      <svg class="card-deco" width="180" height="160" viewBox="0 0 180 160" fill="none">
+        <circle cx="20" cy="20" r="2.5" fill="white"/><circle cx="50" cy="20" r="2.5" fill="white"/><circle cx="80" cy="20" r="2.5" fill="white"/><circle cx="110" cy="20" r="2.5" fill="white"/><circle cx="140" cy="20" r="2.5" fill="white"/><circle cx="170" cy="20" r="2.5" fill="white"/>
+        <circle cx="20" cy="50" r="2.5" fill="white"/><circle cx="50" cy="50" r="2.5" fill="white"/><circle cx="80" cy="50" r="2.5" fill="white"/><circle cx="110" cy="50" r="2.5" fill="white"/><circle cx="140" cy="50" r="2.5" fill="white"/><circle cx="170" cy="50" r="2.5" fill="white"/>
+        <circle cx="20" cy="80" r="2.5" fill="white"/><circle cx="50" cy="80" r="2.5" fill="white"/><circle cx="80" cy="80" r="2.5" fill="white"/><circle cx="110" cy="80" r="2.5" fill="white"/><circle cx="140" cy="80" r="2.5" fill="white"/><circle cx="170" cy="80" r="2.5" fill="white"/>
+        <circle cx="20" cy="110" r="2.5" fill="white"/><circle cx="50" cy="110" r="2.5" fill="white"/><circle cx="80" cy="110" r="2.5" fill="white"/><circle cx="110" cy="110" r="2.5" fill="white"/><circle cx="140" cy="110" r="2.5" fill="white"/><circle cx="170" cy="110" r="2.5" fill="white"/>
+        <circle cx="20" cy="140" r="2.5" fill="white"/><circle cx="50" cy="140" r="2.5" fill="white"/><circle cx="80" cy="140" r="2.5" fill="white"/><circle cx="110" cy="140" r="2.5" fill="white"/><circle cx="140" cy="140" r="2.5" fill="white"/>
+      </svg>
+      <div class="card-top">
+        <div class="card-title-block">
+          <div class="card-eyebrow">Line of Business</div>
+          <div class="card-lob-title">Clienti & Com.</div>
+        </div>
+        <button class="btn-dl" onclick="openDl('clienti')">⬇ Scarica</button>
+      </div>
+      <div class="card-divider"></div>
+      <div class="card-count-badge">● 3 iniziative attive</div>
+      <div class="items-list">
+        <div class="item"><span class="item-num">01</span><span class="item-text">Google Business Profile</span></div>
+        <div class="item"><span class="item-num">02</span><span class="item-text">Mondo Impresa Clienti+ – dip 60+</span></div>
+        <div class="item"><span class="item-num">03</span><span class="item-text">Mondo Impresa Clienti+ – dip 59 max</span></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- DOWNLOAD OVERLAY -->
+<div class="dl-overlay" id="dl-overlay">
+  <div class="dl-box">
+    <div class="dl-emoji">📥</div>
+    <h3>Scarica la scheda</h3>
+    <p id="dl-desc">Scegli il formato per salvare o condividere.</p>
+    <div class="dl-btns">
+      <button class="dl-btn primary" onclick="downloadImg()">🖼 Scarica JPG</button>
+      <button class="dl-btn secondary" onclick="downloadPDF()">📄 Apri come PDF</button>
+    </div>
+    <div class="progress-wrap" id="progress-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <button class="dl-close" onclick="closeDl()">Annulla</button>
+  </div>
+</div>
+
+<script>
+const LOB_NAMES = { motor:'Motor', salute:'Salute', casa:'Casa', impresa:'Impresa', vita:'Vita', clienti:'Clienti & Comunicazione' };
+let currentLob = 'motor';
+
+function switchTab(lob, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => {
+    t.className = 'tab'; // reset
+  });
+  document.getElementById('panel-' + lob).classList.add('active');
+  btn.classList.add('active-' + lob);
+  currentLob = lob;
+}
+
+// init first tab
+document.getElementById('tab-motor').classList.add('active-motor');
+
+// ── DOWNLOAD
+function openDl(lob) {
+  currentLob = lob;
+  document.getElementById('dl-desc').textContent = `Esporta la scheda "${LOB_NAMES[lob]}".`;
+  document.getElementById('dl-overlay').classList.add('open');
+  document.getElementById('progress-wrap').classList.remove('show');
+  document.getElementById('progress-bar').style.width = '0%';
+}
+function closeDl() { document.getElementById('dl-overlay').classList.remove('open'); }
+function showProgress(p) {
+  document.getElementById('progress-wrap').classList.add('show');
+  document.getElementById('progress-bar').style.width = p + '%';
+}
+
+async function captureCard() {
+  const panel = document.getElementById('panel-' + currentLob);
+  const card  = panel.querySelector('.lob-card');
+  showProgress(30);
+  await new Promise(r => setTimeout(r, 80));
+  const canvas = await html2canvas(card, {
+    backgroundColor: null,
+    scale: 2.5,
+    useCORS: true,
+    logging: false
+  });
+  showProgress(90);
+  return canvas;
+}
+
+async function downloadImg() {
+  try {
+    const canvas = await captureCard();
+    showProgress(100);
+    const a = document.createElement('a');
+    a.download = `Allianz_${LOB_NAMES[currentLob].replace(/ /g,'_')}_1SEM2026.jpg`;
+    a.href = canvas.toDataURL('image/jpeg', 0.95);
+    a.click();
+    setTimeout(closeDl, 600);
+  } catch(e) { alert('Errore download. Riprova.'); console.error(e); }
+}
+
+async function downloadPDF() {
+  try {
+    const canvas = await captureCard();
+    showProgress(100);
+    const imgData = canvas.toDataURL('image/jpeg', 0.95);
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html><head>
+      <title>Allianz · ${LOB_NAMES[currentLob]} · 1° SEM 2026</title>
+      <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{background:#0d1117;display:flex;flex-direction:column;align-items:center;padding:28px;font-family:sans-serif;min-height:100vh;}
+        img{max-width:560px;width:100%;border-radius:20px;box-shadow:0 12px 48px rgba(0,0,0,.5);}
+        .bar{display:flex;gap:10px;margin-bottom:20px;max-width:560px;width:100%;}
+        button{padding:10px 20px;border-radius:8px;border:none;cursor:pointer;font-size:13px;font-weight:700;}
+        .p{background:#0057b8;color:#fff;} .s{background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);}
+      </style></head><body>
+      <div class="bar">
+        <button class="p" onclick="window.print()">🖨 Stampa / Salva PDF</button>
+        <button class="s" onclick="window.close()">✕ Chiudi</button>
+      </div>
+      <img src="${imgData}">
+      </body></html>`);
+    win.document.close();
+    setTimeout(closeDl, 600);
+  } catch(e) { alert('Errore download. Riprova.'); console.error(e); }
+}
+
+document.getElementById('dl-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('dl-overlay')) closeDl();
+});
+</script>
+</body>
+</html>

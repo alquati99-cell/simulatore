@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Motore punteggio obiettivi</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      color: #132238;
+      line-height: 1.55;
+      margin: 44px;
+      max-width: 900px;
+    }
+    h1, h2 {
+      color: #0f3f86;
+      margin-bottom: 10px;
+    }
+    h1 {
+      font-size: 28px;
+      margin-top: 0;
+    }
+    h2 {
+      font-size: 18px;
+      margin-top: 28px;
+    }
+    p {
+      margin: 10px 0;
+    }
+    ul {
+      margin: 8px 0 12px 20px;
+    }
+    li {
+      margin: 6px 0;
+    }
+    .formula {
+      margin: 12px 0;
+      padding: 12px 14px;
+      background: #f4f8fd;
+      border: 1px solid #d8e4f2;
+      border-radius: 10px;
+      font-family: "Courier New", monospace;
+      white-space: pre-wrap;
+    }
+    .note {
+      padding: 12px 14px;
+      background: #fff8e7;
+      border: 1px solid #f1dd98;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Motore di calcolo del punteggio di raggiungimento obiettivo</h1>
+
+  <p>
+    Questo documento descrive come il simulatore assegna il punteggio di raggiungimento
+    di ogni obiettivo, sia <strong>senza polizza</strong> sia <strong>con polizza</strong>.
+    Il punteggio non e deciso dal RAG o da un modello generativo: nasce da un
+    motore deterministico basato su patrimonio, risparmio, scenari di rischio
+    e coperture selezionate.
+  </p>
+
+  <h2>1. Base finanziaria del cliente</h2>
+  <p>
+    Per ogni obiettivo il motore parte da una base finanziaria reale del cliente.
+    Questa misura quanto l'obiettivo e gia sostenibile oggi, prima ancora di simulare
+    un evento avverso.
+  </p>
+
+  <div class="formula">capitalCoverage   = quota patrimonio utile / target obiettivo
+savingsCoverage   = capacità di risparmio sostenibile / target obiettivo
+liquidityCoverage = liquidità disponibile / soglia di sicurezza
+
+foundationScore =
+  0.45 * capitalCoverage +
+  0.35 * savingsCoverage +
+  0.20 * liquidityCoverage</div>
+
+  <p>
+    A questa base si aggiunge anche un confronto con benchmark di famiglie simili
+    per reddito, patrimonio e attivita finanziarie.
+  </p>
+
+  <div class="formula">foundationScore corretta =
+  foundationScore * 0.78 +
+  peerScore * 0.22</div>
+
+  <h2>2. Scelta dello scenario piu rilevante</h2>
+  <p>
+    Il motore non usa sempre lo stesso scenario. Per ogni obiettivo seleziona
+    lo scenario piu rilevante combinando:
+  </p>
+
+  <ul>
+    <li>gap potenziale sull'obiettivo</li>
+    <li>ritardo stimato</li>
+    <li>valore economico della perdita</li>
+    <li>coerenza dello scenario con il profilo del cliente</li>
+  </ul>
+
+  <div class="formula">scenarioPriority =
+  (goalGap senza copertura +
+   delayYears * 9000 +
+   totalLossValue * 0.03)
+  * scenarioRelevance</div>
+
+  <p>
+    <strong>scenarioRelevance</strong> varia in funzione di elementi concreti come età,
+    figli, situazione abitativa, mutuo, professione e rischio occupazionale.
+  </p>
+
+  <h2>3. Simulazione senza polizza</h2>
+  <p>
+    Nel ramo senza polizza il motore applica il danno pieno dello scenario:
+    perdita immediata di capitale, eventuale perdita mensile di reddito e durata
+    dell'impatto.
+  </p>
+
+  <div class="formula">noCoverageImpact = {
+  upfrontLoss,
+  monthlyLoss,
+  durationMonths
+}</div>
+
+  <p>
+    Da qui viene costruita una proiezione nel tempo del capitale del cliente fino
+    alla data dell'obiettivo.
+  </p>
+
+  <div class="formula">capitale(t) =
+  capitale(t-1) * rendimento atteso
+  + risparmio mensile
+  - perdita mensile da scenario</div>
+
+  <p>
+    Alla scadenza dell'obiettivo il motore legge:
+  </p>
+
+  <ul>
+    <li>capitale disponibile</li>
+    <li>gap residuo rispetto al target</li>
+    <li>ritardo stimato per recuperare il gap</li>
+    <li>achievement percentuale dell'obiettivo</li>
+  </ul>
+
+  <h2>4. Simulazione con polizza</h2>
+  <p>
+    Nel ramo con polizza il motore non aggiunge punti artificiali. Le coperture
+    riducono direttamente il danno economico simulato.
+  </p>
+
+  <div class="formula">withCoverageImpact =
+  noCoverageImpact - supporto economico delle polizze selezionate</div>
+
+  <p>Logica sintetica di supporto per le coperture:</p>
+
+  <ul>
+    <li>TCM: assorbe il danno da decesso</li>
+    <li>Protezione reddito: assorbe parte del danno da invalidità o blocco reddito</li>
+    <li>RC Casa: assorbe danni a terzi e danni alla casa</li>
+    <li>LTC: riduce il carico economico della non autosufficienza</li>
+    <li>Salute: riduce la spesa sanitaria straordinaria</li>
+    <li>Infortuni: rafforza il ramo invalidità/infortunio</li>
+    <li>Mutuo: protegge il debito residuo nei casi rilevanti</li>
+  </ul>
+
+  <p>
+    La proiezione viene quindi rifatta con il danno netto ridotto e con il drag
+    del premio mensile delle polizze attive.
+  </p>
+
+  <div class="formula">capitale(t) con polizza =
+  capitale(t-1) * rendimento atteso
+  + risparmio mensile
+  - premio polizze
+  - perdita mensile residua dopo la copertura</div>
+
+  <h2>5. Formula finale del punteggio obiettivo</h2>
+  <p>
+    Una volta ottenute le due simulazioni, il motore costruisce un punteggio
+    obiettivo da 0 a 100 per ciascun ramo.
+  </p>
+
+  <div class="formula">achievementRatio = achievement / 100
+targetCoverage   = 1 - goalGap / target
+capitalRetention = capitale post-evento / patrimonio totale
+delayScore       = 1 - delayYears / (orizzonte + 3)
+
+resilienceScore =
+  0.40 * targetCoverage +
+  0.25 * achievementRatio +
+  0.20 * capitalRetention +
+  0.15 * delayScore
+
+finalScore =
+  0.45 * foundationScore +
+  0.55 * resilienceScore</div>
+
+  <p>
+    Il motore applica anche un pavimento minimo, per evitare che un cliente con
+    buona base reale venga portato a zero in modo artificiale.
+  </p>
+
+  <div class="formula">floorScore = foundationScore * 0.30
+score finale = max(finalScore, floorScore)</div>
+
+  <h2>6. Differenza tra score senza polizza e con polizza</h2>
+  <p>
+    Il delta che il simulatore mostra non e un bonus commerciale fisso.
+    E semplicemente:
+  </p>
+
+  <div class="formula">delta punti = score con polizza - score senza polizza</div>
+
+  <p>
+    Quindi, se una polizza aggiunge molti punti, significa che:
+  </p>
+
+  <ul>
+    <li>riduce molto il gap dell'obiettivo</li>
+    <li>riduce il ritardo</li>
+    <li>lascia piu capitale intatto</li>
+    <li>aumenta la probabilita di raggiungimento</li>
+  </ul>
+
+  <h2>7. Lettura business</h2>
+  <p>
+    In termini consulenziali, il motore risponde sempre a quattro domande:
+  </p>
+
+  <ul>
+    <li>quanto l'obiettivo e sostenibile oggi</li>
+    <li>cosa succede se arriva l'imprevisto peggiore per quell'obiettivo</li>
+    <li>quanto la copertura trasferisce davvero il rischio</li>
+    <li>di quanto migliora la tenuta del piano con il set polizze attivo</li>
+  </ul>
+
+  <div class="note">
+    Sintesi finale: il punteggio obiettivo non nasce da testo generato o da
+    giudizi qualitativi. Nasce da una combinazione pesata di base finanziaria
+    reale e resilienza del piano sotto shock, confrontata in due rami distinti:
+    senza polizza e con polizza.
+  </div>
+</body>
+</html>
