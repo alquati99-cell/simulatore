@@ -2256,7 +2256,7 @@
       "</div>" +
       '<div class="impact-stage-grid">' +
       '<div class="impact-stage-metric"><div class="impact-stage-k">Gap recuperato</div><div class="impact-stage-v">€ ' + esc(currency(recoveredGap)) + '</div><div class="impact-stage-s">Capitale riportato verso il target.</div></div>' +
-      '<div class="impact-stage-metric"><div class="impact-stage-k">Probabilita obiettivo</div><div class="impact-stage-v">' + esc(activeScenario.noCoverage.achievement) + '% → ' + esc(activeScenario.withCoverage.achievement) + '%</div><div class="impact-stage-s">Salto di ' + esc(probabilityLift) + " punti sul traguardo.</div></div>" +
+      '<div class="impact-stage-metric"><div class="impact-stage-k">Probabilita obiettivo</div><div class="impact-stage-v">' + esc(activeScenario.noCoverage.achievement) + '% → ' + esc(activeScenario.withCoverage.achievement) + '%</div><div class="impact-stage-s">' + (function () { var db = activeScenario.deltaBreakdown; if (!db || !db.coverageGain) return "Salto di " + probabilityLift + " punti sul traguardo."; var parts = ["+" + db.coverageGain + "pp da copertura"]; if (db.premiumCost < 0) parts.push(db.premiumCost + "pp da premio"); parts.push("= +" + db.net + "pp netto."); return parts.join(", "); })() + "</div></div>" +
       '<div class="impact-stage-metric"><div class="impact-stage-k">Liquidita liberata</div><div class="impact-stage-v">€ ' + esc(currency(economics.activePremium ? economics.activeFreed : economics.suggestedFreed)) + '</div><div class="impact-stage-s">Margine mensile non piu bloccato in auto-accantonamento.</div></div>' +
       "</div>";
   }
@@ -2390,7 +2390,7 @@
       '<div class="goal-story-copy">' + esc(activeScenario.alertBody) + "</div>" +
       '<div class="goal-story-highlight">' +
       '<div class="goal-story-hl"><div class="goal-story-hk">Gap recuperato</div><div class="goal-story-hv">€ ' + esc(currency(recoveredGap)) + "</div></div>" +
-      '<div class="goal-story-hl"><div class="goal-story-hk">Probabilita recuperata</div><div class="goal-story-hv">+' + esc(recoveredProbability) + " pt</div></div>" +
+      '<div class="goal-story-hl"><div class="goal-story-hk">Probabilita recuperata</div><div class="goal-story-hv">+' + esc(recoveredProbability) + " pt" + (function () { var db = activeScenario.deltaBreakdown; if (!db || !db.coverageGain) return ""; return " (" + (db.coverageGain >= 0 ? "+" : "") + db.coverageGain + "pp copertura, " + (db.premiumCost >= 0 ? "+" : "") + db.premiumCost + "pp premio)"; })() + "</div></div>" +
       '<div class="goal-story-hl"><div class="goal-story-hk">Ritardo evitato</div><div class="goal-story-hv">' + esc(compactDelay(recoveredDelay)) + "</div></div>" +
       "</div>" +
       '<div class="goal-story-list">' +
