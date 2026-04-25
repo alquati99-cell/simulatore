@@ -845,6 +845,69 @@
         health: ["salute", "ricoveri", "medica"],
         mortgage: ["mutuo", "cpi"]
       }
+    },
+    riskDb: {
+      fonti: {
+        mortalita: "ISTAT — Tavole di mortalità 2022",
+        infortuni_permanenti: "INAIL — Casellario Centrale Infortuni 2015-2024",
+        non_autosufficienza: "ISTAT 2021 + CERGAS SDA Bocconi 2024"
+      },
+      fasce_eta: [
+        {
+          id: "0_17", label: "Minori",
+          mortalita: { prob_morte_annua_pct: 0.022 },
+          infortuni_permanenti: { indice_x1000_assicurati_privati: 0.1 },
+          non_autosufficienza: { prevalenza_pct: 0.5 }
+        },
+        {
+          id: "18_24", label: "Giovani",
+          mortalita: { prob_morte_annua_pct: 0.043 },
+          infortuni_permanenti: { indice_x1000_assicurati_privati: 0.55 },
+          non_autosufficienza: { prevalenza_pct: 0.5 }
+        },
+        {
+          id: "25_34", label: "Adulti giovani",
+          mortalita: { prob_morte_annua_pct: 0.058 },
+          infortuni_permanenti: { indice_x1000_assicurati_privati: 0.5 },
+          non_autosufficienza: { prevalenza_pct: 1.0 }
+        },
+        {
+          id: "35_44", label: "Adulti",
+          mortalita: { prob_morte_annua_pct: 0.115 },
+          infortuni_permanenti: { indice_x1000_assicurati_privati: 0.45 },
+          non_autosufficienza: { prevalenza_pct: 1.5 }
+        },
+        {
+          id: "45_54", label: "Adulti maturi",
+          mortalita: { prob_morte_annua_pct: 0.319 },
+          infortuni_permanenti: { indice_x1000_assicurati_privati: 0.48 },
+          non_autosufficienza: { prevalenza_pct: 1.5 }
+        },
+        {
+          id: "55_64", label: "Pre-pensionamento",
+          mortalita: { prob_morte_annua_pct: 0.85 },
+          infortuni_permanenti: { indice_x1000_assicurati_privati: 0.42 },
+          non_autosufficienza: { prevalenza_pct: 3.8 }
+        },
+        {
+          id: "65_74", label: "Anziani",
+          mortalita: { prob_morte_annua_pct: 1.7 },
+          infortuni_permanenti: { indice_x1000_assicurati_privati: 0.35 },
+          non_autosufficienza: { prevalenza_pct: 14.6 }
+        },
+        {
+          id: "75_84", label: "Grandi anziani",
+          mortalita: { prob_morte_annua_pct: 7.095 },
+          infortuni_permanenti: { indice_x1000_assicurati_privati: 0.25 },
+          non_autosufficienza: { prevalenza_pct: 32.5 }
+        },
+        {
+          id: "85_plus", label: "Longevi",
+          mortalita: { prob_morte_annua_pct: 20.2 },
+          infortuni_permanenti: { indice_x1000_assicurati_privati: 0 },
+          non_autosufficienza: { prevalenza_pct: 63.8 }
+        }
+      ]
     }
   };
 

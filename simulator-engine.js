@@ -1292,14 +1292,62 @@
     };
   }
 
-  function selfFundEquivalent(productId, needs) {
-    if (productId === "tcm") return roundStep(needs.deathCapital / 240, 10);
-    if (productId === "income_protection") return roundStep(needs.invalidityCapital / 120, 10);
-    if (productId === "rc_family") return roundStep(needs.rcClaimLoss / 60, 10);
-    if (productId === "ltc") return roundStep(needs.ltcCapital / 72, 10);
-    if (productId === "health") return roundStep(needs.healthCapital / 72, 10);
-    if (productId === "accident") return roundStep(needs.invalidityCapital / 180, 10);
-    if (productId === "mortgage") return roundStep(needs.mortgageBalance / 180, 10);
+  function getRiskEntry(age) {
+    var fasceEta = (DB.riskDb && DB.riskDb.fasce_eta) || [];
+    var result = fasceEta[0] || {};
+    for (var i = 0; i < fasceEta.length; i++) {
+      if (age >= parseInt(fasceEta[i].id, 10)) result = fasceEta[i];
+      else break;
+    }
+    return result;
+  }
+
+  function rataComposta(capitale, mesi, tassoAnnuo) {
+    var r = tassoAnnuo / 12;
+    if (r <= 0 || mesi <= 0) return roundStep(capitale / Math.max(mesi, 1), 10);
+    return roundStep(capitale * r / (Math.pow(1 + r, mesi) - 1), 10);
+  }
+
+  function selfFundEquivalent(productId, needs, profile) {
+    var TASSO = 0;
+    var eta = profile ? (profile.age || 40) : 40;
+    var entry = getRiskEntry(eta);
+
+    if (productId === "tcm") {
+      var pAnnua = (entry.mortalita.prob_morte_annua_pct || 0.3) / 100;
+      var pCum = 1 - Math.pow(1 - pAnnua, 20);
+      return rataComposta(needs.deathCapital * pCum, 240, TASSO);
+    }
+    if (productId === "income_protection") {
+      // indice INAIL injuries only × 3.5 per coprire IP da malattia
+      var ipBase = (entry.infortuni_permanenti.indice_x1000_assicurati_privati || 0.45) / 1000;
+      var pCum = 1 - Math.pow(1 - ipBase * 3.5, 10);
+      return rataComposta(needs.invalidityCapital * pCum, 120, TASSO);
+    }
+    if (productId === "rc_family") {
+      // RC: costo atteso annuo — non accumulo lineare
+      return roundStep(needs.rcClaimLoss * 0.008 / 12, 10);
+    }
+    if (productId === "ltc") {
+      var entryFutura = getRiskEntry(Math.max(eta + 25, 65));
+      var pCum = (entryFutura.non_autosufficienza.prevalenza_pct || 14.6) / 100;
+      return rataComposta(needs.ltcCapital * pCum, 72, TASSO);
+    }
+    if (productId === "health") {
+      var pAnnua = (entry.mortalita.prob_morte_annua_pct || 0.3) / 100 * 3;
+      var pCum = 1 - Math.pow(1 - pAnnua, 6);
+      return rataComposta(needs.healthCapital * pCum, 72, TASSO);
+    }
+    if (productId === "accident") {
+      var pAnnua = (entry.infortuni_permanenti.indice_x1000_assicurati_privati || 0.45) / 1000;
+      var pCum = 1 - Math.pow(1 - pAnnua, 15);
+      return rataComposta(needs.invalidityCapital * pCum, 180, TASSO);
+    }
+    if (productId === "mortgage") {
+      var pAnnua = (entry.mortalita.prob_morte_annua_pct || 0.3) / 100;
+      var pCum = 1 - Math.pow(1 - pAnnua, 15);
+      return rataComposta(needs.mortgageBalance * pCum, 180, TASSO);
+    }
     return 0;
   }
 
@@ -1339,12 +1387,16 @@
       amount = needs.deathCapital;
       premium = roundStep(Math.max(12, (amount / 10000) * (0.34 + profile.age / 100 + profile.occupationFactor * 0.15)), 1);
       detail = "Capitale € " + formatCurrency(amount) + " · tutela " + (profile.childrenCount ? "nucleo familiare" : "stabilita del piano");
-      secondaryDetail = "Copre circa " + (profile.childrenCount > 0 ? 6 : 4) + " anni di reddito";
+      var tcmEntry = getRiskEntry(profile.age);
+      var tcmProb = (tcmEntry.mortalita.prob_morte_annua_pct || 0.3).toFixed(2).replace(".", ",");
+      secondaryDetail = "Fascia " + tcmEntry.label + ": " + tcmProb + "%/anno (ISTAT) · copre circa " + (profile.childrenCount > 0 ? 6 : 4) + " anni di reddito";
     } else if (productMeta.id === "income_protection") {
       amount = needs.incomeProtectionMonthly;
       premium = roundStep(Math.max(22, (amount / 250) * (4.8 + profile.age / 18) * profile.occupationFactor), 1);
       detail = "Rendita € " + formatCurrency(amount) + "/mese · durata 10 anni";
-      secondaryDetail = "Gap protetto € " + formatCurrency(needs.invalidityCapital);
+      var ipEntry = getRiskEntry(profile.age);
+      var ipRate = (ipEntry.infortuni_permanenti.indice_x1000_assicurati_privati || 0.45).toString().replace(".", ",");
+      secondaryDetail = "Fascia " + ipEntry.label + ": " + ipRate + " IP/1.000 ass./anno (INAIL) · gap protetto € " + formatCurrency(needs.invalidityCapital);
     } else if (productMeta.id === "rc_family") {
       amount = needs.rcLimit;
       premium = roundStep(18 + profile.childrenCount * 3 + (profile.housingStatus !== "Affittuario" ? 8 : 4) + (profile.totalAssets > 100000 ? 5 : 0), 1);
@@ -1354,7 +1406,9 @@
       amount = needs.ltcMonthly;
       premium = roundStep(Math.max(18, (amount / 250) * (3.5 + Math.max(profile.age - 35, 0) / 15)), 1);
       detail = "Rendita € " + formatCurrency(amount) + "/mese · assistenza continuativa";
-      secondaryDetail = "Esposizione stimata € " + formatCurrency(needs.ltcCapital);
+      var ltcEntryFutura = getRiskEntry(Math.max(profile.age + 25, 65));
+      var ltcPrev = (ltcEntryFutura.non_autosufficienza.prevalenza_pct || 14.6).toString().replace(".", ",");
+      secondaryDetail = "Prevalenza NA a +" + 25 + " anni: " + ltcPrev + "% (ISTAT) · esposizione € " + formatCurrency(needs.ltcCapital);
     } else if (productMeta.id === "health") {
       amount = needs.healthCapital;
       premium = roundStep(24 + profile.age * 0.35 + profile.occupationFactor * 6, 1);
@@ -1393,7 +1447,7 @@
       annualTaxSaving: Math.round(premium * 12 * productMeta.deductibleRate),
       detail: detail,
       secondaryDetail: secondaryDetail,
-      selfFundMonthlyEquivalent: selfFundEquivalent(productMeta.id, needs),
+      selfFundMonthlyEquivalent: selfFundEquivalent(productMeta.id, needs, profile),
       selectedByDefault: false,
       selectedByDefaultReason: ""
     };
