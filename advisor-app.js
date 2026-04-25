@@ -2041,6 +2041,14 @@
     var yesData = yearlyValues(activeScenario.withCoverage.path);
     var ctx = canvas.getContext("2d");
 
+    var h = canvas.offsetHeight || 300;
+    var redGrad = ctx.createLinearGradient(0, 0, 0, h);
+    redGrad.addColorStop(0, "rgba(182,85,85,0.22)");
+    redGrad.addColorStop(1, "rgba(182,85,85,0)");
+    var tealGrad = ctx.createLinearGradient(0, 0, 0, h);
+    tealGrad.addColorStop(0, "rgba(62,118,116,0.18)");
+    tealGrad.addColorStop(1, "rgba(62,118,116,0)");
+
     S.ch.path = new Chart(ctx, {
       type: "line",
       data: {
@@ -2049,35 +2057,38 @@
           {
             label: "Piano base",
             data: baseData,
-            borderColor: "#4d68d8",
-            backgroundColor: "rgba(77,104,216,.08)",
+            borderColor: "rgba(77,104,216,.55)",
+            backgroundColor: "transparent",
             fill: false,
             tension: 0.32,
-            borderWidth: 2.5,
+            borderWidth: 2,
+            borderDash: [5, 4],
             pointRadius: 0,
             pointHoverRadius: 3
           },
           {
             label: "Sinistro scoperto",
             data: noData,
-            borderColor: "#e57373",
-            backgroundColor: "rgba(229,115,115,.08)",
-            fill: false,
+            borderColor: "#b65555",
+            backgroundColor: redGrad,
+            fill: true,
             tension: 0.35,
             borderWidth: 2.5,
-            pointRadius: 2.5,
-            pointBackgroundColor: "#e57373"
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointHoverBackgroundColor: "#b65555"
           },
           {
             label: "Sinistro coperto",
             data: yesData,
-            borderColor: "#00857c",
-            backgroundColor: "rgba(0,133,124,.08)",
-            fill: false,
+            borderColor: "#3e7674",
+            backgroundColor: tealGrad,
+            fill: true,
             tension: 0.35,
             borderWidth: 2.5,
-            pointRadius: 2.5,
-            pointBackgroundColor: "#00857c"
+            pointRadius: 0,
+            pointHoverRadius: 4,
+            pointHoverBackgroundColor: "#3e7674"
           }
         ]
       },
@@ -2088,18 +2099,23 @@
         plugins: {
           legend: { display: false },
           tooltip: {
+            backgroundColor: "rgba(23,35,51,.88)",
+            titleColor: "#d6e0ee",
+            bodyColor: "#b8c4d4",
+            padding: 12,
+            cornerRadius: 10,
             callbacks: {
               label: function (context) {
-                return "€ " + context.parsed.y.toLocaleString("it-IT");
+                return context.dataset.label + ": € " + context.parsed.y.toLocaleString("it-IT");
               }
             }
           }
         },
         scales: {
-          x: { grid: { display: false }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8", maxTicksLimit: 8 } },
-          y: { grid: { color: "rgba(212,227,245,.5)" }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8", callback: function (value) { return "€" + Math.round(value / 1000) + "k"; } } }
+          x: { grid: { display: false }, ticks: { font: { family: "Manrope", size: 10 }, color: "#8f98a5", maxTicksLimit: 8 } },
+          y: { grid: { color: "rgba(16,24,36,.06)" }, border: { dash: [4, 3] }, ticks: { font: { family: "Manrope", size: 10 }, color: "#8f98a5", callback: function (value) { return "€" + Math.round(value / 1000) + "k"; } } }
         },
-        animation: { duration: 650, easing: "easeInOutQuart" }
+        animation: { duration: 700, easing: "easeInOutQuart" }
       }
     });
   }
@@ -2113,17 +2129,29 @@
     var yesCapital = lastValue(activeScenario.withCoverage.path);
     var ctx = canvas.getContext("2d");
 
+    var baseGrad = ctx.createLinearGradient(0, 0, canvas.offsetWidth || 400, 0);
+    baseGrad.addColorStop(0, "rgba(77,104,216,.6)");
+    baseGrad.addColorStop(1, "rgba(77,104,216,.25)");
+    var noGrad = ctx.createLinearGradient(0, 0, canvas.offsetWidth || 400, 0);
+    noGrad.addColorStop(0, "rgba(182,85,85,.75)");
+    noGrad.addColorStop(1, "rgba(182,85,85,.3)");
+    var yesGrad = ctx.createLinearGradient(0, 0, canvas.offsetWidth || 400, 0);
+    yesGrad.addColorStop(0, "rgba(62,118,116,.8)");
+    yesGrad.addColorStop(1, "rgba(62,118,116,.35)");
+
     S.ch.gap = new Chart(ctx, {
       type: "bar",
       data: {
-        labels: ["Piano base", "Sinistro scoperto", "Sinistro coperto"],
+        labels: ["Piano base", "Senza copertura", "Con copertura"],
         datasets: [
           {
             label: "Patrimonio finale",
             data: [baseCapital, noCapital, yesCapital],
-            backgroundColor: ["#4d68d8", "#e57373", "#00857c"],
-            borderRadius: 12,
-            maxBarThickness: 58
+            backgroundColor: [baseGrad, noGrad, yesGrad],
+            borderColor: ["rgba(77,104,216,.6)", "rgba(182,85,85,.7)", "rgba(62,118,116,.7)"],
+            borderWidth: 1.5,
+            borderRadius: 10,
+            maxBarThickness: 52
           }
         ]
       },
@@ -2135,25 +2163,37 @@
         plugins: {
           legend: { display: false },
           tooltip: {
+            backgroundColor: "rgba(23,35,51,.88)",
+            titleColor: "#d6e0ee",
+            bodyColor: "#b8c4d4",
+            padding: 12,
+            cornerRadius: 10,
             callbacks: {
               label: function (context) {
-                return "€ " + context.parsed.x.toLocaleString("it-IT");
+                return "Patrimonio: € " + context.parsed.x.toLocaleString("it-IT");
               },
               afterBody: function (items) {
                 var label = items && items[0] ? items[0].label : "";
                 if (label === "Piano base") return ["Patrimonio atteso senza sinistro."];
-                if (label === "Sinistro scoperto") return ["Capitale eroso dallo shock senza coperture."];
-                if (label === "Sinistro coperto") return ["Capitale preservato grazie al trasferimento del rischio."];
+                if (label === "Senza copertura") return ["Capitale eroso dallo shock senza coperture."];
+                if (label === "Con copertura") return ["Capitale preservato trasferendo il rischio."];
                 return [];
               }
             }
           }
         },
         scales: {
-          x: { grid: { color: "rgba(212,227,245,.5)" }, ticks: { font: { family: "Outfit", size: 10 }, color: "#7a93b8", callback: function (value) { return "€" + Math.round(value / 1000) + "k"; } } },
-          y: { grid: { display: false }, ticks: { font: { family: "Outfit", size: 10 }, color: "#5f738e" } }
+          x: {
+            grid: { color: "rgba(16,24,36,.06)" },
+            border: { dash: [4, 3] },
+            ticks: { font: { family: "Manrope", size: 10 }, color: "#8f98a5", callback: function (value) { return "€" + Math.round(value / 1000) + "k"; } }
+          },
+          y: {
+            grid: { display: false },
+            ticks: { font: { family: "Manrope", size: 11, weight: "600" }, color: "#5f6977" }
+          }
         },
-        animation: { duration: 650, easing: "easeInOutQuart" }
+        animation: { duration: 700, easing: "easeInOutQuart" }
       }
     });
   }
@@ -2718,12 +2758,56 @@
     renderScenario(S.activeScenarioId);
   }
 
+  function renderImpactHero(activeScenario) {
+    var el = byId("impactHero");
+    if (!el || !activeScenario || !S.analysis) return;
+    var economics = scenarioEconomics(activeScenario);
+    var noProb = activeScenario.noCoverage.achievement;
+    var yesProb = activeScenario.withCoverage.achievement;
+    var probLift = Math.max(0, yesProb - noProb);
+    var noGap = activeScenario.noCoverage.goalGap;
+    var yesGap = activeScenario.withCoverage.goalGap;
+    var noDelay = activeScenario.noCoverage.delayYears;
+    var yesDelay = activeScenario.withCoverage.delayYears;
+    var premium = economics.activePremium || economics.suggestedPremium;
+    var noCapital = lastValue(activeScenario.noCoverage.path);
+    var yesCapital = lastValue(activeScenario.withCoverage.path);
+    var capitalDelta = Math.max(0, yesCapital - noCapital);
+
+    el.innerHTML =
+      '<div class="impact-hero">' +
+      '<div class="impact-hero-side no">' +
+      '<div class="impact-hero-badge no">✕ Senza copertura</div>' +
+      '<div><div class="impact-hero-prob-num">' + esc(noProb) + '%</div><div class="impact-hero-prob-label">Probabilità di raggiungere l\'obiettivo</div></div>' +
+      '<div class="impact-hero-metrics">' +
+      '<div class="impact-hero-metric"><div class="impact-hero-metric-k">Gap finanziario</div><div class="impact-hero-metric-v">' + esc(noGap ? "€ " + currency(noGap) : "—") + '</div><div class="impact-hero-metric-s">' + esc(noGap ? "Capitale mancante al target" : "Target formalmente raggiunto") + '</div></div>' +
+      '<div class="impact-hero-metric"><div class="impact-hero-metric-k">Ritardo stimato</div><div class="impact-hero-metric-v">' + esc(compactDelay(noDelay) || "—") + '</div><div class="impact-hero-metric-s">Slittamento sull\'obiettivo</div></div>' +
+      '</div>' +
+      '</div>' +
+      '<div class="impact-hero-center">' +
+      '<div class="impact-hero-arrow">↑</div>' +
+      '<div class="impact-hero-lift"><div class="impact-hero-lift-v">+' + esc(probLift) + ' pt</div><div class="impact-hero-lift-s">Prob. recuperata</div></div>' +
+      (capitalDelta > 0 ? '<div class="impact-hero-lift"><div class="impact-hero-lift-v">+€ ' + esc(Math.round(capitalDelta / 1000) + "k") + '</div><div class="impact-hero-lift-s">Capitale salvato</div></div>' : '') +
+      (premium ? '<div class="impact-hero-premium"><div class="impact-hero-premium-v">€ ' + esc(currency(premium)) + '/mese</div><div class="impact-hero-premium-s">Premio</div></div>' : '') +
+      '</div>' +
+      '<div class="impact-hero-side yes">' +
+      '<div class="impact-hero-badge yes">✓ Con copertura</div>' +
+      '<div><div class="impact-hero-prob-num">' + esc(yesProb) + '%</div><div class="impact-hero-prob-label">Probabilità di raggiungere l\'obiettivo</div></div>' +
+      '<div class="impact-hero-metrics">' +
+      '<div class="impact-hero-metric"><div class="impact-hero-metric-k">Gap finanziario</div><div class="impact-hero-metric-v">' + esc(yesGap ? "€ " + currency(yesGap) : "—") + '</div><div class="impact-hero-metric-s">' + esc(yesGap ? "Gap residuo dopo copertura" : "Target protetto") + '</div></div>' +
+      '<div class="impact-hero-metric"><div class="impact-hero-metric-k">Ritardo stimato</div><div class="impact-hero-metric-v">' + esc(compactDelay(yesDelay) || "—") + '</div><div class="impact-hero-metric-s">Con coperture attive</div></div>' +
+      '</div>' +
+      '</div>' +
+      '</div>';
+  }
+
   function renderScenario(scenarioId) {
     if (!S.analysis) return;
     var collection = currentScenarioCollection();
     if (!collection[scenarioId]) return;
     S.activeScenarioId = scenarioId;
     var activeScenario = collection[scenarioId];
+    renderImpactHero(activeScenario);
     renderGoalFocusGrid();
     renderGoalGaugeGrid();
     renderCoverageSummaryBand();
