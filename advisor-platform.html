@@ -4591,6 +4591,188 @@ button{
   }
 }
 
+/* ── NAV STEP SUB-LABELS ── */
+.ns-body{display:flex;flex-direction:column;gap:1px;line-height:1}
+.ns-lbl{font-size:11.5px;font-weight:700;letter-spacing:-.01em}
+.ns-sub{font-size:9.5px;font-weight:500;color:var(--tl);letter-spacing:.01em;opacity:.85}
+.ns.on .ns-sub{color:var(--tm);opacity:1}
+.ns.dn .ns-sub{color:var(--teal);opacity:.8}
+
+/* ── IMPACT HERO ── */
+.impact-hero{
+  display:grid;
+  grid-template-columns:1fr 110px 1fr;
+  background:#fff;
+  border:1px solid var(--brd);
+  border-radius:24px;
+  box-shadow:var(--sh2);
+  overflow:hidden;
+  margin-bottom:20px;
+  animation:up .4s ease both;
+}
+.impact-hero-side{
+  padding:28px 32px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.impact-hero-side.no{
+  background:linear-gradient(145deg,#fdf5f5 0%,#faf0f0 100%);
+  border-right:1px solid rgba(182,85,85,.1);
+}
+.impact-hero-side.yes{
+  background:linear-gradient(145deg,#f3f9f6 0%,#eef7f3 100%);
+}
+.impact-hero-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:4px 11px;
+  border-radius:999px;
+  font-size:10px;
+  font-weight:800;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+  width:fit-content;
+}
+.impact-hero-badge.no{background:rgba(182,85,85,.1);color:var(--red)}
+.impact-hero-badge.yes{background:rgba(62,118,116,.1);color:var(--teal)}
+.impact-hero-prob-num{
+  font-size:clamp(2.6rem,4.5vw,3.8rem);
+  font-weight:900;
+  letter-spacing:-.05em;
+  line-height:1;
+}
+.impact-hero-side.no .impact-hero-prob-num{color:var(--red)}
+.impact-hero-side.yes .impact-hero-prob-num{color:var(--teal)}
+.impact-hero-prob-label{
+  font-size:11.5px;
+  font-weight:600;
+  color:var(--tm);
+  margin-top:3px;
+}
+.impact-hero-metrics{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+.impact-hero-metric{display:flex;flex-direction:column;gap:2px}
+.impact-hero-metric-k{
+  font-size:9.5px;
+  font-weight:700;
+  color:var(--tl);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.impact-hero-metric-v{
+  font-size:17px;
+  font-weight:800;
+  letter-spacing:-.03em;
+  color:var(--td);
+}
+.impact-hero-metric-s{font-size:10px;color:var(--tm);line-height:1.35}
+.impact-hero-center{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  background:linear-gradient(180deg,rgba(255,255,255,.6) 0%,rgba(240,244,248,.8) 100%);
+  border-left:1px solid var(--brd);
+  border-right:1px solid var(--brd);
+  padding:20px 12px;
+}
+.impact-hero-arrow{
+  font-size:20px;
+  color:var(--blue);
+  opacity:.5;
+}
+.impact-hero-lift{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  text-align:center;
+}
+.impact-hero-lift-v{
+  font-size:1.55rem;
+  font-weight:900;
+  letter-spacing:-.04em;
+  color:var(--teal);
+  line-height:1;
+}
+.impact-hero-lift-s{
+  font-size:8.5px;
+  font-weight:700;
+  color:var(--tl);
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+.impact-hero-premium{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:2px;
+  padding:10px 12px;
+  border-radius:14px;
+  background:rgba(34,58,87,.06);
+  border:1px solid rgba(34,58,87,.1);
+  text-align:center;
+}
+.impact-hero-premium-v{
+  font-size:13px;
+  font-weight:800;
+  color:var(--blue);
+  letter-spacing:-.02em;
+}
+.impact-hero-premium-s{
+  font-size:8.5px;
+  font-weight:700;
+  color:var(--tl);
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+
+/* ── CHART SECTION ENHANCEMENT ── */
+.simple-graph-section{
+  border:1px solid var(--brd);
+  border-radius:24px;
+  background:#fff;
+  padding:28px;
+  box-shadow:var(--sh1);
+  margin-top:20px;
+}
+.simple-graph-head{
+  padding-bottom:20px;
+  border-bottom:1px solid var(--brd);
+  margin-bottom:20px;
+}
+.simple-graph-card{
+  border:1px solid var(--brd);
+  border-radius:18px;
+  background:rgba(250,251,253,.7);
+}
+.simple-graph-card-title{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.simple-graph-card-title::before{
+  content:'';
+  display:inline-block;
+  width:3px;
+  height:16px;
+  border-radius:2px;
+  background:linear-gradient(180deg,var(--blue),var(--teal));
+  flex-shrink:0;
+}
+.lr{padding-top:4px;border-top:1px solid var(--brd);margin-top:12px}
+
+@media (max-width:760px){
+  .impact-hero{grid-template-columns:1fr}
+  .impact-hero-center{flex-direction:row;padding:14px 20px;border:none;border-top:1px solid var(--brd);border-bottom:1px solid var(--brd)}
+}
+
 @media print{
   body{background:#fff}
   body *{visibility:hidden !important}
@@ -4630,11 +4812,11 @@ button{
     <div><div class="nb">FamilyAdvisor Pro</div><div class="nt">Piattaforma goal-based · Allianz</div></div>
   </div>
   <div class="nsteps">
-    <div class="ns on" id="n1" onclick="goTo(1)"><div class="nn">1</div>Raccolta dati</div>
+    <div class="ns on" id="n1" onclick="goTo(1)"><div class="nn">1</div><div class="ns-body"><div class="ns-lbl">Raccolta dati</div><div class="ns-sub">Conversazione libera</div></div></div>
     <div class="nar">›</div>
-    <div class="ns" id="n2" onclick="goTo(2)"><div class="nn">2</div>Profilo cliente</div>
+    <div class="ns" id="n2" onclick="goTo(2)"><div class="nn">2</div><div class="ns-body"><div class="ns-lbl">Profilo cliente</div><div class="ns-sub">Questionario essenziale</div></div></div>
     <div class="nar">›</div>
-    <div class="ns" id="n3" onclick="goTo(3)"><div class="nn">3</div>Scenari & Impatto</div>
+    <div class="ns" id="n3" onclick="goTo(3)"><div class="nn">3</div><div class="ns-body"><div class="ns-lbl">Scenari & Impatto</div><div class="ns-sub">Analisi e coperture</div></div></div>
   </div>
   <div class="nra">
     <button class="nrb" onclick="newClient()">Nuovo cliente</button>
@@ -4920,6 +5102,8 @@ button{
     <button class="bgho" onclick="goTo(2)">← Piano cliente</button>
   </div>
 
+  <div id="impactHero"></div>
+
   <div class="gfocus-grid" id="goalFocusGrid"></div>
 
   <div class="goal-gauge-section">
@@ -4973,17 +5157,17 @@ button{
       <div class="simple-graph-card">
         <div class="simple-graph-card-title">Traiettoria patrimoniale</div>
         <div class="simple-graph-card-sub" id="simplePathLabel"></div>
-        <div class="ca" style="height:240px"><canvas id="pathC"></canvas></div>
+        <div class="ca" style="height:300px"><canvas id="pathC"></canvas></div>
         <div class="lr">
           <div class="li"><div class="ll" style="background:#4d68d8"></div>Piano base</div>
-          <div class="li"><div class="ll" style="background:#e57373"></div>Sinistro scoperto</div>
+          <div class="li"><div class="ll" style="background:#b65555"></div>Sinistro scoperto</div>
           <div class="li"><div class="ll" style="background:var(--teal)"></div>Sinistro coperto</div>
         </div>
       </div>
       <div class="simple-graph-card">
         <div class="simple-graph-card-title">Patrimonio alla data obiettivo</div>
         <div class="simple-graph-card-sub" id="simpleGapLabel"></div>
-        <div class="ca" style="height:240px"><canvas id="gapC"></canvas></div>
+        <div class="ca" style="height:300px"><canvas id="gapC"></canvas></div>
         <div class="lr">
           <div class="li"><div class="ll" style="background:#4d68d8"></div>Piano base</div>
           <div class="li"><div class="ll" style="background:#e57373"></div>Sinistro scoperto</div>
