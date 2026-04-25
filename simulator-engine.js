@@ -1357,7 +1357,7 @@
       return 20 + (profile.childrenCount > 0 ? 28 : 0) + (profile.spouseName ? 12 : 0) + (goalIds.indexOf("home") >= 0 ? 8 : 0) + (goalIds.indexOf("education") >= 0 ? 10 : 0);
     }
     if (productId === "income_protection") {
-      return 24 + (profile.netMonthlyIncome > 0 ? 18 : 0) + (profile.occupationRisk === "alto" ? 15 : profile.occupationRisk === "medio" ? 8 : 4) + (profile.childrenCount > 0 ? 10 : 0);
+      return 20 + (profile.netMonthlyIncome > 0 ? 16 : 0) + (profile.occupationRisk === "alto" ? 14 : profile.occupationRisk === "medio" ? 8 : 4) + (profile.childrenCount > 0 ? 10 : 0);
     }
     if (productId === "rc_family") {
       return 20 + (profile.housingStatus === "Affittuario" ? 6 : profile.housingStatus === "Con mutuo" ? 24 : 28) + (profile.childrenCount > 0 ? 12 : 0) + (profile.totalAssets > 60000 ? 8 : 0);
@@ -1369,7 +1369,7 @@
       return 10 + (profile.age >= 45 ? 15 : 5) + (segment.id === "independent-pro" ? 14 : 0) + (needs.healthCapital >= 25000 ? 8 : 0);
     }
     if (productId === "accident") {
-      return 12 + (profile.netMonthlyIncome > 0 ? 12 : 0) + (profile.occupationRisk === "alto" ? 18 : profile.occupationRisk === "medio" ? 11 : 5) + (profile.age >= 35 ? 7 : 2);
+      return 12 + (profile.netMonthlyIncome > 0 ? 10 : 0) + (profile.occupationRisk === "alto" ? 20 : profile.occupationRisk === "medio" ? 13 : 5) + (profile.childrenCount > 0 ? 5 : 0) + (profile.age >= 35 ? 7 : 2);
     }
     if (productId === "mortgage") {
       return profile.housingStatus === "Con mutuo" ? 55 : 0;
@@ -1499,6 +1499,9 @@
 
     if (profile.netMonthlyIncome > 0) {
       addDefaultSelection(selectionMap, recommendations, "income_protection", "protegge la continuita del reddito");
+      if (profile.occupationRisk === "alto") {
+        addDefaultSelection(selectionMap, recommendations, "accident", "complemento essenziale: rischio infortuni elevato richiede copertura specifica da infortunio");
+      }
     }
     if (profile.childrenCount > 0 || profile.spouseName) {
       addDefaultSelection(selectionMap, recommendations, "tcm", "difende il nucleo familiare in caso di decesso");
@@ -2151,11 +2154,12 @@
     ip: {
       upfrontField: "invalidityCapital", upfrontStep: 5000,
       monthlyField: "netMonthlyIncome", monthlySource: "profile", monthlyStep: 50,
-      impact: { upfront: 0.25, monthly: 0.55, durationMonths: 120 },
+      impact: { upfront: 0.25, monthly: 0.45, durationMonths: 96 },
       products: {
-        income_protection: { upfront: 0.18, durationMonths: 120,
+        income_protection: { upfront: 0.18, durationMonths: 96,
                               monthlyField: "incomeProtectionMonthly", monthly: 1.00 },
-        accident:          { upfront: 0.22, monthly: 0, durationMonths: 0 },
+        accident:          { upfront: 0.22, monthlyField: "incomeProtectionMonthly",
+                             monthly: 0.30, durationMonths: 60 },
         mortgage:          { upfrontField: "mortgageBalance", upfrontStep: 10000,
                              upfront: 0.80, monthly: 0, durationMonths: 0 }
       }
