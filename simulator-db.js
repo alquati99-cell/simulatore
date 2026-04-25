@@ -10,7 +10,7 @@
     demoChatSeed:
       "Marco Ferretti, 42 anni, sposato con Giulia 38 anni, 2 figli (8 e 5 anni), ingegnere, RAL 65.000€, patrimonio 80.000€, risparmio mensile 800€, affittuario. Obiettivi: pensione integrativa da 65 anni, acquisto prima casa entro 5 anni budget 250k, fondo studi per i figli, protezione reddito familiare.",
     defaults: {
-      trialCount: 180,
+      trialCount: 1000,
       eventYearByScenario: {
         rc: 1,
         morte: 1,

@@ -2126,79 +2126,115 @@
     };
   }
 
+  // Central actuarial mapping table. Both scenarioImpact and productSupport read from here
+  // so that coverage fractions are declared once and gaps are explicit declarations, not
+  // accidents of two disconnected numbers.
+  //
+  // upfrontField / monthlyField: property name on needs (or profile when monthlySource="profile")
+  // upfrontStep / monthlyStep: rounding granularity (0 = no rounding)
+  // products[id].upfrontField overrides the scenario base for products with a different capital base
+  // (e.g. mortgage uses mortgageBalance, not the scenario's primary capital)
+  //
+  // health → ip cross-coverage is intentionally absent: healthCapital ≠ invalidityCapital,
+  // so mixing them would produce economically meaningless gap numbers.
+  // health → ltc is kept but now uses ltcCapital as its homogeneous base.
+  var COVERAGE_MATRIX = {
+    morte: {
+      upfrontField: "deathCapital",
+      impact: { upfront: 1.00, monthly: 0, durationMonths: 0 },
+      products: {
+        tcm:      { upfront: 1.00, monthly: 0, durationMonths: 0 },
+        mortgage: { upfrontField: "mortgageBalance", upfrontStep: 10000,
+                    upfront: 0.80, monthly: 0, durationMonths: 0 }
+      }
+    },
+    ip: {
+      upfrontField: "invalidityCapital", upfrontStep: 5000,
+      monthlyField: "netMonthlyIncome", monthlySource: "profile", monthlyStep: 50,
+      impact: { upfront: 0.25, monthly: 0.55, durationMonths: 120 },
+      products: {
+        income_protection: { upfront: 0.18, durationMonths: 120,
+                              monthlyField: "incomeProtectionMonthly", monthly: 1.00 },
+        accident:          { upfront: 0.22, monthly: 0, durationMonths: 0 },
+        mortgage:          { upfrontField: "mortgageBalance", upfrontStep: 10000,
+                             upfront: 0.80, monthly: 0, durationMonths: 0 }
+      }
+    },
+    ltc: {
+      upfrontField: "ltcCapital", upfrontStep: 5000,
+      monthlyField: "ltcMonthly",
+      impact: { upfront: 0.18, monthly: 1.00, durationMonths: 60 },
+      products: {
+        ltc:    { upfront: 0.12, monthly: 1.00, durationMonths: 60 },
+        health: { upfront: 0.45, monthly: 0,    durationMonths: 0 }
+      }
+    },
+    rc: {
+      upfrontField: "rcClaimLoss",
+      impact: { upfront: 1.00, monthly: 0, durationMonths: 0 },
+      products: {
+        rc_family: { upfront: 1.00, monthly: 0, durationMonths: 0 }
+      }
+    },
+    casa: {
+      upfrontField: "homeDamageLoss",
+      impact: { upfront: 1.00, monthly: 0, durationMonths: 0 },
+      products: {
+        rc_family: { upfrontStep: 1000, upfront: 0.85, monthly: 0, durationMonths: 0 }
+      }
+    }
+  };
+
+  function applyStep(value, step) {
+    return step ? roundStep(value, step) : value;
+  }
+
   function scenarioImpact(scenarioId, profile, needs) {
-    if (scenarioId === "rc") {
-      return {
-        upfrontLoss: needs.rcClaimLoss,
-        monthlyLoss: 0,
-        durationMonths: 0
-      };
-    }
-    if (scenarioId === "morte") {
-      return {
-        upfrontLoss: needs.deathCapital,
-        monthlyLoss: 0,
-        durationMonths: 0
-      };
-    }
-    if (scenarioId === "ip") {
-      return {
-        upfrontLoss: roundStep(needs.invalidityCapital * 0.25, 5000),
-        monthlyLoss: roundStep(profile.netMonthlyIncome * 0.55, 50),
-        durationMonths: 120
-      };
-    }
-    if (scenarioId === "ltc") {
-      return {
-        upfrontLoss: roundStep(needs.ltcCapital * 0.18, 5000),
-        monthlyLoss: needs.ltcMonthly,
-        durationMonths: 60
-      };
-    }
-    if (scenarioId === "casa") {
-      return {
-        upfrontLoss: needs.homeDamageLoss,
-        monthlyLoss: 0,
-        durationMonths: 0
-      };
+    var entry = COVERAGE_MATRIX[scenarioId];
+    if (!entry) return { upfrontLoss: 0, monthlyLoss: 0, durationMonths: 0 };
+    var impact = entry.impact;
+    var upfrontBase = needs[entry.upfrontField] || 0;
+    var monthlyRaw = 0;
+    if (impact.monthly && entry.monthlyField) {
+      monthlyRaw = entry.monthlySource === "profile"
+        ? profile[entry.monthlyField] || 0
+        : needs[entry.monthlyField] || 0;
     }
     return {
-      upfrontLoss: 0,
-      monthlyLoss: 0,
-      durationMonths: 0
+      upfrontLoss: impact.upfront
+        ? applyStep(upfrontBase * impact.upfront, entry.upfrontStep)
+        : 0,
+      monthlyLoss: impact.monthly
+        ? applyStep(monthlyRaw * impact.monthly, entry.monthlyStep)
+        : 0,
+      durationMonths: impact.durationMonths
     };
   }
 
   function productSupport(productId, scenarioId, needs) {
-    if (productId === "tcm" && scenarioId === "morte") {
-      return { upfront: needs.deathCapital, monthly: 0, durationMonths: 0 };
-    }
-    if (productId === "income_protection" && scenarioId === "ip") {
-      return {
-        upfront: roundStep(needs.invalidityCapital * 0.18, 5000),
-        monthly: needs.incomeProtectionMonthly,
-        durationMonths: 120
-      };
-    }
-    if (productId === "rc_family" && scenarioId === "rc") {
-      return { upfront: needs.rcClaimLoss, monthly: 0, durationMonths: 0 };
-    }
-    if (productId === "rc_family" && scenarioId === "casa") {
-      return { upfront: roundStep(needs.homeDamageLoss * 0.85, 1000), monthly: 0, durationMonths: 0 };
-    }
-    if (productId === "ltc" && scenarioId === "ltc") {
-      return { upfront: roundStep(needs.ltcCapital * 0.12, 5000), monthly: needs.ltcMonthly, durationMonths: 60 };
-    }
-    if (productId === "health" && (scenarioId === "ip" || scenarioId === "ltc")) {
-      return { upfront: roundStep(needs.healthCapital * (scenarioId === "ip" ? 0.35 : 0.45), 5000), monthly: 0, durationMonths: 0 };
-    }
-    if (productId === "accident" && scenarioId === "ip") {
-      return { upfront: roundStep(needs.invalidityCapital * 0.22, 5000), monthly: 0, durationMonths: 0 };
-    }
-    if (productId === "mortgage" && (scenarioId === "morte" || scenarioId === "ip")) {
-      return { upfront: roundStep(needs.mortgageBalance * 0.8, 10000), monthly: 0, durationMonths: 0 };
-    }
-    return { upfront: 0, monthly: 0, durationMonths: 0 };
+    var scenarioEntry = COVERAGE_MATRIX[scenarioId];
+    if (!scenarioEntry) return { upfront: 0, monthly: 0, durationMonths: 0 };
+    var productEntry = scenarioEntry.products && scenarioEntry.products[productId];
+    if (!productEntry) return { upfront: 0, monthly: 0, durationMonths: 0 };
+    var upfrontField = productEntry.upfrontField || scenarioEntry.upfrontField;
+    var upfrontBase = needs[upfrontField] || 0;
+    var upfrontStep = productEntry.upfrontStep !== undefined
+      ? productEntry.upfrontStep
+      : (scenarioEntry.upfrontStep || 0);
+    var monthlyField = productEntry.monthlyField || scenarioEntry.monthlyField;
+    var monthlyBase = productEntry.monthly && monthlyField ? needs[monthlyField] || 0 : 0;
+    var monthlyStep = productEntry.monthlyStep !== undefined
+      ? productEntry.monthlyStep
+      : (scenarioEntry.monthlyStep || 0);
+    return {
+      upfront: productEntry.upfront
+        ? applyStep(upfrontBase * productEntry.upfront, upfrontStep)
+        : 0,
+      monthly: productEntry.monthly
+        ? applyStep(monthlyBase * productEntry.monthly, monthlyStep)
+        : 0,
+      durationMonths: productEntry.durationMonths
+    };
   }
 
   function scenarioLikelihoodFactor(scenarioId, profile, goalId) {
@@ -2464,8 +2500,6 @@
     var trials = DB.defaults.trialCount;
     var consumeCapitalOnGoal = config.consumeCapitalOnGoal !== false;
     var horizonMonths = config.horizonYears * 12;
-    var eventYear = safeNumber(config.eventYear, DB.defaults.eventYearByScenario[config.scenarioId] || 2);
-    var eventMonth = clamp(eventYear * 12, 6, horizonMonths - 1);
     var goalSchedule = buildGoalSchedule(goals, horizonMonths);
     var baseContribution = Math.max(0, config.monthlySavings - config.premiumDrag);
     var totalWeight = sum(goals.map(function (goal) { return goal.priority; })) || 1;
@@ -2477,6 +2511,19 @@
     var fullSuccessAccumulator = 0;
     var endingCapitalAccumulator = 0;
     var baseSeed = hashString([profile.name, config.scenarioId, config.seedLabel, config.horizonYears].join("|"));
+
+    // Accept an events array directly (for bundles with per-scenario timing) or fall back
+    // to the legacy single-event interface for backward compatibility.
+    var events = config.events;
+    if (!events) {
+      var eventYear = safeNumber(config.eventYear, DB.defaults.eventYearByScenario[config.scenarioId] || 2);
+      events = [{
+        eventMonth: clamp(eventYear * 12, 6, horizonMonths - 1),
+        upfrontLoss: config.netImpact.upfrontLoss,
+        monthlyLoss: config.netImpact.monthlyLoss,
+        durationMonths: config.netImpact.durationMonths
+      }];
+    }
 
     for (var targetMonth = 0; targetMonth <= horizonMonths; targetMonth += 1) {
       var cumulativeTarget = goals
@@ -2495,11 +2542,18 @@
       averagePath[0] += capital;
 
       for (var month = 1; month <= horizonMonths; month += 1) {
-        if (month === eventMonth) capital = Math.max(0, capital - config.netImpact.upfrontLoss);
+        for (var ei = 0; ei < events.length; ei += 1) {
+          if (month === events[ei].eventMonth) {
+            capital = Math.max(0, capital - events[ei].upfrontLoss);
+          }
+        }
 
         var contribution = baseContribution;
-        if (month >= eventMonth && month < eventMonth + config.netImpact.durationMonths) {
-          contribution -= config.netImpact.monthlyLoss;
+        for (var ej = 0; ej < events.length; ej += 1) {
+          var ev = events[ej];
+          if (ev.monthlyLoss && month >= ev.eventMonth && month < ev.eventMonth + ev.durationMonths) {
+            contribution -= ev.monthlyLoss;
+          }
         }
 
         capital = Math.max(0, capital * (1 + monthlyMean + monthlyVolatility * randomNormal(rng)) + contribution);
@@ -2584,6 +2638,9 @@
     var horizonYears = context.horizonYears;
     var selectedProducts = context.selectedProducts;
     var premiumDrag = context.premiumDrag;
+    var horizonMonths = horizonYears * 12;
+
+    // Combined impact used for non-simulation metrics (retention %, protection %, total loss value)
     var rawImpact = combineScenarioImpact(scenarioIds, profile, needs);
     var withSupport = aggregateSupportForScenarioIds(selectedProducts, scenarioIds, needs);
     var noCoverageImpact = {
@@ -2596,21 +2653,41 @@
       monthlyLoss: Math.max(0, rawImpact.monthlyLoss - withSupport.monthly),
       durationMonths: rawImpact.durationMonths
     };
+
+    // Per-scenario events: each scenario fires at its own natural month so that bundle
+    // simulations don't collapse all events to the earliest one (fix for min(years) bug).
+    var noCoverageEvents = scenarioIds.map(function (sId) {
+      var impact = scenarioImpact(sId, profile, needs);
+      return {
+        eventMonth: clamp((DB.defaults.eventYearByScenario[sId] || 2) * 12, 6, horizonMonths - 1),
+        upfrontLoss: impact.upfrontLoss,
+        monthlyLoss: impact.monthlyLoss,
+        durationMonths: impact.durationMonths
+      };
+    });
+    var withCoverageEvents = scenarioIds.map(function (sId) {
+      var impact = scenarioImpact(sId, profile, needs);
+      var support = aggregateSupport(selectedProducts, sId, needs);
+      return {
+        eventMonth: clamp((DB.defaults.eventYearByScenario[sId] || 2) * 12, 6, horizonMonths - 1),
+        upfrontLoss: Math.max(0, impact.upfrontLoss - support.upfront),
+        monthlyLoss: Math.max(0, impact.monthlyLoss - support.monthly),
+        durationMonths: impact.durationMonths
+      };
+    });
+
+    // Anchor eventYear on the earliest scenario for seed labelling (unchanged semantics)
     var eventYear = scenarioYearForIds(scenarioIds);
     var baseProjection = runProjection({
       profile: profile,
       goals: [focusGoal],
       scenarioId: scenarioIds[0],
-      eventYear: eventYear,
       horizonYears: horizonYears,
       initialCapital: profile.totalAssets,
       monthlySavings: profile.monthlySavings,
       premiumDrag: 0,
-      netImpact: {
-        upfrontLoss: 0,
-        monthlyLoss: 0,
-        durationMonths: 0
-      },
+      events: [{ eventMonth: clamp(eventYear * 12, 6, horizonMonths - 1),
+                 upfrontLoss: 0, monthlyLoss: 0, durationMonths: 0 }],
       seedLabel: "base|" + focusGoal.id + "|" + meta.id,
       consumeCapitalOnGoal: false
     });
@@ -2618,25 +2695,37 @@
       profile: profile,
       goals: [focusGoal],
       scenarioId: scenarioIds[0],
-      eventYear: eventYear,
       horizonYears: horizonYears,
       initialCapital: profile.totalAssets,
       monthlySavings: profile.monthlySavings,
       premiumDrag: 0,
-      netImpact: noCoverageImpact,
+      events: noCoverageEvents,
       seedLabel: "no|" + focusGoal.id + "|" + meta.id,
+      consumeCapitalOnGoal: false
+    });
+    // Intermediate projection: coverage shield active but zero premium drag.
+    // Used to decompose the net delta into protection gain vs. premium cost.
+    var coverageProjection = runProjection({
+      profile: profile,
+      goals: [focusGoal],
+      scenarioId: scenarioIds[0],
+      horizonYears: horizonYears,
+      initialCapital: profile.totalAssets,
+      monthlySavings: profile.monthlySavings,
+      premiumDrag: 0,
+      events: withCoverageEvents,
+      seedLabel: "cov|" + focusGoal.id + "|" + meta.id,
       consumeCapitalOnGoal: false
     });
     var yesProjection = runProjection({
       profile: profile,
       goals: [focusGoal],
       scenarioId: scenarioIds[0],
-      eventYear: eventYear,
       horizonYears: horizonYears,
       initialCapital: profile.totalAssets,
       monthlySavings: profile.monthlySavings,
       premiumDrag: premiumDrag,
-      netImpact: withCoverageImpact,
+      events: withCoverageEvents,
       seedLabel: "yes|" + focusGoal.id + "|" + meta.id,
       consumeCapitalOnGoal: false
     });
@@ -2648,6 +2737,7 @@
     var noRetention = profile.totalAssets ? Math.round((Math.max(0, profile.totalAssets - noCoverageImpact.upfrontLoss) / profile.totalAssets) * 100) : 0;
     var yesRetention = profile.totalAssets ? Math.round((Math.max(0, profile.totalAssets - withCoverageImpact.upfrontLoss) / profile.totalAssets) * 100) : 0;
     var noAchievement = Math.round(noProjection.weightedAchievement * 100);
+    var coverageAchievement = Math.round(coverageProjection.weightedAchievement * 100);
     var yesAchievement = Math.round(yesProjection.weightedAchievement * 100);
     var baseAchievement = Math.round(baseProjection.weightedAchievement * 100);
     var baseGoalImpact = buildGoalImpact(
@@ -2671,6 +2761,14 @@
     var noSustainability = Math.round(noAchievement * 0.6 + noRetention * 0.4);
     var yesSustainability = Math.round(yesAchievement * 0.6 + yesRetention * 0.4);
     var achievementDelta = Math.max(0, yesAchievement - noAchievement);
+    // Decompose the net achievement delta into its two additive components so the UI
+    // can show "+Xpp da copertura, −Ypp da costo premio = +Zpp netto" instead of a
+    // single opaque number that blends protection and cost.
+    var deltaBreakdown = {
+      coverageGain: coverageAchievement - noAchievement,
+      premiumCost: yesAchievement - coverageAchievement,
+      net: achievementDelta
+    };
     var eventLabels = scenarioIds.map(function (scenarioId) {
       var scenarioMeta = scenarioMetaById(scenarioId);
       return scenarioMeta ? scenarioMeta.shortLabel : scenarioId;
@@ -2730,7 +2828,8 @@
       },
       targetPath: yesProjection.targetPath,
       loss: rawImpact,
-      totalLossValue: totalLossValue || rawImpact.upfrontLoss
+      totalLossValue: totalLossValue || rawImpact.upfrontLoss,
+      deltaBreakdown: deltaBreakdown
     };
   }
 
