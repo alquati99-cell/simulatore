@@ -2398,8 +2398,8 @@
 
     var pivot = candidates[0];
     var foundation = goalFoundation(goal, context);
-    var noScore = goalResilienceScore(goal, context.profile, pivot, foundation.score, "noCoverage");
-    var yesScore = goalResilienceScore(goal, context.profile, pivot, foundation.score, "withCoverage");
+    var noScore = pivot.noCoverage.achievement;
+    var yesScore = pivot.withCoverage.achievement;
     return {
       goalId: goal.id,
       goalName: goal.name,
@@ -2639,6 +2639,7 @@
     var profile = context.profile;
     var needs = context.needs;
     var focusGoal = context.focusGoal;
+    var goals = context.goals || [focusGoal];
     var horizonYears = context.horizonYears;
     var selectedProducts = context.selectedProducts;
     var premiumDrag = context.premiumDrag;
@@ -2684,7 +2685,7 @@
     var eventYear = scenarioYearForIds(scenarioIds);
     var baseProjection = runProjection({
       profile: profile,
-      goals: [focusGoal],
+      goals: goals,
       scenarioId: scenarioIds[0],
       horizonYears: horizonYears,
       initialCapital: profile.totalAssets,
@@ -2693,11 +2694,11 @@
       events: [{ eventMonth: clamp(eventYear * 12, 6, horizonMonths - 1),
                  upfrontLoss: 0, monthlyLoss: 0, durationMonths: 0 }],
       seedLabel: "base|" + focusGoal.id + "|" + meta.id,
-      consumeCapitalOnGoal: false
+      consumeCapitalOnGoal: true
     });
     var noProjection = runProjection({
       profile: profile,
-      goals: [focusGoal],
+      goals: goals,
       scenarioId: scenarioIds[0],
       horizonYears: horizonYears,
       initialCapital: profile.totalAssets,
@@ -2705,13 +2706,13 @@
       premiumDrag: 0,
       events: noCoverageEvents,
       seedLabel: "no|" + focusGoal.id + "|" + meta.id,
-      consumeCapitalOnGoal: false
+      consumeCapitalOnGoal: true
     });
     // Intermediate projection: coverage shield active but zero premium drag.
     // Used to decompose the net delta into protection gain vs. premium cost.
     var coverageProjection = runProjection({
       profile: profile,
-      goals: [focusGoal],
+      goals: goals,
       scenarioId: scenarioIds[0],
       horizonYears: horizonYears,
       initialCapital: profile.totalAssets,
@@ -2719,11 +2720,11 @@
       premiumDrag: 0,
       events: withCoverageEvents,
       seedLabel: "cov|" + focusGoal.id + "|" + meta.id,
-      consumeCapitalOnGoal: false
+      consumeCapitalOnGoal: true
     });
     var yesProjection = runProjection({
       profile: profile,
-      goals: [focusGoal],
+      goals: goals,
       scenarioId: scenarioIds[0],
       horizonYears: horizonYears,
       initialCapital: profile.totalAssets,
@@ -2731,7 +2732,7 @@
       premiumDrag: premiumDrag,
       events: withCoverageEvents,
       seedLabel: "yes|" + focusGoal.id + "|" + meta.id,
-      consumeCapitalOnGoal: false
+      consumeCapitalOnGoal: true
     });
     var totalLossValue = rawImpact.upfrontLoss + rawImpact.monthlyLoss * rawImpact.durationMonths;
     var noCoverageProtected = totalLossValue ? 0 : 100;
@@ -2862,6 +2863,7 @@
       profile: profile,
       needs: plan.needs,
       focusGoal: focusGoal,
+      goals: goals,
       horizonYears: horizonYears,
       selectedProducts: selectedProducts,
       premiumDrag: premiumDrag
