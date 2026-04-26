@@ -2501,7 +2501,7 @@
     var profile = config.profile;
     var goals = config.goals;
     var riskProfile = DB.defaults.riskProfiles[profile.riskProfileId] || DB.defaults.riskProfiles.bilanciato;
-    var trials = DB.defaults.trialCount;
+    var trials = config.trialCount || DB.defaults.trialCount;
     var consumeCapitalOnGoal = config.consumeCapitalOnGoal !== false;
     var horizonMonths = config.horizonYears * 12;
     var goalSchedule = buildGoalSchedule(goals, horizonMonths);
@@ -2541,14 +2541,16 @@
     for (var trial = 0; trial < trials; trial += 1) {
       var rng = createRng(baseSeed + trial * 97);
       var capital = config.initialCapital;
+      var pathCapital = config.initialCapital;
       var achievedWeight = 0;
 
-      averagePath[0] += capital;
+      averagePath[0] += pathCapital;
 
       for (var month = 1; month <= horizonMonths; month += 1) {
         for (var ei = 0; ei < events.length; ei += 1) {
           if (month === events[ei].eventMonth) {
             capital = Math.max(0, capital - events[ei].upfrontLoss);
+            pathCapital = Math.max(0, pathCapital - events[ei].upfrontLoss);
           }
         }
 
@@ -2560,19 +2562,23 @@
           }
         }
 
-        capital = Math.max(0, capital * (1 + monthlyMean + monthlyVolatility * randomNormal(rng)) + contribution);
+        var noise = randomNormal(rng);
+        capital = Math.max(0, capital * (1 + monthlyMean + monthlyVolatility * noise) + contribution);
+        pathCapital = Math.max(0, pathCapital * (1 + monthlyMean + monthlyVolatility * noise) + contribution);
 
         if (goalSchedule.has(month)) {
           goalSchedule.get(month).forEach(function (goal) {
             var achievementRatio = goal.targetAmount > 0 ? clamp(capital / goal.targetAmount, 0, 1) : 1;
             achievedWeight += goal.priority * achievementRatio;
             if (consumeCapitalOnGoal) {
+              // Only capital (achievement tracking) is consumed; pathCapital keeps the
+              // organic trajectory so the wealth chart is not distorted by goal payouts.
               capital = Math.max(0, capital - Math.min(capital, goal.targetAmount));
             }
           });
         }
 
-        averagePath[month] += capital;
+        averagePath[month] += pathCapital;
       }
 
       var weightedAchievement = achievedWeight / totalWeight;
@@ -2643,6 +2649,7 @@
     var horizonYears = context.horizonYears;
     var selectedProducts = context.selectedProducts;
     var premiumDrag = context.premiumDrag;
+    var trialCount = context.trialCount || undefined;
     var horizonMonths = horizonYears * 12;
 
     // Combined impact used for non-simulation metrics (retention %, protection %, total loss value)
