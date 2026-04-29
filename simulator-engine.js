@@ -1191,6 +1191,16 @@
     };
   }
 
+  function buildClaimRisk(profile) {
+    var ageNormIp = clamp((safeNumber(profile.age, 40) - 30) / 35, 0, 1);
+    var ageNormLtc = clamp((safeNumber(profile.age, 40) - 40) / 30, 0, 1);
+    var occupationFactor = profile.occupationRisk === "alto" ? 1 : profile.occupationRisk === "medio" ? 0.55 : 0.15;
+    var ipPressure = clamp(ageNormIp * 0.55 + occupationFactor * 0.45, 0, 1);
+    var ltcPressure = clamp(ageNormLtc * 0.75 + occupationFactor * 0.25, 0, 1);
+    var combinedPressure = (ipPressure + ltcPressure) / 2;
+    return { ipPressure: ipPressure, ltcPressure: ltcPressure, combinedPressure: combinedPressure };
+  }
+
   function selfFundEquivalent(productId, needs) {
     if (productId === "tcm") return roundStep(needs.deathCapital / 240, 10);
     if (productId === "income_protection") return roundStep(needs.invalidityCapital / 120, 10);
@@ -1462,9 +1472,14 @@
   }
 
   function scenarioImpact(scenarioId, profile, needs) {
+    var risk = buildClaimRisk(profile);
+    var ipPressure = risk.ipPressure;
+    var ltcPressure = risk.ltcPressure;
+    var combinedPressure = risk.combinedPressure;
+
     if (scenarioId === "rc") {
       return {
-        upfrontLoss: needs.rcClaimLoss,
+        upfrontLoss: roundStep(needs.rcClaimLoss * (0.98 + combinedPressure * 0.16), 1000),
         monthlyLoss: 0,
         durationMonths: 0
       };
@@ -1477,24 +1492,30 @@
       };
     }
     if (scenarioId === "ip") {
+      var ageCorrection = Math.max(0, Math.round((safeNumber(profile.age, 40) - 40) / 5));
+      var ipDuration = clamp(48 + Math.round(ipPressure * 60) + ageCorrection, 48, 120);
       return {
-        upfrontLoss: roundStep(needs.invalidityCapital * 0.25, 5000),
-        monthlyLoss: roundStep(profile.netMonthlyIncome * 0.55, 50),
-        durationMonths: 120
+        upfrontLoss: roundStep(needs.invalidityCapital * (0.35 + ipPressure * 0.20), 5000),
+        monthlyLoss: roundStep(profile.netMonthlyIncome * 0.55 * (1.0 + ipPressure * 0.20), 50),
+        durationMonths: ipDuration
       };
     }
     if (scenarioId === "ltc") {
+      var ltcDuration = clamp(60 + Math.round(ltcPressure * 60), 60, 120);
       return {
-        upfrontLoss: roundStep(needs.ltcCapital * 0.18, 5000),
+        upfrontLoss: roundStep(needs.ltcCapital * (0.20 + ltcPressure * 0.08), 5000),
         monthlyLoss: needs.ltcMonthly,
-        durationMonths: 60
+        durationMonths: ltcDuration
       };
     }
     if (scenarioId === "casa") {
+      var isOwner = profile.housingStatus !== "Affittuario";
+      var casaMonthly = isOwner ? roundStep(700 + safeNumber(profile.childrenCount, 0) * 50, 50) : 0;
+      var casaDuration = isOwner ? clamp(6 + Math.round(combinedPressure * 12), 6, 18) : 0;
       return {
-        upfrontLoss: needs.homeDamageLoss,
-        monthlyLoss: 0,
-        durationMonths: 0
+        upfrontLoss: roundStep(needs.homeDamageLoss * (0.98 + combinedPressure * 0.14), 1000),
+        monthlyLoss: casaMonthly,
+        durationMonths: casaDuration
       };
     }
     return {
@@ -2034,7 +2055,8 @@
       },
       targetPath: yesProjection.targetPath,
       loss: rawImpact,
-      totalLossValue: totalLossValue || rawImpact.upfrontLoss
+      totalLossValue: totalLossValue || rawImpact.upfrontLoss,
+      residualExposure: Math.max(0, (totalLossValue || rawImpact.upfrontLoss) - (withSupport.upfront + withSupport.monthly * rawImpact.durationMonths))
     };
   }
 
