@@ -234,74 +234,74 @@
     productCatalog: [
       {
         id: "tcm",
-        name: "Temporanea Caso Morte (TCM)",
-        icon: "💀",
+        name: "Lovia",
+        icon: "💙",
         tint: "#e8f4fd",
         deductibleRate: 0.19,
         deductibleLabel: "Si - 19%",
         scenarioIds: ["morte"],
-        shortDescription: "Capitale ai familiari in caso di decesso."
+        shortDescription: "Un capitale esente da tasse per proteggere chi ami se vieni a mancare."
       },
       {
         id: "income_protection",
-        name: "Invalidita & Protezione reddito",
+        name: "Allianz ULTRA Salute",
         icon: "🦽",
         tint: "#fff7e6",
         deductibleRate: 0.19,
         deductibleLabel: "Si - 19%",
         scenarioIds: ["ip"],
-        shortDescription: "Tutela la capacita reddituale in caso di invalidita."
+        shortDescription: "Capitale per invalidita permanente da malattia o infortunio."
       },
       {
         id: "rc_family",
-        name: "RC Famiglia & Casa",
+        name: "Allianz ULTRA Casa e Patrimonio",
         icon: "🏡",
         tint: "#eaf7f0",
         deductibleRate: 0,
         deductibleLabel: "No",
         scenarioIds: ["rc", "casa"],
-        shortDescription: "Protegge da danni a terzi e imprevisti domestici."
+        shortDescription: "RC Famiglia e tutela casa: protegge da danni a terzi e imprevisti."
       },
       {
         id: "ltc",
-        name: "Long Term Care (LTC)",
+        name: "Allianz Longevity Care",
         icon: "🏥",
         tint: "#fdf0ef",
         deductibleRate: 0.19,
         deductibleLabel: "Si - 19%",
         scenarioIds: ["ltc"],
-        shortDescription: "Rendita per non autosufficienza e assistenza."
+        shortDescription: "Rendita vitalizia per non autosufficienza, esente da imposte."
       },
       {
         id: "health",
-        name: "Salute ricoveri",
+        name: "Allianz ULTRA Salute",
         icon: "🩺",
         tint: "#eef5ff",
         deductibleRate: 0.19,
         deductibleLabel: "Si - 19%",
         scenarioIds: ["ip", "ltc"],
-        shortDescription: "Copre spese mediche e ricoveri straordinari."
+        shortDescription: "Rimborso spese mediche, ricoveri e diagnostica specialistica."
       },
       {
         id: "accident",
-        name: "Infortuni quotidiani",
+        name: "Infortuni",
         icon: "🦺",
         tint: "#eefbf4",
         deductibleRate: 0.19,
         deductibleLabel: "Si - 19%",
         scenarioIds: ["ip"],
-        shortDescription: "Indennizzo per infortuni che impattano lavoro e autonomia."
+        shortDescription: "Indennizzo per infortuni che bloccano il lavoro o riducono l'autonomia."
       },
       {
         id: "mortgage",
-        name: "Protezione mutuo",
+        name: "Lovia Decrescente",
         icon: "🏠",
         tint: "#fff5ea",
         deductibleRate: 0.19,
         deductibleLabel: "Si - 19%",
         scenarioIds: ["morte", "ip"],
-        shortDescription: "Riduce il rischio di blocco del piano casa con mutuo."
-      }
+        shortDescription: "Copre il debito residuo del mutuo se vieni a mancare."
+      },
     ],
     scenarioCatalog: [
       {
